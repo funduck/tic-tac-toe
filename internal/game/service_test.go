@@ -1,0 +1,396 @@
+package game
+
+import (
+	"errors"
+	"testing"
+)
+
+var ErrMockRepoUpdateFailure = errors.New("update failure")
+
+// mockRepo is a hand-written test double for GameRepo.
+type mockRepo struct {
+	games     map[string]*Game
+	order     []string
+	createErr error
+	getErr    error
+	updateErr error
+}
+
+func newMockRepo() *mockRepo {
+	return &mockRepo{games: make(map[string]*Game)}
+}
+
+func (m *mockRepo) Create(game *Game) error {
+	if m.createErr != nil {
+		return m.createErr
+	}
+	m.games[game.ID] = game
+	m.order = append(m.order, game.ID)
+	return nil
+}
+
+func (m *mockRepo) FindByID(gameID string) (*Game, error) {
+	if m.getErr != nil {
+		return nil, m.getErr
+	}
+	g, ok := m.games[gameID]
+	if !ok {
+		return nil, ErrGameNotFound
+	}
+	return g, nil
+}
+
+func (m *mockRepo) Update(game *Game) error {
+	if m.updateErr != nil {
+		return m.updateErr
+	}
+	if _, ok := m.games[game.ID]; !ok {
+		return ErrGameNotFound
+	}
+	m.games[game.ID] = game
+	return nil
+}
+
+func (m *mockRepo) FindLatestForUser(userID string) (*Game, error) {
+	if m.getErr != nil {
+		return nil, m.getErr
+	}
+	for i := len(m.order) - 1; i >= 0; i-- {
+		g := m.games[m.order[i]]
+		if g.UserID1 == userID || g.UserID2 == userID {
+			return g, nil
+		}
+	}
+	return nil, ErrGameNotFound
+}
+
+// --- CreateGame ---
+
+func TestGameService_CreateGame(t *testing.T) {
+	repo := newMockRepo()
+	svc := NewGameService(repo)
+
+	g, err := svc.CreateGame()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if g.ID == "" {
+		t.Error("expected non-empty game ID")
+	}
+	if g.Status != StatusWaiting {
+		t.Errorf("expected status %s, got %s", StatusWaiting, g.Status)
+	}
+	// verify persisted
+	stored, err := repo.FindByID(g.ID)
+	if err != nil {
+		t.Fatalf("game not found in repo: %v", err)
+	}
+	if stored.ID != g.ID {
+		t.Error("stored game ID mismatch")
+	}
+}
+
+func TestGameService_CreateGame_Errors(t *testing.T) {
+	repo := newMockRepo()
+	repo.createErr = errors.New("storage failure")
+	svc := NewGameService(repo)
+
+	_, err := svc.CreateGame()
+	if err == nil {
+		t.Error("expected error, got nil")
+	}
+}
+
+// --- JoinGame ---
+
+func TestGameService_JoinGame(t *testing.T) {
+	repo := newMockRepo()
+	svc := NewGameService(repo)
+	g, _ := svc.CreateGame()
+
+	updated, err := svc.JoinGame(g.ID, "alice")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if updated.UserID1 != "alice" {
+		t.Errorf("expected UserID1 alice, got %s", updated.UserID1)
+	}
+	if updated.Status != StatusWaiting {
+		t.Errorf("expected status still waiting, got %s", updated.Status)
+	}
+
+	updated, err = svc.JoinGame(g.ID, "bob")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if updated.UserID2 != "bob" {
+		t.Errorf("expected UserID2 bob, got %s", updated.UserID2)
+	}
+	if updated.Status != StatusInProgress {
+		t.Errorf("expected status in_progress, got %s", updated.Status)
+	}
+}
+
+func TestGameService_JoinGame_Errors(t *testing.T) {
+	var mockRepo *mockRepo
+
+	for _, tc := range []struct {
+		name    string
+		setup   func(*GameService) (gameID string, userID string)
+		wantErr func() error
+	}{
+		{
+			name: "game not found",
+			setup: func(svc *GameService) (string, string) {
+				return "nonexistent", "alice"
+			},
+			wantErr: func() error { return ErrGameNotFound },
+		},
+		{
+			name: "game not waiting",
+			setup: func(svc *GameService) (string, string) {
+				g, _ := svc.CreateGame()
+				svc.JoinGame(g.ID, "alice")
+				svc.JoinGame(g.ID, "bob")
+				return g.ID, "charlie"
+			},
+			wantErr: func() error { return ErrGameNotWaiting },
+		},
+		{
+			name: "user already joined",
+			setup: func(svc *GameService) (string, string) {
+				g, _ := svc.CreateGame()
+				svc.JoinGame(g.ID, "alice") //nolint — alice joins
+				return g.ID, "alice"
+			},
+			wantErr: func() error { return ErrAlreadyJoined },
+		},
+		{
+			name: "repo update fails",
+			setup: func(svc *GameService) (string, string) {
+				g, _ := svc.CreateGame()
+				svc.JoinGame(g.ID, "alice")
+				mockRepo.updateErr = errors.New("update failure")
+				return g.ID, "bob"
+			},
+			wantErr: func() error { return mockRepo.updateErr },
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			mockRepo = newMockRepo()
+			svc := NewGameService(mockRepo)
+			gameID, userID := tc.setup(svc)
+			_, err := svc.JoinGame(gameID, userID)
+			if !errors.Is(err, tc.wantErr()) {
+				t.Errorf("expected %v, got %v", tc.wantErr(), err)
+			}
+		})
+	}
+}
+
+// --- GetLatestGameForUser ---
+
+func TestGameService_GetLatestGameForUser(t *testing.T) {
+	repo := newMockRepo()
+	svc := NewGameService(repo)
+
+	// no games for user
+	_, err := svc.GetLatestGameForUser("alice")
+	if !errors.Is(err, ErrGameNotFound) {
+		t.Errorf("expected ErrGameNotFound, got %v", err)
+	}
+
+	// create some games
+	g1, _ := svc.CreateGame()
+	svc.JoinGame(g1.ID, "alice")
+	g2, _ := svc.CreateGame()
+	svc.JoinGame(g2.ID, "alice")
+	svc.JoinGame(g2.ID, "bob")
+
+	latest, err := svc.GetLatestGameForUser("alice")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if latest.ID != g2.ID {
+		t.Errorf("expected latest game ID %s, got %s", g2.ID, latest.ID)
+	}
+}
+
+func TestGameService_GetLatestGameForUser_Errors(t *testing.T) {
+	repo := newMockRepo()
+	repo.getErr = errors.New("storage failure")
+	svc := NewGameService(repo)
+
+	_, err := svc.GetLatestGameForUser("alice")
+	if !errors.Is(err, repo.getErr) {
+		t.Errorf("expected %v, got %v", repo.getErr, err)
+	}
+}
+
+// --- helper to create a game in progress between two users ---
+
+func createGameInProgressHelper(svc *GameService, userID1, userID2 string) (*Game, error) {
+	g, err := svc.CreateGame()
+	if err != nil {
+		return nil, err
+	}
+	if _, err := svc.JoinGame(g.ID, userID1); err != nil {
+		return nil, err
+	}
+	if _, err := svc.JoinGame(g.ID, userID2); err != nil {
+		return nil, err
+	}
+	return g, nil
+}
+
+// --- GetGame ---
+
+func TestGameService_GetGame(t *testing.T) {
+	repo := newMockRepo()
+	svc := NewGameService(repo)
+	g, _ := createGameInProgressHelper(svc, "alice", "bob")
+
+	got, err := svc.GetGame(g.ID)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if got.ID != g.ID {
+		t.Error("game ID mismatch")
+	}
+}
+
+func TestGameService_GetGame_NotFound(t *testing.T) {
+	svc := NewGameService(newMockRepo())
+	_, err := svc.GetGame("nonexistent")
+	if !errors.Is(err, ErrGameNotFound) {
+		t.Errorf("expected ErrGameNotFound, got %v", err)
+	}
+}
+
+// --- MakeMove ---
+
+func TestGameService_MakeMove(t *testing.T) {
+	repo := newMockRepo()
+	svc := NewGameService(repo)
+	g, _ := createGameInProgressHelper(svc, "alice", "bob")
+
+	updated, err := svc.MakeMove(g.ID, "alice", 0, 0)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if updated.Board[0][0] != 1 {
+		t.Error("expected mark 1 at (0,0)")
+	}
+	if updated.CurrentPlayerID != "bob" {
+		t.Errorf("expected bob to be next, got %s", updated.CurrentPlayerID)
+	}
+}
+
+func TestGameService_MakeMove_Errors(t *testing.T) {
+	var mockRepo *mockRepo
+
+	for _, tc := range []struct {
+		name    string
+		setup   func(*GameService) (gameID string, userID string, x, y int)
+		wantErr func() error
+	}{
+		{
+			name: "game not found",
+			setup: func(svc *GameService) (string, string, int, int) {
+				return "nonexistent", "alice", 0, 0
+			},
+			wantErr: func() error { return ErrGameNotFound },
+		},
+		{
+			name: "game move fails",
+			setup: func(svc *GameService) (string, string, int, int) {
+				g, _ := createGameInProgressHelper(svc, "alice", "bob")
+				return g.ID, "bob", 0, 0
+			},
+			wantErr: func() error { return ErrNotYourTurn },
+		},
+		{
+			name: "update fails",
+			setup: func(svc *GameService) (string, string, int, int) {
+				g, _ := createGameInProgressHelper(svc, "alice", "bob")
+				mockRepo.updateErr = errors.New("update failure")
+				return g.ID, "alice", 0, 0
+			},
+			wantErr: func() error { return mockRepo.updateErr },
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			mockRepo = newMockRepo()
+			svc := NewGameService(mockRepo)
+			gameID, userID, x, y := tc.setup(svc)
+			_, err := svc.MakeMove(gameID, userID, x, y)
+			if !errors.Is(err, tc.wantErr()) {
+				t.Errorf("expected %v, got %v", tc.wantErr(), err)
+			}
+		})
+	}
+}
+
+// --- GiveUp ---
+
+func TestGameService_GiveUp(t *testing.T) {
+	repo := newMockRepo()
+	svc := NewGameService(repo)
+	g, _ := createGameInProgressHelper(svc, "alice", "bob")
+
+	updated, err := svc.GiveUp(g.ID, "alice")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if updated.Status != StatusFinished {
+		t.Errorf("expected finished, got %s", updated.Status)
+	}
+	if updated.WinnerID != "bob" {
+		t.Errorf("expected winner bob, got %s", updated.WinnerID)
+	}
+}
+
+func TestGameService_GiveUp_Errors(t *testing.T) {
+	var mockRepo *mockRepo
+
+	for _, tc := range []struct {
+		name    string
+		setup   func(*GameService) (gameID string, userID string)
+		wantErr func() error
+	}{
+		{
+			name: "game not found",
+			setup: func(svc *GameService) (string, string) {
+				return "nonexistent", "alice"
+			},
+			wantErr: func() error { return ErrGameNotFound },
+		},
+		{
+			name: "game action fails",
+			setup: func(svc *GameService) (string, string) {
+				g, _ := createGameInProgressHelper(svc, "alice", "bob")
+				return g.ID, "charlie"
+			},
+			wantErr: func() error { return ErrNotInGame },
+		},
+		{
+			name: "update fails",
+			setup: func(svc *GameService) (string, string) {
+				g, _ := createGameInProgressHelper(svc, "alice", "bob")
+				mockRepo.updateErr = errors.New("update failure")
+				return g.ID, "alice"
+			},
+			wantErr: func() error { return mockRepo.updateErr },
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			mockRepo = newMockRepo()
+			svc := NewGameService(mockRepo)
+			gameID, userID := tc.setup(svc)
+			_, err := svc.GiveUp(gameID, userID)
+			if !errors.Is(err, tc.wantErr()) {
+				t.Errorf("expected %v, got %v", tc.wantErr(), err)
+			}
+		})
+	}
+}
