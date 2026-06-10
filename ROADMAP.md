@@ -16,7 +16,7 @@ Game methods should allow for initialization, making moves, checking for wins/dr
 Interface for storing and retrieving game state.
 
 * Create(game *Game) error
-* Get(gameID string) (*Game, error)
+* FindByID(gameID string) (*Game, error)
 * Update(game *Game) error
 * FindLatestForUser(userID string) (*Game, error)
 
@@ -24,6 +24,7 @@ Interface for storing and retrieving game state.
 Service processing game logic, managing game state, and handling player interactions.
 
 * CreateGame(userID1, userID2 string) (*Game, error)
+* JoinGame(gameID, userID string) (*Game, error)
 * MakeMove(gameID, userID string, x, y int) (*Game, error)
 * GiveUp(gameID, userID string) (*Game, error)
 * GetGame(gameID string) (*Game, error)
@@ -66,3 +67,21 @@ Command-line client to interact with the server.
 * Allow user to input moves
 * Display results (win/loss/draw)
 
+## Polishing
+Add logs to service
+
+Mute logs for polling requests in the server
+
+Handle errors gracefully on client side - do not crash on incorrect moves for example, but display error message and prompt again.
+
+Add meaningful operation IDs to OpenAPI spec for better codegen.
+
+Move client code to cmd/client/lib, main file is too complex right now.
+* DisplayService is responsesible for rendering the game state and results to the user.
+* InputService is responsible for prompting the user for input and validating it.
+* GameService is responsible for communicating with the server and processing responses.
+* main.go wires everything together and handles the overall flow.   
+
+## TODO
+check response codes
+fix client to handle errors gracefully (invalid moves, server errors, etc)

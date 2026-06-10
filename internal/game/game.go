@@ -24,14 +24,14 @@ var (
 // Game represents the state of a single tic-tac-toe match.
 // UserID1 plays as X (mark 1), UserID2 plays as O (mark 2).
 type Game struct {
-	ID              string
-	UserID1         string
-	UserID2         string
-	Board           [3][3]int
-	CurrentPlayerID string
-	Status          string
-	Result          string
-	WinnerID        string
+	ID              string    `json:"id"`
+	UserID1         string    `json:"userID1"`
+	UserID2         string    `json:"userID2"`
+	Board           [3][3]int `json:"board"`
+	CurrentPlayerID string    `json:"currentPlayerID"`
+	Status          string    `json:"status"`
+	Result          string    `json:"result"`
+	WinnerID        string    `json:"winnerID"`
 }
 
 // NewGame creates a new game in the waiting state.

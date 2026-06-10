@@ -1,0 +1,244 @@
+basePath: /
+definitions:
+  game.Game:
+    properties:
+      board:
+        items:
+          items:
+            type: integer
+          type: array
+        type: array
+      currentPlayerID:
+        type: string
+      id:
+        type: string
+      result:
+        type: string
+      status:
+        type: string
+      userID1:
+        type: string
+      userID2:
+        type: string
+      winnerID:
+        type: string
+    type: object
+  server.CreateGameRequest:
+    properties:
+      gameID:
+        type: string
+      userID:
+        type: string
+    type: object
+  server.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  server.GiveUpRequest:
+    properties:
+      gameID:
+        type: string
+      userID:
+        type: string
+    type: object
+  server.JoinGameRequest:
+    properties:
+      gameID:
+        type: string
+      userID:
+        type: string
+    type: object
+  server.MoveRequest:
+    properties:
+      gameID:
+        type: string
+      userID:
+        type: string
+      x:
+        type: integer
+      "y":
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Multiplayer Tic Tac Toe game server
+  title: Tic Tac Toe API
+  version: "1.0"
+paths:
+  /api/games:
+    post:
+      consumes:
+      - application/json
+      operationId: createGame
+      parameters:
+      - description: Create game request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/server.CreateGameRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/game.Game'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Create a new game
+      tags:
+      - games
+  /api/games/{gameID}:
+    get:
+      operationId: getGame
+      parameters:
+      - description: Game ID
+        in: path
+        name: gameID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/game.Game'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Get game state
+      tags:
+      - games
+  /api/games/{gameID}/giveup:
+    post:
+      consumes:
+      - application/json
+      operationId: giveUpGame
+      parameters:
+      - description: Game ID
+        in: path
+        name: gameID
+        required: true
+        type: string
+      - description: Give up request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/server.GiveUpRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/game.Game'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Give up the game
+      tags:
+      - games
+  /api/games/{gameID}/join:
+    post:
+      consumes:
+      - application/json
+      operationId: joinGame
+      parameters:
+      - description: Game ID
+        in: path
+        name: gameID
+        required: true
+        type: string
+      - description: Join game request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/server.JoinGameRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/game.Game'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Join a waiting game
+      tags:
+      - games
+  /api/games/{gameID}/move:
+    post:
+      consumes:
+      - application/json
+      operationId: makeMove
+      parameters:
+      - description: Game ID
+        in: path
+        name: gameID
+        required: true
+        type: string
+      - description: Move request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/server.MoveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/game.Game'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Make a move
+      tags:
+      - games
+swagger: "2.0"

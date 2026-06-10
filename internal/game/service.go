@@ -1,14 +1,19 @@
 package game
 
-import "github.com/google/uuid"
+import (
+	"log/slog"
+
+	"github.com/google/uuid"
+)
 
 // GameService processes game actions and delegates state persistence to GameRepo.
 type GameService struct {
-	repo GameRepo
+	repo   GameRepo
+	logger *slog.Logger
 }
 
-func NewGameService(repo GameRepo) *GameService {
-	return &GameService{repo: repo}
+func NewGameService(repo GameRepo, logger *slog.Logger) *GameService {
+	return &GameService{repo: repo, logger: logger}
 }
 
 // CreateGame starts a new game in the waiting state, awaiting players to join.
@@ -21,6 +26,7 @@ func (s *GameService) CreateGame() (*Game, error) {
 	if err := s.repo.Create(g); err != nil {
 		return nil, err
 	}
+	s.logger.Info("game created", "gameID", g.ID, "status", g.Status)
 	return g, nil
 }
 
@@ -37,6 +43,7 @@ func (s *GameService) JoinGame(gameID, userID string) (*Game, error) {
 	if err := s.repo.Update(g); err != nil {
 		return nil, err
 	}
+	s.logger.Info("player joined", "gameID", gameID, "userID", userID, "status", g.Status)
 	return g, nil
 }
 
@@ -62,6 +69,7 @@ func (s *GameService) MakeMove(gameID, userID string, x, y int) (*Game, error) {
 	if err := s.repo.Update(g); err != nil {
 		return nil, err
 	}
+	s.logger.Info("move made", "gameID", gameID, "userID", userID, "x", x, "y", y, "status", g.Status, "result", g.Result)
 	return g, nil
 }
 
@@ -77,5 +85,6 @@ func (s *GameService) GiveUp(gameID, userID string) (*Game, error) {
 	if err := s.repo.Update(g); err != nil {
 		return nil, err
 	}
+	s.logger.Info("player gave up", "gameID", gameID, "userID", userID, "winnerID", g.WinnerID)
 	return g, nil
 }

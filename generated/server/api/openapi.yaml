@@ -1,0 +1,290 @@
+openapi: 3.0.1
+info:
+  contact: {}
+  description: Multiplayer Tic Tac Toe game server
+  title: Tic Tac Toe API
+  version: "1.0"
+servers:
+- url: //localhost:8080/
+paths:
+  /api/games:
+    post:
+      operationId: createGame
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/server.CreateGameRequest"
+        description: Create game request
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/game.Game"
+          description: Created
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Bad Request
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Conflict
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Internal Server Error
+      summary: Create a new game
+      tags:
+      - games
+      x-codegen-request-body-name: request
+  /api/games/{gameID}:
+    get:
+      operationId: getGame
+      parameters:
+      - description: Game ID
+        in: path
+        name: gameID
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/game.Game"
+          description: OK
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Not Found
+      summary: Get game state
+      tags:
+      - games
+  /api/games/{gameID}/giveup:
+    post:
+      operationId: giveUpGame
+      parameters:
+      - description: Game ID
+        in: path
+        name: gameID
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/server.GiveUpRequest"
+        description: Give up request
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/game.Game"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Bad Request
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Not Found
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Conflict
+      summary: Give up the game
+      tags:
+      - games
+      x-codegen-request-body-name: request
+  /api/games/{gameID}/join:
+    post:
+      operationId: joinGame
+      parameters:
+      - description: Game ID
+        in: path
+        name: gameID
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/server.JoinGameRequest"
+        description: Join game request
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/game.Game"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Bad Request
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Not Found
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Conflict
+      summary: Join a waiting game
+      tags:
+      - games
+      x-codegen-request-body-name: request
+  /api/games/{gameID}/move:
+    post:
+      operationId: makeMove
+      parameters:
+      - description: Game ID
+        in: path
+        name: gameID
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/server.MoveRequest"
+        description: Move request
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/game.Game"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Bad Request
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Not Found
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Conflict
+      summary: Make a move
+      tags:
+      - games
+      x-codegen-request-body-name: request
+components:
+  schemas:
+    game.Game:
+      example:
+        currentPlayerID: currentPlayerID
+        result: result
+        userID1: userID1
+        userID2: userID2
+        winnerID: winnerID
+        id: id
+        board:
+        - - 0
+          - 0
+        - - 0
+          - 0
+        status: status
+      properties:
+        board:
+          items:
+            items:
+              type: integer
+            type: array
+          type: array
+        currentPlayerID:
+          type: string
+        id:
+          type: string
+        result:
+          type: string
+        status:
+          type: string
+        userID1:
+          type: string
+        userID2:
+          type: string
+        winnerID:
+          type: string
+      type: object
+    server.CreateGameRequest:
+      properties:
+        gameID:
+          type: string
+        userID:
+          type: string
+      type: object
+    server.ErrorResponse:
+      example:
+        error: error
+      properties:
+        error:
+          type: string
+      type: object
+    server.GiveUpRequest:
+      properties:
+        gameID:
+          type: string
+        userID:
+          type: string
+      type: object
+    server.JoinGameRequest:
+      properties:
+        gameID:
+          type: string
+        userID:
+          type: string
+      type: object
+    server.MoveRequest:
+      properties:
+        gameID:
+          type: string
+        userID:
+          type: string
+        x:
+          type: integer
+        "y":
+          type: integer
+      type: object
+x-original-swagger-version: "2.0"
