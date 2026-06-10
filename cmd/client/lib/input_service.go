@@ -8,21 +8,25 @@ import (
 )
 
 // InputService handles user input
-type InputService struct{}
+type InputService struct {
+	scanner *bufio.Scanner
+}
 
 // NewInputService creates a new InputService
-func NewInputService() *InputService {
-	return &InputService{}
+func NewInputService(scanner *bufio.Scanner) *InputService {
+	return &InputService{
+		scanner: scanner,
+	}
 }
 
 // PromptMove prompts the user for a move and validates the input
 // Returns row, col, giveUp flag, and error
-func (i *InputService) PromptMove(scanner *bufio.Scanner) (row, col int, giveUp bool, err error) {
-	if !scanner.Scan() {
+func (i *InputService) PromptMove() (row, col int, giveUp bool, err error) {
+	if !i.scanner.Scan() {
 		return 0, 0, false, errors.New("failed to read input")
 	}
 
-	line := strings.TrimSpace(scanner.Text())
+	line := strings.TrimSpace(i.scanner.Text())
 
 	// Check for quit/give up
 	if line == "q" || line == "quit" {

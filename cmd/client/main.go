@@ -9,6 +9,7 @@ import (
 
 	openapi "github.com/GIT_USER_ID/GIT_REPO_ID"
 
+	"github.com/funduck/tic-tac-toe/cmd/client/app"
 	"github.com/funduck/tic-tac-toe/cmd/client/lib"
 )
 
@@ -31,31 +32,14 @@ func main() {
 	cfg.Servers = openapi.ServerConfigurations{{URL: *serverURL}}
 	apiClient := openapi.NewAPIClient(cfg)
 
+	scanner := bufio.NewScanner(os.Stdin)
+
 	// Initialize services
 	gameSvc := lib.NewGameService(apiClient)
 	displaySvc := lib.NewDisplayService()
-	inputSvc := lib.NewInputService()
+	inputSvc := lib.NewInputService(scanner)
 
-	scanner := bufio.NewScanner(os.Stdin)
 	ctx := context.Background()
 
-	// Create or join game
-	err := lib.CreateOrJoinGame(ctx, gameSvc, displaySvc)
-	if err != nil {
-		displaySvc.PrintError(fmt.Sprintf("Failed to start game: %v", err))
-		os.Exit(1)
-	}
-
-	displaySvc.PrintInfo(fmt.Sprintf("Game started! You are %s.", displaySvc.MyMark()))
-	displaySvc.PrintBoard()
-
-	// Game loop
-	err = lib.PlayGame(ctx, gameSvc, displaySvc, inputSvc, scanner)
-	if err != nil {
-		displaySvc.PrintError(fmt.Sprintf("Game error: %v", err))
-		os.Exit(1)
-	}
-
-	// Display result
-	displaySvc.PrintResult()
+	app.Start(ctx, gameSvc, displaySvc, inputSvc)
 }

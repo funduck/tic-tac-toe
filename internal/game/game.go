@@ -57,11 +57,11 @@ func NewGameInProgress(id, userID1, userID2 string) *Game {
 // Join adds a player to the game. The first player to join becomes UserID1, the second becomes UserID2.
 // If both players have joined, the game status changes to in_progress and UserID1 moves first.
 func (g *Game) Join(userID string) error {
+	if userID == g.UserID1 || userID == g.UserID2 {
+		return nil // already joined, no change
+	}
 	if g.Status != StatusWaiting {
 		return ErrGameNotWaiting
-	}
-	if userID == g.UserID1 || userID == g.UserID2 {
-		return ErrAlreadyJoined
 	}
 	if g.UserID1 == "" {
 		g.UserID1 = userID

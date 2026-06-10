@@ -158,15 +158,6 @@ func TestGameService_JoinGame_Errors(t *testing.T) {
 			wantErr: func() error { return ErrGameNotWaiting },
 		},
 		{
-			name: "user already joined",
-			setup: func(svc *GameService) (string, string) {
-				g, _ := svc.CreateGame()
-				svc.JoinGame(g.ID, "alice") //nolint — alice joins
-				return g.ID, "alice"
-			},
-			wantErr: func() error { return ErrAlreadyJoined },
-		},
-		{
 			name: "repo update fails",
 			setup: func(svc *GameService) (string, string) {
 				g, _ := svc.CreateGame()

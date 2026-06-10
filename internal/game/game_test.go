@@ -52,6 +52,20 @@ func TestJoin_Valid(t *testing.T) {
 	if g.Status != StatusInProgress {
 		t.Errorf("expected status in_progress, got %s", g.Status)
 	}
+
+	// allow join again
+	if err := g.Join("alice"); err != nil {
+		t.Fatalf("unexpected error on rejoin: %v", err)
+	}
+	if g.UserID1 != "alice" {
+		t.Errorf("expected UserID1 alice, got %s", g.UserID1)
+	}
+	if g.UserID2 != "bob" {
+		t.Errorf("expected UserID2 bob, got %s", g.UserID2)
+	}
+	if g.Status != StatusInProgress {
+		t.Errorf("expected status still in_progress, got %s", g.Status)
+	}
 }
 
 func TestJoin_Errors(t *testing.T) {
@@ -67,18 +81,6 @@ func TestJoin_Errors(t *testing.T) {
 			setup:   func(g *Game) { g.UserID1 = "alice"; g.UserID2 = "bob"; g.Status = StatusInProgress },
 			userID:  "charlie",
 			wantErr: ErrGameNotWaiting,
-		},
-		{
-			name:    "user already joined as UserID1",
-			setup:   func(g *Game) { g.UserID1 = "alice" },
-			userID:  "alice",
-			wantErr: ErrAlreadyJoined,
-		},
-		{
-			name:    "user already joined as UserID2",
-			setup:   func(g *Game) { g.UserID2 = "bob" },
-			userID:  "bob",
-			wantErr: ErrAlreadyJoined,
 		},
 	}
 	for _, tt := range tests {
