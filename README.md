@@ -12,6 +12,20 @@ A multiplayer Tic Tac Toe game server and client implementation in Go, featuring
 - [Development](#development)
 - [Future Improvements](#future-improvements)
 
+[Task description](./TASK.md)
+
+**Implemented**:
+- Registration and login with password hashing
+- JWT authentication with access and refresh tokens
+- Simple matchmaking and game state management
+- CLI client with polling-based updates
+- In-memory data storage (users, games)
+- Unit, integration and concurrency tests
+- REST API with OpenAPI documentation
+- Codegeneration for client stubs
+- Dockerfile for server
+- Makefile with convenient commands
+
 ## Quick Start
 
 ### Prerequisites
