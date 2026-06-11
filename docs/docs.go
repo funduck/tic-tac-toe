@@ -513,6 +513,7 @@ const docTemplate = `{
                     }
                 },
                 "currentPlayerID": {
+                    "description": "user ID of the player whose turn it is",
                     "type": "string"
                 },
                 "id": {

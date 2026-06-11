@@ -4,6 +4,9 @@ A multiplayer Tic Tac Toe game server and client implementation in Go, featuring
 
 **Contents:**
 - [Quick Start](#quick-start)
+    * [Running the server](#running-the-server)
+    * [Running the client](#running-the-client)
+    * [Running tests](#running-tests)
 - [Protocol Design](#protocol-design)
 - [Authentication](#authentication)
 - [Development](#development)
@@ -47,16 +50,17 @@ You can access the Swagger UI documentation at: `http://localhost:8080/swagger/i
 
 ### Running the Client
 
+#### Basic scenario for 2 players
 Open **two separate terminals** and run a client in each:
 
 **Terminal 1 (Player 1):**
 ```bash
-go run cmd/client/main.go --user alice --password alicepass
+go run cmd/client/main.go -user alice -password alicepass
 ```
 
 **Terminal 2 (Player 2):**
 ```bash
-go run cmd/client/main.go --user bob --password bobpass
+go run cmd/client/main.go -user bob -password bobpass
 ```
 
 The clients will:
@@ -66,15 +70,21 @@ The clients will:
 4. Display the game board after each move
 5. Show the final result (win/loss/draw)
 
-### Client Options
-
+#### Advanced scenarios
+**Join Any Waiting Game or Create a New One**
 ```bash
---server string      Server base URL (default "http://localhost:8080")
---user string        Your user ID (required)
---password string    Your password (required)
---game string        Game ID to join a specific game (optional)
---private            Create a private game (default false)
+go run cmd/client/main.go -user alice -password alicepass
 ```
+
+**Connecting To Specific Game**
+```bash
+go run cmd/client/main.go -user alice -password alicepass -game <gameID>
+```
+
+Thorough Client development seems to be an overkill for such a task, so the behavior is simplified:
+- If `-game` is provided the client will attempt to join that specific game. If the game does not exist or is already full, it will return an error.
+- If `-game` is not provided, the client looks up for the latest game in `waiting` status and joins it. If no such game exists, it creates a new one.
+- If client was in the game, on restart it will ignore that game unless `-game` parameter is provided.
 
 ### Running Tests
 
