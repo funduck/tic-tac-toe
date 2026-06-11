@@ -1,10 +1,25 @@
 package lib
 
-import openapi "github.com/GIT_USER_ID/GIT_REPO_ID"
+import (
+	openapi "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
 
 // Game wraps the generated openapi.GameGame with convenience methods
 type Game struct {
 	*openapi.GameGame
+}
+
+func (g *Game) GetOpponentID() string {
+	if g.GameGame == nil {
+		return ""
+	}
+	if g.UserID1 != nil && *g.UserID1 != UserID {
+		return *g.UserID1
+	}
+	if g.UserID2 != nil && *g.UserID2 != UserID {
+		return *g.UserID2
+	}
+	return ""
 }
 
 // GetID returns the game ID

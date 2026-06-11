@@ -9,7 +9,7 @@ import (
 func TestLoggerMiddleware(t *testing.T) {
 	// This is a very basic test to ensure the logger middleware does not interfere with request handling.
 	// More thorough testing would require capturing log output, which is beyond the scope of this simple test.
-	handler := loggerMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	handler := LoggerMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
 

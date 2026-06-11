@@ -16,7 +16,7 @@ func CreateOrJoinGame(ctx context.Context, gameSvc *lib.GameService, displaySvc 
 		g, err := gameSvc.JoinAnyGame(ctx, lib.UserID)
 		if err == nil {
 			lib.GameState = g
-			displaySvc.PrintInfo(fmt.Sprintf("Joined game: %s", g.GetID()))
+			displaySvc.PrintInfo(fmt.Sprintf("Joined game: %s with %s", g.GetID(), g.GetOpponentID()))
 			return nil
 		}
 
@@ -36,13 +36,14 @@ func CreateOrJoinGame(ctx context.Context, gameSvc *lib.GameService, displaySvc 
 		return fmt.Errorf("failed to join or get game: %w", err)
 	}
 	lib.GameState = g
+	displaySvc.PrintInfo(fmt.Sprintf("Joined game: %s with %s", g.GetID(), g.GetOpponentID()))
 
 	return nil
 }
 
 func WaitForOpponent(ctx context.Context, gameSvc *lib.GameService, displaySvc *lib.DisplayService) error {
 	g := lib.GameState
-	if g.GetStatus() == "waiting" { // TODO safe types for enums
+	if g.GetStatus() == game.StatusWaiting { // TODO safe types for enums
 		displaySvc.PrintInfo("⏳ Waiting for opponent to join...")
 		g, err := gameSvc.PollUntil(ctx, g.GetID(), func(g *lib.Game) bool {
 			return g.GetStatus() == game.StatusInProgress

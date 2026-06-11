@@ -1,7 +1,9 @@
 package server
 
 import (
+	"bytes"
 	"encoding/json"
+	"io"
 	"log/slog"
 	"net/http"
 )
@@ -27,4 +29,21 @@ func writeJSON(w http.ResponseWriter, status int, v any) {
 
 func writeError(w http.ResponseWriter, status int, err error) {
 	writeJSON(w, status, ErrorResponse{Error: err.Error()})
+}
+
+func getBodyBytes(r *http.Request) ([]byte, error) {
+	// 1. Read the entire body into memory
+	bodyBytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	// Crucial step: Ensure the original body is closed to prevent leaks
+	r.Body.Close()
+
+	// 2. RESTORE the body immediately so it's safe for later
+	r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
+	// 3. Return the body bytes
+	return bodyBytes, nil
 }

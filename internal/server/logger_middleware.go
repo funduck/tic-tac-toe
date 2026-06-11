@@ -9,8 +9,8 @@ import (
 
 var regexGetGame = regexp.MustCompile(`^/api/games/[^/]+$`)
 
-// loggerMiddleware is a middleware that logs all requests except GET /games/{gameID} (polling)
-func loggerMiddleware(next http.Handler) http.Handler {
+// LoggerMiddleware is a middleware that logs all requests except GET /games/{gameID} (polling)
+func LoggerMiddleware(next http.Handler) http.Handler {
 	logger := middleware.Logger(next)
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

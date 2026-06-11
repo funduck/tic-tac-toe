@@ -18,7 +18,7 @@ func UserRouter(r chi.Router, uh *UserHandler, middlewares ...func(http.Handler)
 			r.Use(mw)
 		}
 
-		r.Use(loggerMiddleware)
+		r.Use(LoggerMiddleware)
 
 		r.Post("/users/signup", uh.Signup)
 		r.Post("/users/login", uh.Login)

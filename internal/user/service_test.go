@@ -2,6 +2,8 @@ package user
 
 import (
 	"errors"
+	"log/slog"
+	"os"
 	"testing"
 
 	"github.com/funduck/tic-tac-toe/internal/auth"
@@ -42,7 +44,10 @@ func (r *MockUserRepo) Save(user *User) error {
 func TestAuthService_Signup(t *testing.T) {
 	userRepo := NewMockUserRepo()
 	tokenService := auth.NewAccessTokenService("secret", "my-awesome-app")
-	authService := NewUserService(userRepo, tokenService)
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
+	authService := NewUserService(userRepo, tokenService, logger)
 
 	userID := "testuser"
 	password := "password123"
@@ -71,7 +76,10 @@ func TestAuthService_Signup(t *testing.T) {
 func TestAuthService_Signup_Errors(t *testing.T) {
 	userRepo := NewMockUserRepo()
 	tokenService := auth.NewAccessTokenService("secret", "my-awesome-app")
-	authService := NewUserService(userRepo, tokenService)
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
+	authService := NewUserService(userRepo, tokenService, logger)
 
 	// prepare existing user
 	_, _, err := authService.Signup("testuser", "password123")
@@ -100,7 +108,10 @@ func TestAuthService_Signup_Errors(t *testing.T) {
 func TestAuthService_Login(t *testing.T) {
 	userRepo := NewMockUserRepo()
 	tokenService := auth.NewAccessTokenService("secret", "my-awesome-app")
-	authService := NewUserService(userRepo, tokenService)
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
+	authService := NewUserService(userRepo, tokenService, logger)
 
 	// First, sign up a user
 	userID := "testuser"
@@ -135,7 +146,10 @@ func TestAuthService_Login(t *testing.T) {
 func TestAuthService_Login_Errors(t *testing.T) {
 	userRepo := NewMockUserRepo()
 	tokenService := auth.NewAccessTokenService("secret", "my-awesome-app")
-	authService := NewUserService(userRepo, tokenService)
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
+	authService := NewUserService(userRepo, tokenService, logger)
 
 	// prepare existing user
 	_, _, err := authService.Signup("testuser", "password123")
@@ -164,7 +178,10 @@ func TestAuthService_Login_Errors(t *testing.T) {
 func TestAuthService_RefreshToken(t *testing.T) {
 	userRepo := NewMockUserRepo()
 	tokenService := auth.NewAccessTokenService("secret", "my-awesome-app")
-	authService := NewUserService(userRepo, tokenService)
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
+	authService := NewUserService(userRepo, tokenService, logger)
 
 	// First, sign up a user
 	userID := "testuser"
@@ -199,7 +216,10 @@ func TestAuthService_RefreshToken(t *testing.T) {
 func TestAuthService_RefreshToken_Errors(t *testing.T) {
 	userRepo := NewMockUserRepo()
 	tokenService := auth.NewAccessTokenService("secret", "my-awesome-app")
-	authService := NewUserService(userRepo, tokenService)
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
+	authService := NewUserService(userRepo, tokenService, logger)
 
 	// prepare valid refresh token
 	_, tokenPair, err := authService.Signup("testuser", "password123")

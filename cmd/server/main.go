@@ -30,13 +30,15 @@ func main() {
 
 	tokenService := auth.NewAccessTokenService("secret", "tic-tac-toe")
 	userRepo := user.NewMemoryUserRepo()
-	userSvc := user.NewUserService(userRepo, tokenService) // TODO add logger
+	userSvc := user.NewUserService(userRepo, tokenService, logger)
 	userHandler := server.NewUserHandler(userSvc, logger)
+
+	authMiddleware := server.AuthMiddleware(tokenService)
 
 	router := newRouter()
 
 	router.Route("/api", func(r chi.Router) {
-		server.GameRouter(r, gameHandler)
+		server.GameRouter(r, gameHandler, authMiddleware)
 		server.UserRouter(r, userHandler)
 	})
 

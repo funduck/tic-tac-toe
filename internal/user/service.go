@@ -2,6 +2,7 @@ package user
 
 import (
 	"errors"
+	"log/slog"
 
 	"github.com/funduck/tic-tac-toe/internal/auth"
 )
@@ -22,12 +23,14 @@ type UserService struct {
 	userRepo     UserRepo
 	tokenService TokenService
 	secret       string
+	logger       *slog.Logger
 }
 
-func NewUserService(userRepo UserRepo, tokenService TokenService) *UserService {
+func NewUserService(userRepo UserRepo, tokenService TokenService, logger *slog.Logger) *UserService {
 	return &UserService{
 		userRepo:     userRepo,
 		tokenService: tokenService,
+		logger:       logger,
 	}
 }
 
@@ -70,6 +73,8 @@ func (s *UserService) Signup(userID, password string) (*User, *auth.TokenPair, e
 		return nil, nil, err
 	}
 
+	s.logger.Info("User signed up", "userID", userID)
+
 	return user, tokenPair, nil
 }
 
@@ -102,6 +107,8 @@ func (s *UserService) Login(userID, password string) (*User, *auth.TokenPair, er
 	if err := s.userRepo.Save(user); err != nil {
 		return nil, nil, err
 	}
+
+	s.logger.Info("User logged in", "userID", userID)
 
 	return user, tokenPair, nil
 }
@@ -145,6 +152,8 @@ func (s *UserService) RefreshToken(userID, refreshToken string) (*User, *auth.To
 	if err := s.userRepo.Save(user); err != nil {
 		return nil, nil, err
 	}
+
+	s.logger.Info("User refreshed token", "userID", userID)
 
 	return user, tokenPair, nil
 }
