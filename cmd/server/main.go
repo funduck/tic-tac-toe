@@ -33,7 +33,13 @@ func main() {
 	gameSvc := game.NewGameService(gameRepo, logger)
 	gameHandler := server.NewGameHandler(gameSvc, logger)
 
-	tokenService := auth.NewAccessTokenService("secret", "tic-tac-toe")
+	secret := os.Getenv("JWT_SECRET")
+	if secret == "" {
+		logger.Warn("JWT_SECRET not set, using default secret (not recommended for production)")
+		secret = "default-secret"
+	}
+	tokenService := auth.NewAccessTokenService(secret, "tic-tac-toe")
+
 	userRepo := user.NewMemoryUserRepo()
 	userSvc := user.NewUserService(userRepo, tokenService, logger)
 	userHandler := server.NewUserHandler(userSvc, logger)

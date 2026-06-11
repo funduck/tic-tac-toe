@@ -3,7 +3,6 @@ package lib
 import (
 	"bufio"
 	"errors"
-	"strconv"
 	"strings"
 )
 
@@ -33,18 +32,22 @@ func (i *InputService) PromptMove() (row, col int, giveUp bool, err error) {
 		return 0, 0, true, nil
 	}
 
-	// Parse row and column
-	parts := strings.Fields(line)
-	if len(parts) != 2 {
-		return 0, 0, false, errors.New("invalid input: enter row and column separated by a space (e.g. 1 2)")
+	// Can accept input in format "a1" or "1a" for convenience
+	if len(line) == 2 {
+		letter := line[0]
+		digit := line[1]
+		if digit >= '0' && digit <= '2' && letter >= 'a' && letter <= 'c' {
+			row = int(letter - 'a')
+			col = int(digit - '0')
+			return row, col, false, nil
+		}
+		digit, letter = letter, digit
+		if digit >= '0' && digit <= '2' && letter >= 'a' && letter <= 'c' {
+			row = int(letter - 'a')
+			col = int(digit - '0')
+			return row, col, false, nil
+		}
 	}
 
-	row, err1 := strconv.Atoi(parts[0])
-	col, err2 := strconv.Atoi(parts[1])
-
-	if err1 != nil || err2 != nil {
-		return 0, 0, false, errors.New("invalid input: row and column must be numbers")
-	}
-
-	return row, col, false, nil
+	return 0, 0, false, errors.New("invalid input format, expected format like 'a1' or '1a'")
 }

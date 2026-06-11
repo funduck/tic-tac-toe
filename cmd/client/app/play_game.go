@@ -27,7 +27,7 @@ func PlayGame(ctx context.Context, gameSvc *lib.GameService, displaySvc *lib.Dis
 
 		// Our turn
 		displaySvc.PrintStatus()
-		fmt.Print("Your move (row col) or 'q' to give up: ")
+		fmt.Print("Your move (e.g., 'a1' or '1a') or 'q' to give up: ")
 
 		row, col, giveUp, err := inputSvc.PromptMove()
 		if err != nil {

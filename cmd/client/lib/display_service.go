@@ -40,20 +40,20 @@ func (d *DisplayService) PrintBoard() {
 	fmt.Println()
 	fmt.Println("  0 1 2")
 	board := GameState.GetBoard()
-	for r := 0; r < 3; r++ {
+	for r := range 3 {
 		var row []int32
 		if r < len(board) {
 			row = board[r]
 		}
 		cells := make([]string, 3)
-		for c := 0; c < 3; c++ {
+		for c := range 3 {
 			var v int32
 			if c < len(row) {
 				v = row[c]
 			}
 			cells[c] = markStr(v)
 		}
-		fmt.Printf("%d %s %s %s\n", r, cells[0], cells[1], cells[2])
+		fmt.Printf("%s %s %s %s\n", string('a'+r), cells[0], cells[1], cells[2])
 	}
 	fmt.Println()
 }
