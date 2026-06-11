@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"sync"
 )
@@ -47,14 +46,10 @@ func (a *AuthRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) 
 		// Close the original response body
 		resp.Body.Close()
 
-		log.Printf("Received 401 Unauthorized. Attempting to refresh token...")
-
 		// Try to refresh the token
 		if err := a.refreshToken(req.Context()); err != nil {
 			return nil, fmt.Errorf("failed to refresh token: %w", err)
 		}
-
-		log.Printf("Token refreshed successfully. Retrying original request...")
 
 		// Retry the original request with the new token
 		reqRetry := cloneRequest(req)

@@ -1,6 +1,15 @@
+install:
+	go mod download
+	cd cmd/client && go mod download
+	go install github.com/swaggo/swag/cmd/swag@latest
+	go install github.com/air-verse/air@latest
+
 tests:
 	go test -v ./...
 	go vet ./...
+
+test-race:
+	go test -race -v ./...
 
 swag-init:
 	swag init -g cmd/server/main.go
@@ -15,11 +24,8 @@ start-server:
 codegen-client:
 	./codegen-client.sh
 
-start-client-alice:
-	cd cmd/client && go run main.go -user alice -password 123456
-
-start-client-bob:
-	cd cmd/client && go run main.go -user bob -password qwerty
+start-client:
+	cd cmd/client && go run main.go -user ${USER} -password ${PASSWORD} ${ARGS}
 
 start-server-docker:
 	docker run -p 8080:8080 tic-tac-toe-server

@@ -26,7 +26,7 @@ Clone the repository and install dependencies:
 ```bash
 git clone <repository-url>
 cd tic-tac-toe
-go mod download
+make install
 ```
 
 ### Running the Server
@@ -34,11 +34,7 @@ go mod download
 Start the server on `localhost:8080`:
 
 ```bash
-# Using make
 make start-server
-
-# Or directly
-go run cmd/server/main.go
 ```
 
 The server will start and display:
@@ -67,12 +63,12 @@ Open **two separate terminals** and run a client in each:
 
 **Terminal 1 (Player 1):**
 ```bash
-cd cmd/client && go run main.go -user alice -password alicepass
+make start-client USER=alice PASSWORD=alicepass
 ```
 
 **Terminal 2 (Player 2):**
 ```bash
-cd cmd/client && go run main.go -user bob -password bobpass
+make start-client USER=bob PASSWORD=bobpass
 ```
 
 The clients will:
@@ -84,13 +80,15 @@ The clients will:
 
 ### Advanced scenarios
 **Join Any Waiting Game or Create a New One**
+
 ```bash
-cd cmd/client && go run main.go -user alice -password alicepass
+make start-client USER=alice PASSWORD=alicepass
 ```
 
 **Connecting To Specific Game**
+
 ```bash
-cd cmd/client && go run main.go -user alice -password alicepass -game <gameID>
+make start-client USER=alice PASSWORD=alicepass ARGS="-game <gameID>"
 ```
 
 Thorough Client development seems to be an overkill for such a task, so the behavior is simplified:
@@ -98,25 +96,28 @@ Thorough Client development seems to be an overkill for such a task, so the beha
 - If `-game` is not provided, the client looks up for the latest game in `waiting` status and joins it. If no such game exists, it creates a new one.
 - If client was in the game, on restart it will ignore that game unless `-game` parameter is provided.
 
+**Debug mode**
+
+Add `DEBUG=true` to the command to enable debug logging in the client
+
+```bash
+make start-client USER=alice PASSWORD=alicepass DEBUG=true
+```
+
 ### Running Tests
 
 Run all tests with verbose output:
 
 ```bash
 make tests
-
-# Or directly
-go test -v ./...
-go vet ./...
 ```
 
 Run tests with race detection:
 
 ```bash
-go test -race ./...
+make test-race
 ```
 
----
 
 ## Protocol Design
 
@@ -232,7 +233,6 @@ Common status codes:
 - `409 Conflict` - User already exists (signup)
 - `500 Internal Server Error` - Unexpected server error
 
----
 
 ## Authentication
 
@@ -248,8 +248,9 @@ The server uses **JWT tokens** for stateless authentication. This design choice 
 - ✅ **Expiration:** Built-in time-based validity
 
 **Tradeoffs:**
-- ❌ Cannot revoke tokens before expiration (mitigation: short-lived access tokens + refresh tokens stored in the database)
-- ❌ Token size larger than session IDs (acceptable overhead for HTTP headers)
+- ❌ Cannot revoke tokens before expiration (mitigation: short-lived access tokens + refresh tokens stored in the database). Revocation could be implemented with in-memory whitelist for fast checkup and key-value store (e.g. Redis) for persistence.
+- ❌ Token size larger than session IDs (acceptable overhead for HTTP headers and avoids server-side storage)
+- ❌ Asymmetric JWT signing (e.g. RSA) would be more secure but adds complexity; HMAC is sufficient for this use case
 
 ### Token Lifecycle
 
@@ -275,8 +276,6 @@ The system uses a **dual-token approach**:
 - **Refresh token storage:** Refresh tokens are hashed (SHA256) before storage to prevent misuse if database is compromised
 - **Token validation:** Every protected endpoint validates the Bearer token signature, expiration, and issuer
 
----
-
 ## Development
 
 ### Hot Reload (Server)
@@ -284,11 +283,7 @@ The system uses a **dual-token approach**:
 Use `air` for automatic server reloads during development:
 
 ```bash
-# Install air
-go install github.com/air-verse/air@latest
-
-# Run with hot reload
-make serve  # or just 'air'
+make serve
 ```
 
 ### Regenerate OpenAPI Client
@@ -302,8 +297,6 @@ make swag-init
 # Regenerate client stubs
 make codegen-client
 ```
-
---- 
 
 ## Future Improvements
 
