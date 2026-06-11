@@ -249,8 +249,135 @@ paths:
       tags:
       - games
       x-codegen-request-body-name: request
+  /api/users/login:
+    post:
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/server.UserLoginRequest"
+        description: User login request
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/auth.TokenPair"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Unauthorized
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Internal Server Error
+      summary: Log in an existing user
+      tags:
+      - users
+      x-codegen-request-body-name: request
+  /api/users/refresh-token:
+    post:
+      operationId: refresh-token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/server.UserRefreshTokenRequest"
+        description: User refresh token request
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/auth.TokenPair"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Unauthorized
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Internal Server Error
+      summary: Refresh access token using refresh token
+      tags:
+      - users
+      x-codegen-request-body-name: request
+  /api/users/signup:
+    post:
+      operationId: signup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/server.UserSignupRequest"
+        description: User signup request
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/auth.TokenPair"
+          description: Created
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Bad Request
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Conflict
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Internal Server Error
+      summary: Sign up a new user
+      tags:
+      - users
+      x-codegen-request-body-name: request
 components:
   schemas:
+    auth.TokenPair:
+      example:
+        access_token: access_token
+        refresh_token: refresh_token
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+      type: object
     game.Game:
       example:
         currentPlayerID: currentPlayerID
@@ -336,5 +463,26 @@ components:
           type: integer
         "y":
           type: integer
+      type: object
+    server.UserLoginRequest:
+      properties:
+        password:
+          type: string
+        userID:
+          type: string
+      type: object
+    server.UserRefreshTokenRequest:
+      properties:
+        refreshToken:
+          type: string
+        userID:
+          type: string
+      type: object
+    server.UserSignupRequest:
+      properties:
+        password:
+          type: string
+        userID:
+          type: string
       type: object
 x-original-swagger-version: "2.0"

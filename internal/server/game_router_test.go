@@ -13,8 +13,8 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// TestRouter verifies that routes are correctly mapped and URL parameters are extracted
-func TestRouter(t *testing.T) {
+// TestGameRouter verifies that routes are correctly mapped and URL parameters are extracted
+func TestGameRouter(t *testing.T) {
 	// Create a simple mock service for routing tests
 	mockSvc := &mockGameService{
 		createGameFunc: func() (*game.Game, error) {
@@ -44,7 +44,7 @@ func TestRouter(t *testing.T) {
 	// Create router without any additional middlewares (clean test environment)
 	router := chi.NewRouter()
 	router.Route("/api", func(r chi.Router) {
-		ApiRouter(r, handler)
+		GameRouter(r, handler)
 	})
 
 	tests := []struct {
@@ -187,8 +187,8 @@ func TestRouter(t *testing.T) {
 	}
 }
 
-// TestRouterWithMiddleware verifies that custom middlewares can be injected
-func TestRouterWithMiddleware(t *testing.T) {
+// TestGameRouterWithMiddleware verifies that custom middlewares can be injected
+func TestGameRouterWithMiddleware(t *testing.T) {
 	mockSvc := &mockGameService{
 		createGameFunc: func() (*game.Game, error) {
 			return game.NewGame("test-id"), nil
@@ -208,7 +208,7 @@ func TestRouterWithMiddleware(t *testing.T) {
 	// Create router with custom middleware
 	router := chi.NewRouter()
 	router.Route("/api", func(r chi.Router) {
-		ApiRouter(r, handler, customMiddleware)
+		GameRouter(r, handler, customMiddleware)
 	})
 
 	req := httptest.NewRequest(http.MethodPost, "/api/games", bytes.NewBufferString("{}"))

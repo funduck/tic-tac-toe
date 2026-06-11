@@ -10,8 +10,10 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/funduck/tic-tac-toe/internal/auth"
 	"github.com/funduck/tic-tac-toe/internal/game"
-	server "github.com/funduck/tic-tac-toe/internal/server"
+	"github.com/funduck/tic-tac-toe/internal/server"
+	"github.com/funduck/tic-tac-toe/internal/user"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
@@ -22,13 +24,20 @@ func main() {
 		Level: slog.LevelDebug,
 	}))
 
-	repo := game.NewMemoryRepo()
-	svc := game.NewGameService(repo, logger)
-	handler := server.NewGameHandler(svc, logger)
+	gameRepo := game.NewMemoryRepo()
+	gameSvc := game.NewGameService(gameRepo, logger)
+	gameHandler := server.NewGameHandler(gameSvc, logger)
+
+	tokenService := auth.NewAccessTokenService("secret", "tic-tac-toe")
+	userRepo := user.NewMemoryUserRepo()
+	userSvc := user.NewUserService(userRepo, tokenService) // TODO add logger
+	userHandler := server.NewUserHandler(userSvc, logger)
+
 	router := newRouter()
 
 	router.Route("/api", func(r chi.Router) {
-		server.ApiRouter(r, handler)
+		server.GameRouter(r, gameHandler)
+		server.UserRouter(r, userHandler)
 	})
 
 	logger.Info("Server listening on :8080")

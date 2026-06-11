@@ -10,7 +10,9 @@ func parseRequestBody(r *http.Request, dst any, logger *slog.Logger, w http.Resp
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields() // catch unknown fields
 	if err := decoder.Decode(dst); err != nil {
-		logger.Warn("bad request", "method", r.Method, "path", r.URL.Path, "error", err)
+		if logger != nil {
+			logger.Warn("bad request", "method", r.Method, "path", r.URL.Path, "error", err)
+		}
 		writeError(w, http.StatusBadRequest, err)
 		return err
 	}

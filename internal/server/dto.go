@@ -27,6 +27,21 @@ type GiveUpRequest struct {
 	UserID string `json:"userID"`
 }
 
+type UserSignupRequest struct {
+	UserID   string `json:"userID"`
+	Password string `json:"password"`
+}
+
+type UserLoginRequest struct {
+	UserID   string `json:"userID"`
+	Password string `json:"password"`
+}
+
+type UserRefreshTokenRequest struct {
+	UserID       string `json:"userID"`
+	RefreshToken string `json:"refreshToken"`
+}
+
 type ErrorResponse struct {
 	Error string `json:"error"`
 }

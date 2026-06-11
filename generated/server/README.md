@@ -84,10 +84,14 @@ Class | Method | HTTP request | Description
 *GamesAPI* | [**JoinAnyGame**](docs/GamesAPI.md#joinanygame) | **Post** /api/games/join | Join any available game
 *GamesAPI* | [**JoinGame**](docs/GamesAPI.md#joingame) | **Post** /api/games/{gameID}/join | Join a waiting game
 *GamesAPI* | [**MakeMove**](docs/GamesAPI.md#makemove) | **Post** /api/games/{gameID}/move | Make a move
+*UsersAPI* | [**Login**](docs/UsersAPI.md#login) | **Post** /api/users/login | Log in an existing user
+*UsersAPI* | [**RefreshToken**](docs/UsersAPI.md#refreshtoken) | **Post** /api/users/refresh-token | Refresh access token using refresh token
+*UsersAPI* | [**Signup**](docs/UsersAPI.md#signup) | **Post** /api/users/signup | Sign up a new user
 
 
 ## Documentation For Models
 
+ - [AuthTokenPair](docs/AuthTokenPair.md)
  - [GameGame](docs/GameGame.md)
  - [ServerCreateGameRequest](docs/ServerCreateGameRequest.md)
  - [ServerErrorResponse](docs/ServerErrorResponse.md)
@@ -95,6 +99,9 @@ Class | Method | HTTP request | Description
  - [ServerJoinAnyGameRequest](docs/ServerJoinAnyGameRequest.md)
  - [ServerJoinGameRequest](docs/ServerJoinGameRequest.md)
  - [ServerMoveRequest](docs/ServerMoveRequest.md)
+ - [ServerUserLoginRequest](docs/ServerUserLoginRequest.md)
+ - [ServerUserRefreshTokenRequest](docs/ServerUserRefreshTokenRequest.md)
+ - [ServerUserSignupRequest](docs/ServerUserSignupRequest.md)
 
 
 ## Documentation For Authorization

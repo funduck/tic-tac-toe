@@ -1,5 +1,12 @@
 basePath: /
 definitions:
+  auth.TokenPair:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
   game.Game:
     properties:
       board:
@@ -69,6 +76,27 @@ definitions:
         type: integer
       "y":
         type: integer
+    type: object
+  server.UserLoginRequest:
+    properties:
+      password:
+        type: string
+      userID:
+        type: string
+    type: object
+  server.UserRefreshTokenRequest:
+    properties:
+      refreshToken:
+        type: string
+      userID:
+        type: string
+    type: object
+  server.UserSignupRequest:
+    properties:
+      password:
+        type: string
+      userID:
+        type: string
     type: object
 host: localhost:8080
 info:
@@ -285,4 +313,106 @@ paths:
       summary: Join any available game
       tags:
       - games
+  /api/users/login:
+    post:
+      consumes:
+      - application/json
+      operationId: login
+      parameters:
+      - description: User login request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/server.UserLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.TokenPair'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Log in an existing user
+      tags:
+      - users
+  /api/users/refresh-token:
+    post:
+      consumes:
+      - application/json
+      operationId: refresh-token
+      parameters:
+      - description: User refresh token request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/server.UserRefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.TokenPair'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Refresh access token using refresh token
+      tags:
+      - users
+  /api/users/signup:
+    post:
+      consumes:
+      - application/json
+      operationId: signup
+      parameters:
+      - description: User signup request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/server.UserSignupRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/auth.TokenPair'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Sign up a new user
+      tags:
+      - users
 swagger: "2.0"
