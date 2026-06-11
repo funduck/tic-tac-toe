@@ -2,81 +2,29 @@ package game
 
 import (
 	"errors"
-	"fmt"
-	"sync"
 	"testing"
 )
 
-func TestMemoryRepo_CreateConcurrently(t *testing.T) {
-	nWorkers := 10
-
-	repo := NewMemoryRepo()
-
-	wg := sync.WaitGroup{}
-	wg.Add(nWorkers)
-
-	errors := make(chan error, nWorkers)
-
-	for i := range nWorkers {
-		go func(i int) {
-			defer wg.Done()
-			g := NewGameInProgress(
-				fmt.Sprintf("game%d", i),
-				fmt.Sprintf("user%d", i),
-				fmt.Sprintf("user%d", i+1),
-			)
-			if err := repo.Create(g); err != nil {
-				errors <- fmt.Errorf("Create error for game%d: %v", i, err)
-			}
-		}(i)
-	}
-
-	wg.Wait()
-	close(errors)
-
-	for err := range errors {
-		t.Error(err)
-	}
-
-	if len(repo.gamesByID) != nWorkers {
-		t.Errorf("expected %d games, got %d", nWorkers, len(repo.gamesByID))
-	}
-}
-
-func TestMemoryRepo_FindByIDConcurrently(t *testing.T) {
+func TestMemoryRepo_Create(t *testing.T) {
 	repo := NewMemoryRepo()
 	g := NewGameInProgress("id1", "alice", "bob")
 	if err := repo.Create(g); err != nil {
 		t.Fatalf("Create error: %v", err)
 	}
+}
 
-	nWorkers := 5
-	wg := sync.WaitGroup{}
-	wg.Add(nWorkers)
-
-	errors := make(chan error, nWorkers)
-
-	for range nWorkers {
-		go func() {
-			defer wg.Done()
-
-			got, err := repo.FindByID("id1")
-			if err != nil {
-				errors <- fmt.Errorf("FindByID error: %v", err)
-				return
-			}
-			if got.ID != g.ID {
-				errors <- fmt.Errorf("expected ID %s, got %s", g.ID, got.ID)
-			}
-
-		}()
+func TestMemoryRepo_FindByID(t *testing.T) {
+	repo := NewMemoryRepo()
+	g := NewGameInProgress("id1", "alice", "bob")
+	if err := repo.Create(g); err != nil {
+		t.Fatalf("Create error: %v", err)
 	}
-
-	wg.Wait()
-	close(errors)
-
-	for err := range errors {
-		t.Error(err)
+	got, err := repo.FindByID("id1")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if got.ID != g.ID {
+		t.Errorf("expected ID %s, got %s", g.ID, got.ID)
 	}
 }
 

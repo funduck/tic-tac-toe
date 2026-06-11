@@ -44,7 +44,7 @@ Before joining the matchmaking queue or making any move, every client must authe
 
 
 ```
-n There is no single correct mechanism. Pick what fits your architecture and be ready to explain the tradeoffs.
+There is no single correct mechanism. Pick what fits your architecture and be ready to explain the tradeoffs.
 ```
 ### Bonus Objectives
 
@@ -81,6 +81,6 @@ Include a README.md covering: how to run the project, your protocol design, auth
 any architectural decisions worth explaining.
 
 ```
-Good luck, and have fun building! n
+Good luck, and have fun building!
 ```
 

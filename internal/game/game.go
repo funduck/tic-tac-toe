@@ -18,7 +18,6 @@ var (
 	ErrGameNotWaiting = errors.New("game is not waiting for players")
 	ErrGameNotActive  = errors.New("game is not in progress")
 	ErrNotInGame      = errors.New("player not in this game")
-	ErrAlreadyJoined  = errors.New("user already joined the game")
 )
 
 // Game represents the state of a single tic-tac-toe match.

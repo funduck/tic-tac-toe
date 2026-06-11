@@ -10,12 +10,20 @@ import (
 	"github.com/funduck/tic-tac-toe/internal/game"
 )
 
+type GameService interface {
+	CreateGame() (*game.Game, error)
+	JoinGame(gameID, userID string) (*game.Game, error)
+	MakeMove(gameID, userID string, x, y int) (*game.Game, error)
+	GiveUp(gameID, userID string) (*game.Game, error)
+	GetGame(gameID string) (*game.Game, error)
+}
+
 type GameHandler struct {
-	svc    *game.GameService
+	svc    GameService
 	logger *slog.Logger
 }
 
-func NewGameHandler(svc *game.GameService, logger *slog.Logger) *GameHandler {
+func NewGameHandler(svc GameService, logger *slog.Logger) *GameHandler {
 	return &GameHandler{svc: svc, logger: logger}
 }
 
@@ -46,12 +54,13 @@ func (h *GameHandler) CreateGame(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if req.UserID != "" {
-		g, err = h.svc.JoinGame(g.ID, req.UserID)
+		g2, err := h.svc.JoinGame(g.ID, req.UserID)
 		if err != nil {
 			h.logger.Warn("join game failed", "gameID", g.ID, "userID", req.UserID, "error", err)
 			writeError(w, mapGameError(err), err)
 			return
 		}
+		g = g2
 	}
 
 	writeJSON(w, http.StatusCreated, g)
@@ -188,12 +197,11 @@ func mapGameError(err error) int {
 
 	case errors.Is(err, game.ErrGameNotWaiting),
 		errors.Is(err, game.ErrGameNotActive),
+		errors.Is(err, game.ErrNotYourTurn),
 		errors.Is(err, game.ErrNotInGame):
 		return http.StatusConflict
 
 	case
-		errors.Is(err, game.ErrAlreadyJoined),
-		errors.Is(err, game.ErrNotYourTurn),
 		errors.Is(err, game.ErrCellOccupied),
 		errors.Is(err, game.ErrOutOfBounds):
 		return http.StatusBadRequest

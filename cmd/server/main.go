@@ -11,7 +11,10 @@ import (
 	"os"
 
 	"github.com/funduck/tic-tac-toe/internal/game"
-	server "github.com/funduck/tic-tac-toe/internal/http"
+	server "github.com/funduck/tic-tac-toe/internal/server"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 func main() {
@@ -28,4 +31,21 @@ func main() {
 	if err := http.ListenAndServe(":8080", router); err != nil {
 		logger.Error("Server error", "error", err)
 	}
+}
+
+func router() http.Handler {
+	r := chi.NewRouter()
+	r.Use(middleware.Recoverer)
+
+	// Serve raw OpenAPI spec (consumed by codegen_client.sh)
+	r.Get("/swagger/doc.json", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "docs/swagger.json")
+	})
+
+	// Swagger UI
+	r.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("/swagger/doc.json"),
+	))
+
+	return r
 }

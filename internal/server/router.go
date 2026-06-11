@@ -4,19 +4,21 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	httpSwagger "github.com/swaggo/http-swagger/v2"
 
 	_ "github.com/funduck/tic-tac-toe/docs"
 )
 
 // NewRouter builds and returns the chi router with all routes mounted.
-func NewRouter(h *GameHandler) chi.Router {
+// Optional middlewares can be passed to be applied before the logger middleware.
+// This allows injecting auth or other middlewares while keeping tests simple.
+func NewRouter(h *GameHandler, middlewares ...func(http.Handler) http.Handler) chi.Router {
 	r := chi.NewRouter()
-	r.Use(middleware.Recoverer)
 
 	r.Group(func(r chi.Router) {
-		// here we will inject auth middleware in the future if needed
+		// Apply custom middlewares (e.g., auth in production, none in tests)
+		for _, mw := range middlewares {
+			r.Use(mw)
+		}
 
 		r.Use(loggerMiddleware)
 
@@ -28,16 +30,6 @@ func NewRouter(h *GameHandler) chi.Router {
 			r.Get("/games/{gameID}", h.GetGame)
 		})
 	})
-
-	// Serve raw OpenAPI spec (consumed by codegen_client.sh)
-	r.Get("/swagger/doc.json", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "docs/swagger.json")
-	})
-
-	// Swagger UI
-	r.Get("/swagger/*", httpSwagger.Handler(
-		httpSwagger.URL("/swagger/doc.json"),
-	))
 
 	return r
 }
