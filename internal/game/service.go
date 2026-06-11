@@ -16,18 +16,29 @@ func NewGameService(repo GameRepo, logger *slog.Logger) *GameService {
 	return &GameService{repo: repo, logger: logger}
 }
 
-// CreateGame starts a new game in the waiting state, awaiting players to join.
-func (s *GameService) CreateGame() (*Game, error) {
+func (s *GameService) createGame(private bool) (*Game, error) {
 	id, err := uuid.NewV7() // V7 for lexicographically sortable IDs
 	if err != nil {
 		return nil, err
 	}
 	g := NewGame(id.String())
+	if private {
+		g.Private = true
+	}
 	if err := s.repo.Create(g); err != nil {
 		return nil, err
 	}
-	s.logger.Info("game created", "gameID", g.ID, "status", g.Status)
+	s.logger.Info("game created", "gameID", g.ID, "status", g.Status, "private", g.Private)
 	return g, nil
+}
+
+// CreateGame starts a new game in the waiting state, awaiting players to join.
+func (s *GameService) CreateGame() (*Game, error) {
+	return s.createGame(false)
+}
+
+func (s *GameService) CreatePrivateGame() (*Game, error) {
+	return s.createGame(true)
 }
 
 // JoinGame adds a player to an existing waiting game. The first player to join becomes UserID1, the second becomes UserID2.

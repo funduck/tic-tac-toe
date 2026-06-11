@@ -21,7 +21,7 @@ func CreateOrJoinGame(ctx context.Context, gameSvc *lib.GameService, displaySvc 
 		}
 
 		// Create new game
-		g, err = gameSvc.CreateGame(ctx, lib.UserID)
+		g, err = gameSvc.CreateGame(ctx, lib.UserID, lib.Private)
 		if err != nil {
 			return fmt.Errorf("failed to create game: %w", err)
 		}

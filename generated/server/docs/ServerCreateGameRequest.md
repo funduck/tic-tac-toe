@@ -5,6 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **GameID** | Pointer to **string** |  | [optional] 
+**Private** | Pointer to **bool** |  | [optional] 
 **UserID** | Pointer to **string** |  | [optional] 
 
 ## Methods
@@ -50,6 +51,31 @@ SetGameID sets GameID field to given value.
 `func (o *ServerCreateGameRequest) HasGameID() bool`
 
 HasGameID returns a boolean if a field has been set.
+
+### GetPrivate
+
+`func (o *ServerCreateGameRequest) GetPrivate() bool`
+
+GetPrivate returns the Private field if non-nil, zero value otherwise.
+
+### GetPrivateOk
+
+`func (o *ServerCreateGameRequest) GetPrivateOk() (*bool, bool)`
+
+GetPrivateOk returns a tuple with the Private field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetPrivate
+
+`func (o *ServerCreateGameRequest) SetPrivate(v bool)`
+
+SetPrivate sets Private field to given value.
+
+### HasPrivate
+
+`func (o *ServerCreateGameRequest) HasPrivate() bool`
+
+HasPrivate returns a boolean if a field has been set.
 
 ### GetUserID
 

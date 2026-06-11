@@ -115,6 +115,25 @@ func TestGameService_CreateGame_Errors(t *testing.T) {
 	}
 }
 
+func TestGameService_CreatePrivateGame(t *testing.T) {
+	repo := newMockRepo()
+	svc := NewGameService(repo, slog.Default())
+
+	g, err := svc.CreatePrivateGame()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if g.ID == "" {
+		t.Error("expected non-empty game ID")
+	}
+	if g.Status != StatusWaiting {
+		t.Errorf("expected status %s, got %s", StatusWaiting, g.Status)
+	}
+	if !g.Private {
+		t.Error("expected private game")
+	}
+}
+
 // --- JoinGame ---
 
 func TestGameService_JoinGame(t *testing.T) {

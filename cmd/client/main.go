@@ -17,9 +17,11 @@ func main() {
 	serverURL := flag.String("server", "http://localhost:8080", "server base URL")
 	userID := flag.String("user", "", "your user ID (required)")
 	gameID := flag.String("game", "", "game ID to join (omit to create a new game)")
+	private := flag.Bool("private", false, "create a private game")
 	flag.Parse()
 	lib.UserID = *userID
 	lib.GameID = *gameID
+	lib.Private = *private
 
 	if lib.UserID == "" {
 		fmt.Fprintln(os.Stderr, "❌ Error: --user is required")

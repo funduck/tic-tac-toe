@@ -12,6 +12,7 @@ import (
 
 type GameService interface {
 	CreateGame() (*game.Game, error)
+	CreatePrivateGame() (*game.Game, error)
 	JoinGame(gameID, userID string) (*game.Game, error)
 	JoinAnyGame(userID string) (*game.Game, error)
 	MakeMove(gameID, userID string, x, y int) (*game.Game, error)
@@ -47,7 +48,15 @@ func (h *GameHandler) CreateGame(w http.ResponseWriter, r *http.Request) {
 		return // parseRequestBody already wrote the error response
 	}
 
-	g, err := h.svc.CreateGame()
+	var g *game.Game
+	var err error
+
+	if req.Private {
+		g, err = h.svc.CreatePrivateGame()
+	} else {
+		g, err = h.svc.CreateGame()
+	}
+
 	if err != nil {
 		h.logger.Warn("create game failed", "error", err)
 		writeError(w, http.StatusInternalServerError, err)

@@ -378,6 +378,9 @@ const docTemplate = `{
                 "gameID": {
                     "type": "string"
                 },
+                "private": {
+                    "type": "boolean"
+                },
                 "userID": {
                     "type": "string"
                 }

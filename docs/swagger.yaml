@@ -30,6 +30,8 @@ definitions:
     properties:
       gameID:
         type: string
+      private:
+        type: boolean
       userID:
         type: string
     type: object

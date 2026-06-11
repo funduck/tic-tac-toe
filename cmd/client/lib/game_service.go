@@ -33,9 +33,10 @@ func parseGameError(r *http.Response, err error) error {
 }
 
 // CreateGame creates a new game
-func (gs *GameService) CreateGame(ctx context.Context, userID string) (*Game, error) {
+func (gs *GameService) CreateGame(ctx context.Context, userID string, private bool) (*Game, error) {
 	req := openapi.NewServerCreateGameRequest()
 	req.SetUserID(userID)
+	req.SetPrivate(private)
 	g, r, err := gs.api.CreateGame(ctx).Request(*req).Execute()
 	if err != nil {
 		return nil, parseGameError(r, err)

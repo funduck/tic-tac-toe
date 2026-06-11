@@ -16,17 +16,25 @@ import (
 )
 
 type mockGameService struct {
-	createGameFunc  func() (*game.Game, error)
-	joinGameFunc    func(gameID, userID string) (*game.Game, error)
-	joinAnyGameFunc func(userID string) (*game.Game, error)
-	makeMoveFunc    func(gameID, userID string, x, y int) (*game.Game, error)
-	giveUpFunc      func(gameID, userID string) (*game.Game, error)
-	getGameFunc     func(gameID string) (*game.Game, error)
+	createGameFunc        func() (*game.Game, error)
+	createPrivateGameFunc func() (*game.Game, error)
+	joinGameFunc          func(gameID, userID string) (*game.Game, error)
+	joinAnyGameFunc       func(userID string) (*game.Game, error)
+	makeMoveFunc          func(gameID, userID string, x, y int) (*game.Game, error)
+	giveUpFunc            func(gameID, userID string) (*game.Game, error)
+	getGameFunc           func(gameID string) (*game.Game, error)
 }
 
 func (m *mockGameService) CreateGame() (*game.Game, error) {
 	if m.createGameFunc != nil {
 		return m.createGameFunc()
+	}
+	return nil, nil
+}
+
+func (m *mockGameService) CreatePrivateGame() (*game.Game, error) {
+	if m.createPrivateGameFunc != nil {
+		return m.createPrivateGameFunc()
 	}
 	return nil, nil
 }
@@ -182,6 +190,34 @@ func TestGameHandler_CreateGame(t *testing.T) {
 				ID:      "test-game-id-123",
 				Status:  game.StatusWaiting,
 				UserID1: "user-123",
+			}),
+		},
+		{
+			name: "create private game with user",
+			mockSetup: func() *mockGameService {
+				return &mockGameService{
+					createPrivateGameFunc: func() (*game.Game, error) {
+						g := game.NewGame("test-game-id-123")
+						g.Private = true
+						return g, nil
+					},
+					joinGameFunc: func(gameID, userID string) (*game.Game, error) {
+						g := game.NewGame(gameID)
+						g.UserID1 = userID
+						return g, nil
+					},
+				}
+			},
+			requestBody: CreateGameRequest{
+				UserID:  "user-123",
+				Private: true,
+			},
+			expectedStatus: http.StatusCreated,
+			checkResponse: checkGameMatches(game.Game{
+				ID:      "test-game-id-123",
+				Status:  game.StatusWaiting,
+				UserID1: "user-123",
+				Private: true,
 			}),
 		},
 		{

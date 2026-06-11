@@ -20,3 +20,6 @@ start-client-alice:
 
 start-client-bob:
 	go run cmd/client/main.go --user bob
+
+build-client:
+	go build -o dist/client cmd/client/main.go

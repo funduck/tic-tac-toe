@@ -20,6 +20,7 @@ var _ MappedNullable = &ServerCreateGameRequest{}
 // ServerCreateGameRequest struct for ServerCreateGameRequest
 type ServerCreateGameRequest struct {
 	GameID *string `json:"gameID,omitempty"`
+	Private *bool `json:"private,omitempty"`
 	UserID *string `json:"userID,omitempty"`
 }
 
@@ -72,6 +73,38 @@ func (o *ServerCreateGameRequest) SetGameID(v string) {
 	o.GameID = &v
 }
 
+// GetPrivate returns the Private field value if set, zero value otherwise.
+func (o *ServerCreateGameRequest) GetPrivate() bool {
+	if o == nil || IsNil(o.Private) {
+		var ret bool
+		return ret
+	}
+	return *o.Private
+}
+
+// GetPrivateOk returns a tuple with the Private field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *ServerCreateGameRequest) GetPrivateOk() (*bool, bool) {
+	if o == nil || IsNil(o.Private) {
+		return nil, false
+	}
+	return o.Private, true
+}
+
+// HasPrivate returns a boolean if a field has been set.
+func (o *ServerCreateGameRequest) HasPrivate() bool {
+	if o != nil && !IsNil(o.Private) {
+		return true
+	}
+
+	return false
+}
+
+// SetPrivate gets a reference to the given bool and assigns it to the Private field.
+func (o *ServerCreateGameRequest) SetPrivate(v bool) {
+	o.Private = &v
+}
+
 // GetUserID returns the UserID field value if set, zero value otherwise.
 func (o *ServerCreateGameRequest) GetUserID() string {
 	if o == nil || IsNil(o.UserID) {
@@ -116,6 +149,9 @@ func (o ServerCreateGameRequest) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.GameID) {
 		toSerialize["gameID"] = o.GameID
+	}
+	if !IsNil(o.Private) {
+		toSerialize["private"] = o.Private
 	}
 	if !IsNil(o.UserID) {
 		toSerialize["userID"] = o.UserID
