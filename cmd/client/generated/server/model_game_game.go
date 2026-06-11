@@ -20,6 +20,7 @@ var _ MappedNullable = &GameGame{}
 // GameGame struct for GameGame
 type GameGame struct {
 	Board [][]int32 `json:"board,omitempty"`
+	// user ID of the player whose turn it is
 	CurrentPlayerID *string `json:"currentPlayerID,omitempty"`
 	Id *string `json:"id,omitempty"`
 	// optional field to indicate if the game is private or public

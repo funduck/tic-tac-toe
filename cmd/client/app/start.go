@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/funduck/tic-tac-toe/cmd/client/lib"
+	"github.com/funduck/tic-tac-toe/client/lib"
 )
 
 func Start(ctx context.Context, gameSvc *lib.GameService, userSvc *lib.UserService, displaySvc *lib.DisplayService, inputSvc *lib.InputService) {

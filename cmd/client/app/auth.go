@@ -3,7 +3,7 @@ package app
 import (
 	"context"
 
-	"github.com/funduck/tic-tac-toe/cmd/client/lib"
+	"github.com/funduck/tic-tac-toe/client/lib"
 )
 
 func LoginOrSignup(ctx context.Context, userSvc *lib.UserService, displaySvc *lib.DisplayService) error {

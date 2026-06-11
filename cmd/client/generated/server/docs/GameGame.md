@@ -5,7 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Board** | Pointer to **[][]int32** |  | [optional] 
-**CurrentPlayerID** | Pointer to **string** |  | [optional] 
+**CurrentPlayerID** | Pointer to **string** | user ID of the player whose turn it is | [optional] 
 **Id** | Pointer to **string** |  | [optional] 
 **Private** | Pointer to **bool** | optional field to indicate if the game is private or public | [optional] 
 **Result** | Pointer to **string** |  | [optional] 

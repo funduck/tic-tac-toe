@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/funduck/tic-tac-toe/cmd/client/lib"
+	"github.com/funduck/tic-tac-toe/client/lib"
 )
 
 // PlayGame runs the main game loop

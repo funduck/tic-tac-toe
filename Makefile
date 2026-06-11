@@ -16,10 +16,19 @@ codegen-client:
 	./codegen-client.sh
 
 start-client-alice:
-	go run cmd/client/main.go --user alice
+	cd cmd/client && go run main.go -user alice -password 123456
 
 start-client-bob:
-	go run cmd/client/main.go --user bob
+	cd cmd/client && go run main.go -user bob -password qwerty
+
+start-server-docker:
+	docker run -p 8080:8080 tic-tac-toe-server
+
+build-server:
+	go build -o dist/server cmd/server/main.go
+
+build-server-docker:
+	docker build -t tic-tac-toe-server -f build/Dockerfile .
 
 build-client:
-	go build -o dist/client cmd/client/main.go
+	cd cmd/client && go build -o ../../dist/client main.go

@@ -3,14 +3,14 @@ function gen() {
   
   curl -sL $GEN_API_URL -o $GEN_OPENAPI_FILE
   
-  rm -rf generated/$GEN_MODULE
+  rm -rf cmd/client/generated/$GEN_MODULE
 
   docker run --rm \
   -u $(id -u):$(id -g) \
   -v ${PWD}:/local openapitools/openapi-generator-cli generate \
   -i /local/$GEN_OPENAPI_FILE \
   -g go \
-  -o /local/generated/$GEN_MODULE
+  -o /local/cmd/client/generated/$GEN_MODULE
 
   if [ $? -ne 0 ]; then
     echo "Error generating $GEN_MODULE API client"

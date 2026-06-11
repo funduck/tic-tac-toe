@@ -8,8 +8,8 @@ import (
 	"os"
 
 	openapi "github.com/GIT_USER_ID/GIT_REPO_ID"
-	"github.com/funduck/tic-tac-toe/cmd/client/app"
-	"github.com/funduck/tic-tac-toe/cmd/client/lib"
+	"github.com/funduck/tic-tac-toe/client/app"
+	"github.com/funduck/tic-tac-toe/client/lib"
 )
 
 func main() {

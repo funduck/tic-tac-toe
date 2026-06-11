@@ -48,19 +48,31 @@ Server listening on :8080
 
 You can access the Swagger UI documentation at: `http://localhost:8080/swagger/index.html`
 
+### Running Server In Docker
+Build
+```bash
+make build-server-docker
+```
+
+Run
+```bash
+make start-server-docker
+```
+
 ### Running the Client
+**Important!** Client's code is separated from the server's, so it can be run only from `cmd/client` directory.
 
 #### Basic scenario for 2 players
 Open **two separate terminals** and run a client in each:
 
 **Terminal 1 (Player 1):**
 ```bash
-go run cmd/client/main.go -user alice -password alicepass
+cd cmd/client && go run main.go -user alice -password alicepass
 ```
 
 **Terminal 2 (Player 2):**
 ```bash
-go run cmd/client/main.go -user bob -password bobpass
+cd cmd/client && go run main.go -user bob -password bobpass
 ```
 
 The clients will:
@@ -70,15 +82,15 @@ The clients will:
 4. Display the game board after each move
 5. Show the final result (win/loss/draw)
 
-#### Advanced scenarios
+### Advanced scenarios
 **Join Any Waiting Game or Create a New One**
 ```bash
-go run cmd/client/main.go -user alice -password alicepass
+cd cmd/client && go run main.go -user alice -password alicepass
 ```
 
 **Connecting To Specific Game**
 ```bash
-go run cmd/client/main.go -user alice -password alicepass -game <gameID>
+cd cmd/client && go run main.go -user alice -password alicepass -game <gameID>
 ```
 
 Thorough Client development seems to be an overkill for such a task, so the behavior is simplified:
