@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 )
 
 type AccessTokenService struct {
@@ -19,7 +18,7 @@ func NewAccessTokenService(secret, issuer string) *AccessTokenService {
 	return &AccessTokenService{
 		secret:               secret,
 		issuer:               issuer,
-		accessTokenLifetime:  1 * time.Minute,
+		accessTokenLifetime:  10 * time.Second, // Short-lived access token for better security
 		refreshTokenLifetime: 7 * 24 * time.Hour,
 	}
 }
@@ -75,15 +74,8 @@ func (s *AccessTokenService) ValidateRefreshToken(tokenStr string) (string, erro
 func (s *AccessTokenService) GenerateToken(userID string) (*TokenPair, error) {
 	now := time.Now()
 
-	id, err := uuid.NewV7() // V7 for lexicographically sortable IDs
-	if err != nil {
-		return nil, err
-	}
-	sessionID := id.String()
-
 	accessClaims := CustomClaims{
-		UserID:    userID,
-		SessionID: sessionID,
+		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(now.Add(s.accessTokenLifetime)),
 			IssuedAt:  jwt.NewNumericDate(now),

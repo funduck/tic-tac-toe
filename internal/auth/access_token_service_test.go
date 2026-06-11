@@ -48,9 +48,6 @@ func TestAccessTokenService_ValidateToken(t *testing.T) {
 	if token.UserID != "user1" {
 		t.Errorf("expected user ID 'user1', got '%s'", token.UserID)
 	}
-	if token.SessionID == "" {
-		t.Error("expected non-nil session ID")
-	}
 }
 
 func TestAccessTokenService_ValidateToken_Errors(t *testing.T) {

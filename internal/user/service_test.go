@@ -27,15 +27,6 @@ func (r *MockUserRepo) FindByID(id string) (*User, error) {
 	return user, nil
 }
 
-func (r *MockUserRepo) FindBySessionID(sessionID string) (*User, error) {
-	for _, user := range r.users {
-		if user.ID == sessionID { // This is just a placeholder. In a real implementation, you'd check the session ID.
-			return user, nil
-		}
-	}
-	return nil, nil
-}
-
 func (r *MockUserRepo) Save(user *User) error {
 	r.users[user.ID] = user
 	return nil

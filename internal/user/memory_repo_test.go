@@ -19,23 +19,6 @@ func TestMemoryUserRepo_FindByID(t *testing.T) {
 	}
 }
 
-func TestMemoryUserRepo_FindBySessionID(t *testing.T) {
-	repo := NewMemoryUserRepo()
-	user := &User{ID: "session123", Password: "pass"}
-	repo.Save(user)
-
-	found, err := repo.FindBySessionID("session123")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if found == nil {
-		t.Fatal("expected to find user, got nil")
-	}
-	if found.ID != "session123" {
-		t.Errorf("expected ID 'session123', got '%s'", found.ID)
-	}
-}
-
 func TestMemoryUserRepo_Save(t *testing.T) {
 	repo := NewMemoryUserRepo()
 	user := &User{ID: "user2", Password: "pass"}

@@ -27,7 +27,7 @@ type Game struct {
 	UserID1         string    `json:"userID1"`
 	UserID2         string    `json:"userID2"`
 	Board           [3][3]int `json:"board"`
-	CurrentPlayerID string    `json:"currentPlayerID"`
+	CurrentPlayerID string    `json:"currentPlayerID"` // user ID of the player whose turn it is
 	Status          string    `json:"status"`
 	Result          string    `json:"result"`
 	WinnerID        string    `json:"winnerID"`

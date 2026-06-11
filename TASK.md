@@ -1,8 +1,4 @@
-# Go Developer
-
-## Technical Assessment
-
-#### Multiplayer Tic Tac Toe
+# Multiplayer Tic Tac Toe
 
 ### Overview
 

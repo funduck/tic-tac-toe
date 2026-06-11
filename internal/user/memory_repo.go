@@ -23,17 +23,6 @@ func (r *MemoryUserRepo) FindByID(id string) (*User, error) {
 	return user, nil
 }
 
-func (r *MemoryUserRepo) FindBySessionID(sessionID string) (*User, error) {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	for _, user := range r.users {
-		if user.ID == sessionID { // This is just a placeholder. In a real implementation, you'd check the session ID.
-			return user, nil
-		}
-	}
-	return nil, nil
-}
-
 func (r *MemoryUserRepo) Save(user *User) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()

@@ -14,8 +14,7 @@ var ErrTokenExpired = errors.New("token expired")
 var ErrTokenSignatureInvalid = errors.New("invalid token signature")
 
 type CustomClaims struct {
-	UserID    string `json:"user_id"`
-	SessionID string `json:"session_id"`
+	UserID string `json:"user_id"`
 	jwt.RegisteredClaims
 }
 

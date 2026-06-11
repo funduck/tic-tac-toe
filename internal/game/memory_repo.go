@@ -16,6 +16,15 @@ func NewMemoryRepo() *MemoryRepo {
 	}
 }
 
+// copyGame creates a deep copy of a game to prevent concurrent access issues.
+func copyGame(g *Game) *Game {
+	if g == nil {
+		return nil
+	}
+	copy := *g
+	return &copy
+}
+
 func (r *MemoryRepo) Create(game *Game) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -31,7 +40,7 @@ func (r *MemoryRepo) FindByID(gameID string) (*Game, error) {
 	if !ok {
 		return nil, ErrGameNotFound
 	}
-	return g, nil
+	return copyGame(g), nil
 }
 
 func (r *MemoryRepo) Update(game *Game) error {
@@ -50,7 +59,7 @@ func (r *MemoryRepo) FindLatestForUser(userID string) (*Game, error) {
 	for i := len(r.order) - 1; i >= 0; i-- {
 		g := r.gamesByID[r.order[i]]
 		if g.UserID1 == userID || g.UserID2 == userID {
-			return g, nil
+			return copyGame(g), nil
 		}
 	}
 	return nil, ErrGameNotFound
@@ -62,7 +71,7 @@ func (r *MemoryRepo) FindGameToJoin(userID string) (*Game, error) {
 	for i := len(r.order) - 1; i >= 0; i-- {
 		g := r.gamesByID[r.order[i]]
 		if g.IsJoinAllowed() && !g.Private {
-			return g, nil
+			return copyGame(g), nil
 		}
 	}
 	return nil, ErrGameNotFound

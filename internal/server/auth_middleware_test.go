@@ -74,6 +74,7 @@ func TestAuthMiddleware(t *testing.T) {
 		body := `{"userID":"otheruser"}`
 		req := httptest.NewRequest(http.MethodPost, "/api/games/123", bytes.NewBufferString(body))
 		req.Header.Set("Authorization", "Bearer "+validToken.AccessToken)
+		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 
 		handler.ServeHTTP(w, req)
@@ -87,6 +88,7 @@ func TestAuthMiddleware(t *testing.T) {
 		body := `{"userID":"testuser"}`
 		req := httptest.NewRequest(http.MethodPost, "/api/games/123", bytes.NewBufferString(body))
 		req.Header.Set("Authorization", "Bearer "+validToken.AccessToken)
+		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 
 		handler.ServeHTTP(w, req)
