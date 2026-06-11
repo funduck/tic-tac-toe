@@ -6,9 +6,13 @@
 package main
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/funduck/tic-tac-toe/internal/auth"
 	"github.com/funduck/tic-tac-toe/internal/game"
@@ -24,6 +28,7 @@ func main() {
 		Level: slog.LevelDebug,
 	}))
 
+	// Services and handlers
 	gameRepo := game.NewMemoryRepo()
 	gameSvc := game.NewGameService(gameRepo, logger)
 	gameHandler := server.NewGameHandler(gameSvc, logger)
@@ -35,19 +40,43 @@ func main() {
 
 	authMiddleware := server.AuthMiddleware(tokenService)
 
+	// Router setup
 	router := newRouter()
-
 	router.Route("/api", func(r chi.Router) {
 		server.GameRouter(r, gameHandler, authMiddleware)
 		server.UserRouter(r, userHandler)
 	})
 
-	logger.Info("Server listening on :8080")
-	if err := http.ListenAndServe(":8080", router); err != nil {
-		logger.Error("Server error", "error", err)
+	// Server
+	srv := &http.Server{
+		Addr:    ":8080",
+		Handler: router,
+	}
+	go func() {
+		logger.Info("Starting server on :8080")
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.Error("Server error", "error", err)
+		}
+	}()
+
+	// Graceful shutdown
+	shutdownChannel := make(chan os.Signal, 1)
+	signal.Notify(shutdownChannel, syscall.SIGTERM, syscall.SIGINT)
+
+	<-shutdownChannel
+	logger.Info("Shutting down server...")
+
+	ctxShutdown, cancelShutdown := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelShutdown()
+
+	if err := srv.Shutdown(ctxShutdown); err != nil {
+		logger.Error("Server shutdown error", "error", err)
+	} else {
+		logger.Info("Server gracefully stopped")
 	}
 }
 
+// Basic router setup with Swagger UI and OpenAPI spec endpoint
 func newRouter() *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.Recoverer)
@@ -61,6 +90,12 @@ func newRouter() *chi.Mux {
 	r.Get("/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL("/swagger/doc.json"),
 	))
+
+	// Health check endpoint (dummy for now)
+	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	})
 
 	return r
 }
