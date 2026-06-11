@@ -105,6 +105,10 @@ make start-client USER=alice PASSWORD=alicepass DEBUG=true
 ```
 
 ### Running Tests
+Tests include:
+* unit tests
+* integration tests for API endpoints
+* concurrency tests
 
 Run all tests with verbose output:
 
@@ -117,7 +121,6 @@ Run tests with race detection:
 ```bash
 make test-race
 ```
-
 
 ## Protocol Design
 
