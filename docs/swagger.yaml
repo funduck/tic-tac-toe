@@ -12,6 +12,9 @@ definitions:
         type: string
       id:
         type: string
+      private:
+        description: optional field to indicate if the game is private or public
+        type: boolean
       result:
         type: string
       status:
@@ -39,6 +42,11 @@ definitions:
     properties:
       gameID:
         type: string
+      userID:
+        type: string
+    type: object
+  server.JoinAnyGameRequest:
+    properties:
       userID:
         type: string
     type: object
@@ -239,6 +247,40 @@ paths:
           schema:
             $ref: '#/definitions/server.ErrorResponse'
       summary: Make a move
+      tags:
+      - games
+  /api/games/join:
+    post:
+      consumes:
+      - application/json
+      operationId: joinAnyGame
+      parameters:
+      - description: Join any game request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/server.JoinAnyGameRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/game.Game'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Join any available game
       tags:
       - games
 swagger: "2.0"

@@ -1,6 +1,4 @@
 cloud.google.com/go v0.34.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
-github.com/go-openapi/testify v0.0.0-20251001202347-e909893202bd h1:+xqXbJEPxWM3YMAJ7yKV2FyqC/V/Dn8XggLC4tsMBXo=
-github.com/go-openapi/testify v0.0.0-20251001202347-e909893202bd/go.mod h1:Eo7DE2AKidl1U1diMDA05WiNks99vsR7HUun6G6Vob4=
 github.com/golang/protobuf v1.2.0 h1:P3YflyNX/ehuJFLhxviNdFxQPkGK5cDcApsge1SqnvM=
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 golang.org/x/net v0.0.0-20180724234803-3673e40ba225/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=

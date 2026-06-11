@@ -55,3 +55,15 @@ func (r *MemoryRepo) FindLatestForUser(userID string) (*Game, error) {
 	}
 	return nil, ErrGameNotFound
 }
+
+func (r *MemoryRepo) FindGameToJoin(userID string) (*Game, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	for i := len(r.order) - 1; i >= 0; i-- {
+		g := r.gamesByID[r.order[i]]
+		if g.IsJoinAllowed() && !g.Private {
+			return g, nil
+		}
+	}
+	return nil, ErrGameNotFound
+}

@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/funduck/tic-tac-toe/internal/game"
+	"github.com/go-chi/chi/v5"
 )
 
 // TestRouter verifies that routes are correctly mapped and URL parameters are extracted
@@ -41,7 +42,10 @@ func TestRouter(t *testing.T) {
 
 	handler := NewGameHandler(mockSvc, slog.New(slog.NewTextHandler(io.Discard, nil)))
 	// Create router without any additional middlewares (clean test environment)
-	router := NewRouter(handler)
+	router := chi.NewRouter()
+	router.Route("/api", func(r chi.Router) {
+		ApiRouter(r, handler)
+	})
 
 	tests := []struct {
 		name           string
@@ -202,7 +206,10 @@ func TestRouterWithMiddleware(t *testing.T) {
 	}
 
 	// Create router with custom middleware
-	router := NewRouter(handler, customMiddleware)
+	router := chi.NewRouter()
+	router.Route("/api", func(r chi.Router) {
+		ApiRouter(r, handler, customMiddleware)
+	})
 
 	req := httptest.NewRequest(http.MethodPost, "/api/games", bytes.NewBufferString("{}"))
 	req.Header.Set("Content-Type", "application/json")

@@ -15,6 +15,12 @@ func Start(ctx context.Context, gameSvc *lib.GameService, displaySvc *lib.Displa
 		os.Exit(1)
 	}
 
+	// Wait for opponent if needed
+	err = WaitForOpponent(ctx, gameSvc, displaySvc)
+	if err != nil {
+		os.Exit(1)
+	}
+
 	displaySvc.PrintInfo(fmt.Sprintf("Game started! You are %s.", displaySvc.MyMark()))
 	displaySvc.PrintBoard()
 

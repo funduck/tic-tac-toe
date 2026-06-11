@@ -67,6 +67,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/games/join": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "games"
+                ],
+                "summary": "Join any available game",
+                "operationId": "joinAnyGame",
+                "parameters": [
+                    {
+                        "description": "Join any game request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/server.JoinAnyGameRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/game.Game"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/server.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/server.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/server.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/games/{gameID}": {
             "get": {
                 "produces": [
@@ -299,6 +351,10 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "private": {
+                    "description": "optional field to indicate if the game is private or public",
+                    "type": "boolean"
+                },
                 "result": {
                     "type": "string"
                 },
@@ -341,6 +397,14 @@ const docTemplate = `{
                 "gameID": {
                     "type": "string"
                 },
+                "userID": {
+                    "type": "string"
+                }
+            }
+        },
+        "server.JoinAnyGameRequest": {
+            "type": "object",
+            "properties": {
                 "userID": {
                     "type": "string"
                 }

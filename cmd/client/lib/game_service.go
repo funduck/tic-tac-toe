@@ -54,6 +54,17 @@ func (gs *GameService) JoinGame(ctx context.Context, gameID, userID string) (*Ga
 	return WrapGame(g), nil
 }
 
+// JoinAnyGame joins an existing game
+func (gs *GameService) JoinAnyGame(ctx context.Context, userID string) (*Game, error) {
+	req := openapi.NewServerJoinAnyGameRequest()
+	req.SetUserID(userID)
+	g, r, err := gs.api.JoinAnyGame(ctx).Request(*req).Execute()
+	if err != nil {
+		return nil, parseGameError(r, err)
+	}
+	return WrapGame(g), nil
+}
+
 // MakeMove makes a move in the game
 func (gs *GameService) MakeMove(ctx context.Context, gameID, userID string, x, y int) (*Game, error) {
 	req := openapi.NewServerMoveRequest()

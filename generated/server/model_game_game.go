@@ -22,6 +22,8 @@ type GameGame struct {
 	Board [][]int32 `json:"board,omitempty"`
 	CurrentPlayerID *string `json:"currentPlayerID,omitempty"`
 	Id *string `json:"id,omitempty"`
+	// optional field to indicate if the game is private or public
+	Private *bool `json:"private,omitempty"`
 	Result *string `json:"result,omitempty"`
 	Status *string `json:"status,omitempty"`
 	UserID1 *string `json:"userID1,omitempty"`
@@ -140,6 +142,38 @@ func (o *GameGame) HasId() bool {
 // SetId gets a reference to the given string and assigns it to the Id field.
 func (o *GameGame) SetId(v string) {
 	o.Id = &v
+}
+
+// GetPrivate returns the Private field value if set, zero value otherwise.
+func (o *GameGame) GetPrivate() bool {
+	if o == nil || IsNil(o.Private) {
+		var ret bool
+		return ret
+	}
+	return *o.Private
+}
+
+// GetPrivateOk returns a tuple with the Private field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *GameGame) GetPrivateOk() (*bool, bool) {
+	if o == nil || IsNil(o.Private) {
+		return nil, false
+	}
+	return o.Private, true
+}
+
+// HasPrivate returns a boolean if a field has been set.
+func (o *GameGame) HasPrivate() bool {
+	if o != nil && !IsNil(o.Private) {
+		return true
+	}
+
+	return false
+}
+
+// SetPrivate gets a reference to the given bool and assigns it to the Private field.
+func (o *GameGame) SetPrivate(v bool) {
+	o.Private = &v
 }
 
 // GetResult returns the Result field value if set, zero value otherwise.
@@ -320,6 +354,9 @@ func (o GameGame) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Id) {
 		toSerialize["id"] = o.Id
+	}
+	if !IsNil(o.Private) {
+		toSerialize["private"] = o.Private
 	}
 	if !IsNil(o.Result) {
 		toSerialize["result"] = o.Result

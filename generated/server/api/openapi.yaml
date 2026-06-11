@@ -46,6 +46,45 @@ paths:
       tags:
       - games
       x-codegen-request-body-name: request
+  /api/games/join:
+    post:
+      operationId: joinAnyGame
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/server.JoinAnyGameRequest"
+        description: Join any game request
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/game.Game"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Bad Request
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Not Found
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Conflict
+      summary: Join any available game
+      tags:
+      - games
+      x-codegen-request-body-name: request
   /api/games/{gameID}:
     get:
       operationId: getGame
@@ -217,6 +256,7 @@ components:
         currentPlayerID: currentPlayerID
         result: result
         userID1: userID1
+        private: true
         userID2: userID2
         winnerID: winnerID
         id: id
@@ -237,6 +277,9 @@ components:
           type: string
         id:
           type: string
+        private:
+          description: optional field to indicate if the game is private or public
+          type: boolean
         result:
           type: string
         status:
@@ -266,6 +309,11 @@ components:
       properties:
         gameID:
           type: string
+        userID:
+          type: string
+      type: object
+    server.JoinAnyGameRequest:
+      properties:
         userID:
           type: string
       type: object

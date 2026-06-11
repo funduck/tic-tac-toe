@@ -81,6 +81,7 @@ Class | Method | HTTP request | Description
 *GamesAPI* | [**CreateGame**](docs/GamesAPI.md#creategame) | **Post** /api/games | Create a new game
 *GamesAPI* | [**GetGame**](docs/GamesAPI.md#getgame) | **Get** /api/games/{gameID} | Get game state
 *GamesAPI* | [**GiveUpGame**](docs/GamesAPI.md#giveupgame) | **Post** /api/games/{gameID}/giveup | Give up the game
+*GamesAPI* | [**JoinAnyGame**](docs/GamesAPI.md#joinanygame) | **Post** /api/games/join | Join any available game
 *GamesAPI* | [**JoinGame**](docs/GamesAPI.md#joingame) | **Post** /api/games/{gameID}/join | Join a waiting game
 *GamesAPI* | [**MakeMove**](docs/GamesAPI.md#makemove) | **Post** /api/games/{gameID}/move | Make a move
 
@@ -91,6 +92,7 @@ Class | Method | HTTP request | Description
  - [ServerCreateGameRequest](docs/ServerCreateGameRequest.md)
  - [ServerErrorResponse](docs/ServerErrorResponse.md)
  - [ServerGiveUpRequest](docs/ServerGiveUpRequest.md)
+ - [ServerJoinAnyGameRequest](docs/ServerJoinAnyGameRequest.md)
  - [ServerJoinGameRequest](docs/ServerJoinGameRequest.md)
  - [ServerMoveRequest](docs/ServerMoveRequest.md)
 

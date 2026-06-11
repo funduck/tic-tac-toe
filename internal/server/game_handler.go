@@ -13,6 +13,7 @@ import (
 type GameService interface {
 	CreateGame() (*game.Game, error)
 	JoinGame(gameID, userID string) (*game.Game, error)
+	JoinAnyGame(userID string) (*game.Game, error)
 	MakeMove(gameID, userID string, x, y int) (*game.Game, error)
 	GiveUp(gameID, userID string) (*game.Game, error)
 	GetGame(gameID string) (*game.Game, error)
@@ -92,6 +93,37 @@ func (h *GameHandler) JoinGame(w http.ResponseWriter, r *http.Request) {
 	g, err := h.svc.JoinGame(gameID, req.UserID)
 	if err != nil {
 		h.logger.Warn("join game failed", "gameID", gameID, "userID", req.UserID, "error", err)
+		writeError(w, mapGameError(err), err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, g)
+}
+
+// JoinAnyGame godoc
+//
+//	@Summary	Join any available game
+//	@ID		joinAnyGame
+//	@Tags		games
+//	@Accept		json
+//	@Produce	json
+//	@Param		request	body		JoinAnyGameRequest	true	"Join any game request"
+//	@Success	200		{object}	game.Game
+//	@Failure	400		{object}	ErrorResponse
+//	@Failure	404		{object}	ErrorResponse
+//	@Failure	409		{object}	ErrorResponse
+//	@Router		/api/games/join [post]
+func (h *GameHandler) JoinAnyGame(w http.ResponseWriter, r *http.Request) {
+	var req JoinAnyGameRequest
+	if err := parseRequestBody(r, &req, h.logger, w); err != nil {
+		return // parseRequestBody already wrote the error response
+	}
+
+	h.logger.Debug("request", "method", r.Method, "path", r.URL.Path, "userID", req.UserID)
+
+	g, err := h.svc.JoinAnyGame(req.UserID)
+	if err != nil {
+		h.logger.Warn("join any game failed", "userID", req.UserID, "error", err)
 		writeError(w, mapGameError(err), err)
 		return
 	}

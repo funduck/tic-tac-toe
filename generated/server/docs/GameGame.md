@@ -7,6 +7,7 @@ Name | Type | Description | Notes
 **Board** | Pointer to **[][]int32** |  | [optional] 
 **CurrentPlayerID** | Pointer to **string** |  | [optional] 
 **Id** | Pointer to **string** |  | [optional] 
+**Private** | Pointer to **bool** | optional field to indicate if the game is private or public | [optional] 
 **Result** | Pointer to **string** |  | [optional] 
 **Status** | Pointer to **string** |  | [optional] 
 **UserID1** | Pointer to **string** |  | [optional] 
@@ -106,6 +107,31 @@ SetId sets Id field to given value.
 `func (o *GameGame) HasId() bool`
 
 HasId returns a boolean if a field has been set.
+
+### GetPrivate
+
+`func (o *GameGame) GetPrivate() bool`
+
+GetPrivate returns the Private field if non-nil, zero value otherwise.
+
+### GetPrivateOk
+
+`func (o *GameGame) GetPrivateOk() (*bool, bool)`
+
+GetPrivateOk returns a tuple with the Private field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetPrivate
+
+`func (o *GameGame) SetPrivate(v bool)`
+
+SetPrivate sets Private field to given value.
+
+### HasPrivate
+
+`func (o *GameGame) HasPrivate() bool`
+
+HasPrivate returns a boolean if a field has been set.
 
 ### GetResult
 

@@ -19,4 +19,4 @@ start-client-alice:
 	go run cmd/client/main.go --user alice
 
 start-client-bob:
-	go run cmd/client/main.go --user bob --game ${GAME_ID}
+	go run cmd/client/main.go --user bob

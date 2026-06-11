@@ -65,6 +65,19 @@ func (m *mockRepo) FindLatestForUser(userID string) (*Game, error) {
 	return nil, ErrGameNotFound
 }
 
+func (m *mockRepo) FindGameToJoin(userID string) (*Game, error) {
+	if m.getErr != nil {
+		return nil, m.getErr
+	}
+	for i := len(m.order) - 1; i >= 0; i-- {
+		g := m.games[m.order[i]]
+		if g.Status == StatusWaiting && g.UserID1 != userID && g.UserID2 != userID {
+			return g, nil
+		}
+	}
+	return nil, ErrGameNotFound
+}
+
 // --- CreateGame ---
 
 func TestGameService_CreateGame(t *testing.T) {

@@ -31,6 +31,7 @@ type Game struct {
 	Status          string    `json:"status"`
 	Result          string    `json:"result"`
 	WinnerID        string    `json:"winnerID"`
+	Private         bool      `json:"private"` // optional field to indicate if the game is private or public
 }
 
 // NewGame creates a new game in the waiting state.
@@ -51,6 +52,16 @@ func NewGameInProgress(id, userID1, userID2 string) *Game {
 		CurrentPlayerID: userID1,
 		Status:          StatusInProgress,
 	}
+}
+
+func (g *Game) IsJoinAllowed() bool {
+	if g.Status != StatusWaiting {
+		return false
+	}
+	if g.UserID1 != "" && g.UserID2 != "" {
+		return false
+	}
+	return true
 }
 
 // Join adds a player to the game. The first player to join becomes UserID1, the second becomes UserID2.

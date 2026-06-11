@@ -47,6 +47,15 @@ func (s *GameService) JoinGame(gameID, userID string) (*Game, error) {
 	return g, nil
 }
 
+// JoinAnyGame finds a waiting game for the user to join, or returns an error if none are available.
+func (s *GameService) JoinAnyGame(userID string) (*Game, error) {
+	g, err := s.repo.FindGameToJoin(userID)
+	if err != nil {
+		return nil, err
+	}
+	return s.JoinGame(g.ID, userID)
+}
+
 // GetLatestGameForUser retrieves the most recent game for a given user.
 func (s *GameService) GetLatestGameForUser(userID string) (*Game, error) {
 	return s.repo.FindLatestForUser(userID)

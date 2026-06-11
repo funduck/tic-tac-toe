@@ -93,3 +93,54 @@ func TestMemoryRepo_Update_NotFound(t *testing.T) {
 		t.Errorf("expected ErrGameNotFound, got %v", err)
 	}
 }
+
+func TestMemoryRepo_FindGameToJoin(t *testing.T) {
+	repo := NewMemoryRepo()
+	g1 := NewGame("id1")                           // waiting game
+	g2 := NewGameInProgress("id2", "alice", "bob") // in_progress game
+	if err := repo.Create(g1); err != nil {
+		t.Fatalf("Create error: %v", err)
+	}
+	if err := repo.Create(g2); err != nil {
+		t.Fatalf("Create error: %v", err)
+	}
+
+	got, err := repo.FindGameToJoin("charlie")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if got.ID != g1.ID {
+		t.Errorf("expected to find waiting game ID %s, got %s", g1.ID, got.ID)
+	}
+}
+
+func TestMemoryRepo_FindGameToJoin_NotFound(t *testing.T) {
+	repo := NewMemoryRepo()
+	_, err := repo.FindGameToJoin("charlie")
+	if !errors.Is(err, ErrGameNotFound) {
+		t.Errorf("expected ErrGameNotFound, got %v", err)
+	}
+
+	// also test when there are only in_progress games
+	g := NewGameInProgress("id1", "alice", "bob")
+	if err := repo.Create(g); err != nil {
+		t.Fatalf("Create error: %v", err)
+	}
+
+	_, err = repo.FindGameToJoin("charlie")
+	if !errors.Is(err, ErrGameNotFound) {
+		t.Errorf("expected ErrGameNotFound, got %v", err)
+	}
+
+	// and when there are only private waiting games
+	g2 := NewGame("id2")
+	g2.Private = true
+	if err := repo.Create(g2); err != nil {
+		t.Fatalf("Create error: %v", err)
+	}
+
+	_, err = repo.FindGameToJoin("charlie")
+	if !errors.Is(err, ErrGameNotFound) {
+		t.Errorf("expected ErrGameNotFound, got %v", err)
+	}
+}

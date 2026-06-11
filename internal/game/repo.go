@@ -10,4 +10,5 @@ type GameRepo interface {
 	FindByID(gameID string) (*Game, error)
 	Update(game *Game) error
 	FindLatestForUser(userID string) (*Game, error)
+	FindGameToJoin(userID string) (*Game, error) // optional method to find a waiting game for a user to join
 }

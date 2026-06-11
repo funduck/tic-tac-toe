@@ -7,6 +7,7 @@ Method | HTTP request | Description
 [**CreateGame**](GamesAPI.md#CreateGame) | **Post** /api/games | Create a new game
 [**GetGame**](GamesAPI.md#GetGame) | **Get** /api/games/{gameID} | Get game state
 [**GiveUpGame**](GamesAPI.md#GiveUpGame) | **Post** /api/games/{gameID}/giveup | Give up the game
+[**JoinAnyGame**](GamesAPI.md#JoinAnyGame) | **Post** /api/games/join | Join any available game
 [**JoinGame**](GamesAPI.md#JoinGame) | **Post** /api/games/{gameID}/join | Join a waiting game
 [**MakeMove**](GamesAPI.md#MakeMove) | **Post** /api/games/{gameID}/move | Make a move
 
@@ -195,6 +196,70 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
  **request** | [**ServerGiveUpRequest**](ServerGiveUpRequest.md) | Give up request | 
+
+### Return type
+
+[**GameGame**](GameGame.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## JoinAnyGame
+
+> GameGame JoinAnyGame(ctx).Request(request).Execute()
+
+Join any available game
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+	request := *openapiclient.NewServerJoinAnyGameRequest() // ServerJoinAnyGameRequest | Join any game request
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.GamesAPI.JoinAnyGame(context.Background()).Request(request).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `GamesAPI.JoinAnyGame``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `JoinAnyGame`: GameGame
+	fmt.Fprintf(os.Stdout, "Response from `GamesAPI.JoinAnyGame`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiJoinAnyGameRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **request** | [**ServerJoinAnyGameRequest**](ServerJoinAnyGameRequest.md) | Join any game request | 
 
 ### Return type
 

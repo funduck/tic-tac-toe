@@ -10,6 +10,10 @@ type JoinGameRequest struct {
 	UserID string `json:"userID"`
 }
 
+type JoinAnyGameRequest struct {
+	UserID string `json:"userID"`
+}
+
 type MoveRequest struct {
 	GameID string `json:"gameID"`
 	UserID string `json:"userID"`

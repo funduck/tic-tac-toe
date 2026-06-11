@@ -25,7 +25,11 @@ func main() {
 	repo := game.NewMemoryRepo()
 	svc := game.NewGameService(repo, logger)
 	handler := server.NewGameHandler(svc, logger)
-	router := server.NewRouter(handler)
+	router := newRouter()
+
+	router.Route("/api", func(r chi.Router) {
+		server.ApiRouter(r, handler)
+	})
 
 	logger.Info("Server listening on :8080")
 	if err := http.ListenAndServe(":8080", router); err != nil {
@@ -33,7 +37,7 @@ func main() {
 	}
 }
 
-func router() http.Handler {
+func newRouter() *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.Recoverer)
 
