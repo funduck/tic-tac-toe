@@ -2,14 +2,17 @@ package game
 
 import (
 	"log/slog"
+	"sync"
 
 	"github.com/google/uuid"
 )
 
 // GameService processes game actions and delegates state persistence to GameRepo.
 type GameService struct {
-	repo   GameRepo
-	logger *slog.Logger
+	repo             GameRepo
+	logger           *slog.Logger
+	joinGameMutex    sync.Mutex // protects JoinGame
+	joinAnyGameMutex sync.Mutex // protects JoinAnyGame
 }
 
 func NewGameService(repo GameRepo, logger *slog.Logger) *GameService {
@@ -44,6 +47,11 @@ func (s *GameService) CreatePrivateGame() (*Game, error) {
 // JoinGame adds a player to an existing waiting game. The first player to join becomes UserID1, the second becomes UserID2.
 // If both players have joined, the game status changes to in_progress and UserID1 moves first.
 func (s *GameService) JoinGame(gameID, userID string) (*Game, error) {
+	// To make this method concurrency-safe we need to wrap the code into a "transaction"
+	// With SQL database we'd use a transaction with "SELECT ... FOR UPDATE"
+	s.joinGameMutex.Lock()
+	defer s.joinGameMutex.Unlock()
+
 	g, err := s.repo.FindByID(gameID)
 	if err != nil {
 		return nil, err
@@ -54,16 +62,24 @@ func (s *GameService) JoinGame(gameID, userID string) (*Game, error) {
 	if err := s.repo.Update(g); err != nil {
 		return nil, err
 	}
+
 	s.logger.Info("player joined", "gameID", gameID, "userID", userID, "status", g.Status)
 	return g, nil
 }
 
 // JoinAnyGame finds a waiting game for the user to join, or returns an error if none are available.
 func (s *GameService) JoinAnyGame(userID string) (*Game, error) {
+	// To make this method concurrency-safe we need to wrap the code into a "transaction"
+	// With SQL database we'd use a transaction with "SELECT ... FOR UPDATE"
+	// We need another mutex here to avoid picking the same game for multiple users concurrently
+	s.joinAnyGameMutex.Lock()
+	defer s.joinAnyGameMutex.Unlock()
+
 	g, err := s.repo.FindGameToJoin(userID)
 	if err != nil {
 		return nil, err
 	}
+
 	return s.JoinGame(g.ID, userID)
 }
 

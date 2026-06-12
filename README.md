@@ -320,3 +320,4 @@ make codegen-client
 Additionally to bonus features mentioned in the [task](./TASK.md), here are some future improvements:
 * If `-game` parameter is not passed to client, it looks up for the last played unfinished game and joins it instead of creating a new one. This allows for easier testing and quicker game start without needing to copy-paste game IDs.
 * Store in memory the last timestamp when user *touched* the game and provide this info to the opponent. It allows to detect if opponent is AFK and maybe implement some timeout-based game end in the future.
+* Matchmaking consurrency-safe without locks, either use SQL database `SELECT FOR UPDATE` or implement in-memory queue of waiting games with atomic operations or channels.
