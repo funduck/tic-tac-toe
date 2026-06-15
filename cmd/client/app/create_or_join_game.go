@@ -3,10 +3,11 @@ package app
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 
+	openapi "github.com/GIT_USER_ID/GIT_REPO_ID"
 	"github.com/funduck/tic-tac-toe/client/lib"
-	"github.com/funduck/tic-tac-toe/internal/game"
 )
 
 // CreateOrJoinGame handles game creation or joining
@@ -43,10 +44,10 @@ func CreateOrJoinGame(ctx context.Context, gameSvc *lib.GameService, displaySvc 
 
 func WaitForOpponent(ctx context.Context, gameSvc *lib.GameService, displaySvc *lib.DisplayService) error {
 	g := lib.GameState
-	if g.GetStatus() == game.StatusWaiting { // TODO safe types for enums
+	if g.GetStatus() == openapi.StatusWaiting {
 		displaySvc.PrintInfo("⏳ Waiting for opponent to join...")
 		g, err := gameSvc.PollUntil(ctx, g.GetID(), func(g *lib.Game) bool {
-			return g.GetStatus() == game.StatusInProgress
+			return g.GetStatus() == openapi.StatusInProgress
 		}, 5)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "❌ Error: failed to wait for opponent: %v\n", err)
@@ -54,5 +55,6 @@ func WaitForOpponent(ctx context.Context, gameSvc *lib.GameService, displaySvc *
 		}
 		lib.GameState = g
 	}
+	log.Println("game status changed:", g.GetStatus())
 	return nil
 }

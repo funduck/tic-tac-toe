@@ -4,18 +4,19 @@ import (
 	"context"
 	"fmt"
 
+	openapi "github.com/GIT_USER_ID/GIT_REPO_ID"
 	"github.com/funduck/tic-tac-toe/client/lib"
 )
 
 // PlayGame runs the main game loop
 func PlayGame(ctx context.Context, gameSvc *lib.GameService, displaySvc *lib.DisplayService, inputSvc *lib.InputService) error {
-	for lib.GameState.GetStatus() == "in_progress" {
+	for lib.GameState.GetStatus() == openapi.StatusInProgress {
 		// Wait for our turn
 		if lib.GameState.GetCurrentPlayerID() != lib.UserID {
 			displaySvc.PrintStatus()
 			var err error
 			g, err := gameSvc.PollUntil(ctx, lib.GameState.GetID(), func(g *lib.Game) bool {
-				return g.GetStatus() != "in_progress" || g.GetCurrentPlayerID() == lib.UserID
+				return g.GetStatus() != openapi.StatusInProgress || g.GetCurrentPlayerID() == lib.UserID
 			}, 5)
 			if err != nil {
 				return fmt.Errorf("failed to poll game state: %w", err)

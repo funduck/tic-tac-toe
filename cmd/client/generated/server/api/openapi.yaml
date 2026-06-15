@@ -381,7 +381,7 @@ components:
     game.Game:
       example:
         currentPlayerID: currentPlayerID
-        result: result
+        result: win
         userID1: userID1
         private: true
         userID2: userID2
@@ -392,7 +392,7 @@ components:
           - 0
         - - 0
           - 0
-        status: status
+        status: waiting
       properties:
         board:
           items:
@@ -409,9 +409,9 @@ components:
           description: optional field to indicate if the game is private or public
           type: boolean
         result:
-          type: string
+          $ref: "#/components/schemas/game.GameResult"
         status:
-          type: string
+          $ref: "#/components/schemas/game.GameStatus"
         userID1:
           type: string
         userID2:
@@ -419,6 +419,24 @@ components:
         winnerID:
           type: string
       type: object
+    game.GameResult:
+      enum:
+      - win
+      - draw
+      type: string
+      x-enum-varnames:
+      - ResultWin
+      - ResultDraw
+    game.GameStatus:
+      enum:
+      - waiting
+      - in_progress
+      - finished
+      type: string
+      x-enum-varnames:
+      - StatusWaiting
+      - StatusInProgress
+      - StatusFinished
     server.CreateGameRequest:
       properties:
         gameID:

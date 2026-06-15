@@ -2,13 +2,16 @@ package game
 
 import "errors"
 
-const (
-	StatusWaiting    = "waiting"
-	StatusInProgress = "in_progress"
-	StatusFinished   = "finished"
+type GameStatus string
+type GameResult string
 
-	ResultWin  = "win"
-	ResultDraw = "draw"
+const (
+	StatusWaiting    GameStatus = "waiting"
+	StatusInProgress GameStatus = "in_progress"
+	StatusFinished   GameStatus = "finished"
+
+	ResultWin  GameResult = "win"
+	ResultDraw GameResult = "draw"
 )
 
 var (
@@ -23,15 +26,15 @@ var (
 // Game represents the state of a single tic-tac-toe match.
 // UserID1 plays as X (mark 1), UserID2 plays as O (mark 2).
 type Game struct {
-	ID              string    `json:"id"`
-	UserID1         string    `json:"userID1"`
-	UserID2         string    `json:"userID2"`
-	Board           [3][3]int `json:"board"`
-	CurrentPlayerID string    `json:"currentPlayerID"` // user ID of the player whose turn it is
-	Status          string    `json:"status"`
-	Result          string    `json:"result"`
-	WinnerID        string    `json:"winnerID"`
-	Private         bool      `json:"private"` // optional field to indicate if the game is private or public
+	ID              string     `json:"id"`
+	UserID1         string     `json:"userID1"`
+	UserID2         string     `json:"userID2"`
+	Board           [3][3]int  `json:"board"`
+	CurrentPlayerID string     `json:"currentPlayerID"` // user ID of the player whose turn it is
+	Status          GameStatus `json:"status"`
+	Result          GameResult `json:"result,omitempty"`
+	WinnerID        string     `json:"winnerID,omitempty"`
+	Private         bool       `json:"private"` // optional field to indicate if the game is private or public
 }
 
 // NewGame creates a new game in the waiting state.

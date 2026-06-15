@@ -8,8 +8,8 @@ Name | Type | Description | Notes
 **CurrentPlayerID** | Pointer to **string** | user ID of the player whose turn it is | [optional] 
 **Id** | Pointer to **string** |  | [optional] 
 **Private** | Pointer to **bool** | optional field to indicate if the game is private or public | [optional] 
-**Result** | Pointer to **string** |  | [optional] 
-**Status** | Pointer to **string** |  | [optional] 
+**Result** | Pointer to [**GameGameResult**](GameGameResult.md) |  | [optional] 
+**Status** | Pointer to [**GameGameStatus**](GameGameStatus.md) |  | [optional] 
 **UserID1** | Pointer to **string** |  | [optional] 
 **UserID2** | Pointer to **string** |  | [optional] 
 **WinnerID** | Pointer to **string** |  | [optional] 
@@ -135,20 +135,20 @@ HasPrivate returns a boolean if a field has been set.
 
 ### GetResult
 
-`func (o *GameGame) GetResult() string`
+`func (o *GameGame) GetResult() GameGameResult`
 
 GetResult returns the Result field if non-nil, zero value otherwise.
 
 ### GetResultOk
 
-`func (o *GameGame) GetResultOk() (*string, bool)`
+`func (o *GameGame) GetResultOk() (*GameGameResult, bool)`
 
 GetResultOk returns a tuple with the Result field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetResult
 
-`func (o *GameGame) SetResult(v string)`
+`func (o *GameGame) SetResult(v GameGameResult)`
 
 SetResult sets Result field to given value.
 
@@ -160,20 +160,20 @@ HasResult returns a boolean if a field has been set.
 
 ### GetStatus
 
-`func (o *GameGame) GetStatus() string`
+`func (o *GameGame) GetStatus() GameGameStatus`
 
 GetStatus returns the Status field if non-nil, zero value otherwise.
 
 ### GetStatusOk
 
-`func (o *GameGame) GetStatusOk() (*string, bool)`
+`func (o *GameGame) GetStatusOk() (*GameGameStatus, bool)`
 
 GetStatusOk returns a tuple with the Status field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetStatus
 
-`func (o *GameGame) SetStatus(v string)`
+`func (o *GameGame) SetStatus(v GameGameStatus)`
 
 SetStatus sets Status field to given value.
 

@@ -93,6 +93,8 @@ Class | Method | HTTP request | Description
 
  - [AuthTokenPair](docs/AuthTokenPair.md)
  - [GameGame](docs/GameGame.md)
+ - [GameGameResult](docs/GameGameResult.md)
+ - [GameGameStatus](docs/GameGameStatus.md)
  - [ServerCreateGameRequest](docs/ServerCreateGameRequest.md)
  - [ServerErrorResponse](docs/ServerErrorResponse.md)
  - [ServerGiveUpRequest](docs/ServerGiveUpRequest.md)

@@ -31,7 +31,7 @@ func (g *Game) GetID() string {
 }
 
 // GetStatus returns the game status
-func (g *Game) GetStatus() string {
+func (g *Game) GetStatus() openapi.GameGameStatus {
 	if g.GameGame == nil || g.Status == nil {
 		return ""
 	}
@@ -71,7 +71,7 @@ func (g *Game) GetWinnerID() string {
 }
 
 // GetResult returns the game result
-func (g *Game) GetResult() string {
+func (g *Game) GetResult() openapi.GameGameResult {
 	if g.GameGame == nil || g.Result == nil {
 		return ""
 	}

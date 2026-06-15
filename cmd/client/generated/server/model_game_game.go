@@ -25,8 +25,8 @@ type GameGame struct {
 	Id *string `json:"id,omitempty"`
 	// optional field to indicate if the game is private or public
 	Private *bool `json:"private,omitempty"`
-	Result *string `json:"result,omitempty"`
-	Status *string `json:"status,omitempty"`
+	Result *GameGameResult `json:"result,omitempty"`
+	Status *GameGameStatus `json:"status,omitempty"`
 	UserID1 *string `json:"userID1,omitempty"`
 	UserID2 *string `json:"userID2,omitempty"`
 	WinnerID *string `json:"winnerID,omitempty"`
@@ -178,9 +178,9 @@ func (o *GameGame) SetPrivate(v bool) {
 }
 
 // GetResult returns the Result field value if set, zero value otherwise.
-func (o *GameGame) GetResult() string {
+func (o *GameGame) GetResult() GameGameResult {
 	if o == nil || IsNil(o.Result) {
-		var ret string
+		var ret GameGameResult
 		return ret
 	}
 	return *o.Result
@@ -188,7 +188,7 @@ func (o *GameGame) GetResult() string {
 
 // GetResultOk returns a tuple with the Result field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *GameGame) GetResultOk() (*string, bool) {
+func (o *GameGame) GetResultOk() (*GameGameResult, bool) {
 	if o == nil || IsNil(o.Result) {
 		return nil, false
 	}
@@ -204,15 +204,15 @@ func (o *GameGame) HasResult() bool {
 	return false
 }
 
-// SetResult gets a reference to the given string and assigns it to the Result field.
-func (o *GameGame) SetResult(v string) {
+// SetResult gets a reference to the given GameGameResult and assigns it to the Result field.
+func (o *GameGame) SetResult(v GameGameResult) {
 	o.Result = &v
 }
 
 // GetStatus returns the Status field value if set, zero value otherwise.
-func (o *GameGame) GetStatus() string {
+func (o *GameGame) GetStatus() GameGameStatus {
 	if o == nil || IsNil(o.Status) {
-		var ret string
+		var ret GameGameStatus
 		return ret
 	}
 	return *o.Status
@@ -220,7 +220,7 @@ func (o *GameGame) GetStatus() string {
 
 // GetStatusOk returns a tuple with the Status field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *GameGame) GetStatusOk() (*string, bool) {
+func (o *GameGame) GetStatusOk() (*GameGameStatus, bool) {
 	if o == nil || IsNil(o.Status) {
 		return nil, false
 	}
@@ -236,8 +236,8 @@ func (o *GameGame) HasStatus() bool {
 	return false
 }
 
-// SetStatus gets a reference to the given string and assigns it to the Status field.
-func (o *GameGame) SetStatus(v string) {
+// SetStatus gets a reference to the given GameGameStatus and assigns it to the Status field.
+func (o *GameGame) SetStatus(v GameGameStatus) {
 	o.Status = &v
 }
 

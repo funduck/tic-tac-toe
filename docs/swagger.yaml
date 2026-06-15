@@ -24,9 +24,9 @@ definitions:
         description: optional field to indicate if the game is private or public
         type: boolean
       result:
-        type: string
+        $ref: '#/definitions/game.GameResult'
       status:
-        type: string
+        $ref: '#/definitions/game.GameStatus'
       userID1:
         type: string
       userID2:
@@ -34,6 +34,24 @@ definitions:
       winnerID:
         type: string
     type: object
+  game.GameResult:
+    enum:
+    - win
+    - draw
+    type: string
+    x-enum-varnames:
+    - ResultWin
+    - ResultDraw
+  game.GameStatus:
+    enum:
+    - waiting
+    - in_progress
+    - finished
+    type: string
+    x-enum-varnames:
+    - StatusWaiting
+    - StatusInProgress
+    - StatusFinished
   server.CreateGameRequest:
     properties:
       gameID:

@@ -524,10 +524,10 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "result": {
-                    "type": "string"
+                    "$ref": "#/definitions/game.GameResult"
                 },
                 "status": {
-                    "type": "string"
+                    "$ref": "#/definitions/game.GameStatus"
                 },
                 "userID1": {
                     "type": "string"
@@ -539,6 +539,30 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "game.GameResult": {
+            "type": "string",
+            "enum": [
+                "win",
+                "draw"
+            ],
+            "x-enum-varnames": [
+                "ResultWin",
+                "ResultDraw"
+            ]
+        },
+        "game.GameStatus": {
+            "type": "string",
+            "enum": [
+                "waiting",
+                "in_progress",
+                "finished"
+            ],
+            "x-enum-varnames": [
+                "StatusWaiting",
+                "StatusInProgress",
+                "StatusFinished"
+            ]
         },
         "server.CreateGameRequest": {
             "type": "object",
