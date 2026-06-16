@@ -11,6 +11,10 @@ tests:
 test-race:
 	go test -race -v ./...
 
+test-coverage:
+	go test -coverprofile=coverage.out ./...
+	go tool cover -html=coverage.out
+
 swag-init:
 	swag init -g cmd/server/main.go
 

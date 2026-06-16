@@ -293,7 +293,7 @@ func TestGameService_GetGame(t *testing.T) {
 	}
 }
 
-func TestGameService_GetGame_NotFound(t *testing.T) {
+func TestGameService_GetGame_Errors(t *testing.T) {
 	ctx := context.Background()
 	svc := NewGameService(newMockRepo(), slog.Default())
 	_, err := svc.GetGame(ctx, "nonexistent")

@@ -32,40 +32,51 @@ func TestNewGameInProgress(t *testing.T) {
 }
 
 func TestJoin_Valid(t *testing.T) {
-	g := NewGame("id1")
-	if err := g.Join("alice"); err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if g.UserID1 != "alice" {
-		t.Errorf("expected UserID1 alice, got %s", g.UserID1)
-	}
-	if g.Status != StatusWaiting {
-		t.Errorf("expected status still waiting, got %s", g.Status)
-	}
+	t.Run("first player joins", func(t *testing.T) {
+		g := NewGame("id1")
+		if err := g.Join("alice"); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if g.UserID1 != "alice" {
+			t.Errorf("expected UserID1 alice, got %s", g.UserID1)
+		}
+		if g.Status != StatusWaiting {
+			t.Errorf("expected status still waiting, got %s", g.Status)
+		}
+	})
 
-	if err := g.Join("bob"); err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if g.UserID2 != "bob" {
-		t.Errorf("expected UserID2 bob, got %s", g.UserID2)
-	}
-	if g.Status != StatusInProgress {
-		t.Errorf("expected status in_progress, got %s", g.Status)
-	}
+	t.Run("second player joins, game starts", func(t *testing.T) {
+		g := NewGame("id1")
+		if err := g.Join("alice"); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if err := g.Join("bob"); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if g.UserID2 != "bob" {
+			t.Errorf("expected UserID2 bob, got %s", g.UserID2)
+		}
+		if g.Status != StatusInProgress {
+			t.Errorf("expected status in_progress, got %s", g.Status)
+		}
+	})
 
-	// allow join again
-	if err := g.Join("alice"); err != nil {
-		t.Fatalf("unexpected error on rejoin: %v", err)
-	}
-	if g.UserID1 != "alice" {
-		t.Errorf("expected UserID1 alice, got %s", g.UserID1)
-	}
-	if g.UserID2 != "bob" {
-		t.Errorf("expected UserID2 bob, got %s", g.UserID2)
-	}
-	if g.Status != StatusInProgress {
-		t.Errorf("expected status still in_progress, got %s", g.Status)
-	}
+	t.Run("same player joins again", func(t *testing.T) {
+		g := NewGameInProgress("id1", "alice", "bob")
+		// allow join again
+		if err := g.Join("alice"); err != nil {
+			t.Fatalf("unexpected error on rejoin: %v", err)
+		}
+		if g.UserID1 != "alice" {
+			t.Errorf("expected UserID1 alice, got %s", g.UserID1)
+		}
+		if g.UserID2 != "bob" {
+			t.Errorf("expected UserID2 bob, got %s", g.UserID2)
+		}
+		if g.Status != StatusInProgress {
+			t.Errorf("expected status still in_progress, got %s", g.Status)
+		}
+	})
 }
 
 func TestJoin_Errors(t *testing.T) {
@@ -73,7 +84,6 @@ func TestJoin_Errors(t *testing.T) {
 		name    string
 		setup   func(*Game)
 		userID  string
-		x, y    int
 		wantErr error
 	}{
 		{
