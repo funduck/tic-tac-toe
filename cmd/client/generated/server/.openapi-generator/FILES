@@ -13,6 +13,7 @@ docs/GameGameResult.md
 docs/GameGameStatus.md
 docs/GamesAPI.md
 docs/ServerCreateGameRequest.md
+docs/ServerErrorCode.md
 docs/ServerErrorResponse.md
 docs/ServerGiveUpRequest.md
 docs/ServerJoinAnyGameRequest.md
@@ -30,6 +31,7 @@ model_game_game.go
 model_game_game_result.go
 model_game_game_status.go
 model_server_create_game_request.go
+model_server_error_code.go
 model_server_error_response.go
 model_server_give_up_request.go
 model_server_join_any_game_request.go

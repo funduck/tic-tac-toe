@@ -96,6 +96,7 @@ Class | Method | HTTP request | Description
  - [GameGameResult](docs/GameGameResult.md)
  - [GameGameStatus](docs/GameGameStatus.md)
  - [ServerCreateGameRequest](docs/ServerCreateGameRequest.md)
+ - [ServerErrorCode](docs/ServerErrorCode.md)
  - [ServerErrorResponse](docs/ServerErrorResponse.md)
  - [ServerGiveUpRequest](docs/ServerGiveUpRequest.md)
  - [ServerJoinAnyGameRequest](docs/ServerJoinAnyGameRequest.md)

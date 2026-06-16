@@ -578,9 +578,49 @@ const docTemplate = `{
                 }
             }
         },
+        "server.ErrorCode": {
+            "type": "string",
+            "enum": [
+                "ERR_GAME_NOT_FOUND",
+                "ERR_GAME_NOT_WAITING",
+                "ERR_GAME_NOT_ACTIVE",
+                "ERR_NOT_YOUR_TURN",
+                "ERR_NOT_IN_GAME",
+                "ERR_CELL_OCCUPIED",
+                "ERR_OUT_OF_BOUNDS",
+                "ERR_PASSWORD_TOO_SHORT",
+                "ERR_USER_ALREADY_EXISTS",
+                "ERR_USER_NOT_FOUND",
+                "ERR_INVALID_CREDENTIALS",
+                "ERR_REFRESH_TOKEN_DELETED",
+                "ERR_TOKEN_INVALID",
+                "ERR_TOKEN_EXPIRED",
+                "ERR_TOKEN_SIGNATURE_INVALID"
+            ],
+            "x-enum-varnames": [
+                "CodeGameNotFound",
+                "CodeGameNotWaiting",
+                "CodeGameNotActive",
+                "CodeNotYourTurn",
+                "CodeNotInGame",
+                "CodeCellOccupied",
+                "CodeOutOfBounds",
+                "CodePasswordTooShort",
+                "CodeUserAlreadyExists",
+                "CodeUserNotFound",
+                "CodeInvalidCredentials",
+                "CodeRefreshTokenDeleted",
+                "CodeTokenInvalid",
+                "CodeTokenExpired",
+                "CodeTokenSignatureInvalid"
+            ]
+        },
         "server.ErrorResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "$ref": "#/definitions/server.ErrorCode"
+                },
                 "error": {
                     "type": "string"
                 }

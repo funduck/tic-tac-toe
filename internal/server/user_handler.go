@@ -48,7 +48,7 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	_, tokens, err := h.svc.Signup(req.UserID, req.Password)
 	if err != nil {
 		h.logger.Warn("signup failed", "user_id", req.UserID, "error", err)
-		writeError(w, http.StatusBadRequest, err)
+		writeDomainError(w, err)
 		return
 	}
 
@@ -77,7 +77,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	_, tokens, err := h.svc.Login(req.UserID, req.Password)
 	if err != nil {
 		h.logger.Warn("login failed", "user_id", req.UserID, "error", err)
-		writeError(w, http.StatusUnauthorized, err)
+		writeDomainError(w, err)
 		return
 	}
 
@@ -106,7 +106,7 @@ func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	_, tokens, err := h.svc.RefreshToken(req.UserID, req.RefreshToken)
 	if err != nil {
 		h.logger.Warn("refresh token failed", "user_id", req.UserID, "error", err)
-		writeError(w, http.StatusUnauthorized, err)
+		writeDomainError(w, err)
 		return
 	}
 

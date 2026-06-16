@@ -1,7 +1,6 @@
 package server
 
 import (
-	"errors"
 	"log/slog"
 	"net/http"
 
@@ -59,7 +58,7 @@ func (h *GameHandler) CreateGame(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		h.logger.Warn("create game failed", "error", err)
-		writeError(w, http.StatusInternalServerError, err)
+		writeDomainError(w, err)
 		return
 	}
 
@@ -67,7 +66,7 @@ func (h *GameHandler) CreateGame(w http.ResponseWriter, r *http.Request) {
 		g2, err := h.svc.JoinGame(g.ID, req.UserID)
 		if err != nil {
 			h.logger.Warn("join game failed", "gameID", g.ID, "userID", req.UserID, "error", err)
-			writeError(w, mapGameError(err), err)
+			writeDomainError(w, err)
 			return
 		}
 		g = g2
@@ -102,7 +101,7 @@ func (h *GameHandler) JoinGame(w http.ResponseWriter, r *http.Request) {
 	g, err := h.svc.JoinGame(gameID, req.UserID)
 	if err != nil {
 		h.logger.Warn("join game failed", "gameID", gameID, "userID", req.UserID, "error", err)
-		writeError(w, mapGameError(err), err)
+		writeDomainError(w, err)
 		return
 	}
 
@@ -133,7 +132,7 @@ func (h *GameHandler) JoinAnyGame(w http.ResponseWriter, r *http.Request) {
 	g, err := h.svc.JoinAnyGame(req.UserID)
 	if err != nil {
 		h.logger.Warn("join any game failed", "userID", req.UserID, "error", err)
-		writeError(w, mapGameError(err), err)
+		writeDomainError(w, err)
 		return
 	}
 
@@ -166,7 +165,7 @@ func (h *GameHandler) MakeMove(w http.ResponseWriter, r *http.Request) {
 	g, err := h.svc.MakeMove(gameID, req.UserID, req.X, req.Y)
 	if err != nil {
 		h.logger.Warn("make move failed", "gameID", gameID, "userID", req.UserID, "x", req.X, "y", req.Y, "error", err)
-		writeError(w, mapGameError(err), err)
+		writeDomainError(w, err)
 		return
 	}
 
@@ -199,7 +198,7 @@ func (h *GameHandler) GiveUp(w http.ResponseWriter, r *http.Request) {
 	g, err := h.svc.GiveUp(gameID, req.UserID)
 	if err != nil {
 		h.logger.Warn("give up failed", "gameID", gameID, "userID", req.UserID, "error", err)
-		writeError(w, mapGameError(err), err)
+		writeDomainError(w, err)
 		return
 	}
 
@@ -222,32 +221,10 @@ func (h *GameHandler) GetGame(w http.ResponseWriter, r *http.Request) {
 	g, err := h.svc.GetGame(gameID)
 	if err != nil {
 		h.logger.Warn("get game failed", "gameID", gameID, "error", err)
-		writeError(w, mapGameError(err), err)
+		writeDomainError(w, err)
 		return
 	}
 
 	writeJSON(w, http.StatusOK, g)
 }
 
-// mapGameError converts domain errors to HTTP status codes.
-func mapGameError(err error) int {
-	switch {
-
-	case errors.Is(err, game.ErrGameNotFound):
-		return http.StatusNotFound
-
-	case errors.Is(err, game.ErrGameNotWaiting),
-		errors.Is(err, game.ErrGameNotActive),
-		errors.Is(err, game.ErrNotYourTurn),
-		errors.Is(err, game.ErrNotInGame):
-		return http.StatusConflict
-
-	case
-		errors.Is(err, game.ErrCellOccupied),
-		errors.Is(err, game.ErrOutOfBounds):
-		return http.StatusBadRequest
-
-	default:
-		return http.StatusInternalServerError
-	}
-}

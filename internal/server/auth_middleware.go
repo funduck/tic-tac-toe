@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"regexp"
 
@@ -26,7 +27,7 @@ func AuthMiddleware(tokenService TokenService) func(next http.Handler) http.Hand
 			// Extract authorization header and validate JWT token
 			authHeader := r.Header.Get("Authorization")
 			if authHeader == "" {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				writeError(w, http.StatusUnauthorized, errors.New("unauthorized"))
 				return
 			}
 
@@ -36,14 +37,14 @@ func AuthMiddleware(tokenService TokenService) func(next http.Handler) http.Hand
 			if len(matches) == 2 {
 				tokenStr = matches[1]
 			} else {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				writeError(w, http.StatusUnauthorized, errors.New("unauthorized"))
 				return
 			}
 
 			// Validate JWT token
 			token, err := tokenService.ValidateToken(tokenStr)
 			if err != nil {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				writeDomainError(w, err)
 				return
 			}
 			userID := token.UserID
@@ -52,14 +53,14 @@ func AuthMiddleware(tokenService TokenService) func(next http.Handler) http.Hand
 			if r.Body != nil && r.Header.Get("Content-Type") == "application/json" {
 				bodyBytes, err := getBodyBytes(r)
 				if err != nil {
-					http.Error(w, "Failed to read body", http.StatusBadRequest)
+					writeError(w, http.StatusBadRequest, errors.New("failed to read body"))
 					return
 				}
 
 				var dto dtoWithUserID
 				if err := json.NewDecoder(bytes.NewBuffer(bodyBytes)).Decode(&dto); err == nil {
 					if dto.UserID != userID {
-						http.Error(w, "Unauthorized", http.StatusUnauthorized)
+						writeError(w, http.StatusUnauthorized, errors.New("unauthorized"))
 						return
 					}
 				}

@@ -19,6 +19,7 @@ var _ MappedNullable = &ServerErrorResponse{}
 
 // ServerErrorResponse struct for ServerErrorResponse
 type ServerErrorResponse struct {
+	Code *ServerErrorCode `json:"code,omitempty"`
 	Error *string `json:"error,omitempty"`
 }
 
@@ -37,6 +38,38 @@ func NewServerErrorResponse() *ServerErrorResponse {
 func NewServerErrorResponseWithDefaults() *ServerErrorResponse {
 	this := ServerErrorResponse{}
 	return &this
+}
+
+// GetCode returns the Code field value if set, zero value otherwise.
+func (o *ServerErrorResponse) GetCode() ServerErrorCode {
+	if o == nil || IsNil(o.Code) {
+		var ret ServerErrorCode
+		return ret
+	}
+	return *o.Code
+}
+
+// GetCodeOk returns a tuple with the Code field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *ServerErrorResponse) GetCodeOk() (*ServerErrorCode, bool) {
+	if o == nil || IsNil(o.Code) {
+		return nil, false
+	}
+	return o.Code, true
+}
+
+// HasCode returns a boolean if a field has been set.
+func (o *ServerErrorResponse) HasCode() bool {
+	if o != nil && !IsNil(o.Code) {
+		return true
+	}
+
+	return false
+}
+
+// SetCode gets a reference to the given ServerErrorCode and assigns it to the Code field.
+func (o *ServerErrorResponse) SetCode(v ServerErrorCode) {
+	o.Code = &v
 }
 
 // GetError returns the Error field value if set, zero value otherwise.
@@ -81,6 +114,9 @@ func (o ServerErrorResponse) MarshalJSON() ([]byte, error) {
 
 func (o ServerErrorResponse) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
+	if !IsNil(o.Code) {
+		toSerialize["code"] = o.Code
+	}
 	if !IsNil(o.Error) {
 		toSerialize["error"] = o.Error
 	}

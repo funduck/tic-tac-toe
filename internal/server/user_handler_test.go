@@ -65,7 +65,7 @@ func TestUserHandler_Signup(t *testing.T) {
 			signupFunc: func(userID, password string) (*user.User, *auth.TokenPair, error) {
 				return nil, nil, user.ErrUserAlreadyExists
 			},
-			expectedStatus: http.StatusBadRequest,
+			expectedStatus: http.StatusConflict,
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {

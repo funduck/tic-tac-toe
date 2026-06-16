@@ -2,9 +2,6 @@ package lib
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
-	"net/http"
 	"time"
 
 	openapi "github.com/GIT_USER_ID/GIT_REPO_ID"
@@ -20,18 +17,6 @@ func NewGameService(apiClient *openapi.APIClient) *GameService {
 	return &GameService{api: apiClient.GamesAPI}
 }
 
-func parseGameError(r *http.Response, err error) error {
-	if r == nil {
-		return err
-	}
-	e := &openapi.ServerErrorResponse{}
-	decoder := json.NewDecoder(r.Body)
-	if err2 := decoder.Decode(e); err2 != nil {
-		return err
-	}
-	return errors.Join(errors.New(e.GetError()), err)
-}
-
 // CreateGame creates a new game
 func (gs *GameService) CreateGame(ctx context.Context, userID string, private bool) (*Game, error) {
 	req := openapi.NewServerCreateGameRequest()
@@ -39,7 +24,7 @@ func (gs *GameService) CreateGame(ctx context.Context, userID string, private bo
 	req.SetPrivate(private)
 	g, r, err := gs.api.CreateGame(ctx).Request(*req).Execute()
 	if err != nil {
-		return nil, parseGameError(r, err)
+		return nil, parseError(r, err)
 	}
 	return WrapGame(g), nil
 }
@@ -50,7 +35,7 @@ func (gs *GameService) JoinGame(ctx context.Context, gameID, userID string) (*Ga
 	req.SetUserID(userID)
 	g, r, err := gs.api.JoinGame(ctx, gameID).Request(*req).Execute()
 	if err != nil {
-		return nil, parseGameError(r, err)
+		return nil, parseError(r, err)
 	}
 	return WrapGame(g), nil
 }
@@ -61,7 +46,7 @@ func (gs *GameService) JoinAnyGame(ctx context.Context, userID string) (*Game, e
 	req.SetUserID(userID)
 	g, r, err := gs.api.JoinAnyGame(ctx).Request(*req).Execute()
 	if err != nil {
-		return nil, parseGameError(r, err)
+		return nil, parseError(r, err)
 	}
 	return WrapGame(g), nil
 }
@@ -74,7 +59,7 @@ func (gs *GameService) MakeMove(ctx context.Context, gameID, userID string, x, y
 	req.SetY(int32(y))
 	g, r, err := gs.api.MakeMove(ctx, gameID).Request(*req).Execute()
 	if err != nil {
-		return nil, parseGameError(r, err)
+		return nil, parseError(r, err)
 	}
 	return WrapGame(g), nil
 }
@@ -85,7 +70,7 @@ func (gs *GameService) GiveUp(ctx context.Context, gameID, userID string) (*Game
 	req.SetUserID(userID)
 	g, r, err := gs.api.GiveUpGame(ctx, gameID).Request(*req).Execute()
 	if err != nil {
-		return nil, parseGameError(r, err)
+		return nil, parseError(r, err)
 	}
 	return WrapGame(g), nil
 }
@@ -94,7 +79,7 @@ func (gs *GameService) GiveUp(ctx context.Context, gameID, userID string) (*Game
 func (gs *GameService) GetGame(ctx context.Context, gameID string) (*Game, error) {
 	g, r, err := gs.api.GetGame(ctx, gameID).Execute()
 	if err != nil {
-		return nil, parseGameError(r, err)
+		return nil, parseError(r, err)
 	}
 	return WrapGame(g), nil
 }

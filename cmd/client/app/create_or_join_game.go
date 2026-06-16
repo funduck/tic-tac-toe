@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -19,6 +20,11 @@ func CreateOrJoinGame(ctx context.Context, gameSvc *lib.GameService, displaySvc 
 			lib.GameState = g
 			displaySvc.PrintInfo(fmt.Sprintf("Joined game: %s with %s", g.GetID(), g.GetOpponentID()))
 			return nil
+		}
+		// Only fall through to create if no game was available; surface real errors.
+		var apiErr *lib.APIError
+		if !errors.As(err, &apiErr) || !apiErr.HasCode(openapi.CodeGameNotFound) {
+			return fmt.Errorf("failed to join any game: %w", err)
 		}
 
 		// Create new game

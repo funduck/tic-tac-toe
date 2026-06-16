@@ -27,8 +27,16 @@ func writeJSON(w http.ResponseWriter, status int, v any) {
 	json.NewEncoder(w).Encode(v) //nolint:errcheck
 }
 
+// writeDomainError writes a JSON error response with status and code both resolved from the registry.
+func writeDomainError(w http.ResponseWriter, err error) {
+	status, code := lookupError(err)
+	writeJSON(w, status, ErrorResponse{Error: err.Error(), Code: code})
+}
+
+// writeError writes a JSON error response with a caller-supplied status; code is still looked up and attached.
 func writeError(w http.ResponseWriter, status int, err error) {
-	writeJSON(w, status, ErrorResponse{Error: err.Error()})
+	_, code := lookupError(err)
+	writeJSON(w, status, ErrorResponse{Error: err.Error(), Code: code})
 }
 
 func getBodyBytes(r *http.Request) ([]byte, error) {
