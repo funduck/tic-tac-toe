@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"log/slog"
@@ -16,13 +17,13 @@ import (
 func TestUserRouter(t *testing.T) {
 	// Create a simple mock service for routing tests
 	mockSvc := &mockUserService{
-		signupFunc: func(id, password string) (*user.User, *auth.TokenPair, error) {
+		signupFunc: func(ctx context.Context, id, password string) (*user.User, *auth.TokenPair, error) {
 			return &user.User{ID: id}, &auth.TokenPair{AccessToken: "access", RefreshToken: "refresh"}, nil
 		},
-		loginFunc: func(id, password string) (*user.User, *auth.TokenPair, error) {
+		loginFunc: func(ctx context.Context, id, password string) (*user.User, *auth.TokenPair, error) {
 			return &user.User{ID: id}, &auth.TokenPair{AccessToken: "access", RefreshToken: "refresh"}, nil
 		},
-		refreshTokenFunc: func(id, refreshToken string) (*user.User, *auth.TokenPair, error) {
+		refreshTokenFunc: func(ctx context.Context, id, refreshToken string) (*user.User, *auth.TokenPair, error) {
 			return &user.User{ID: id}, &auth.TokenPair{AccessToken: "new-access", RefreshToken: "new-refresh"}, nil
 		},
 	}

@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"log/slog"
@@ -17,25 +18,25 @@ import (
 func TestGameRouter(t *testing.T) {
 	// Create a simple mock service for routing tests
 	mockSvc := &mockGameService{
-		createGameFunc: func() (*game.Game, error) {
+		createGameFunc: func(ctx context.Context) (*game.Game, error) {
 			return game.NewGame("test-id"), nil
 		},
-		joinGameFunc: func(gameID, userID string) (*game.Game, error) {
+		joinGameFunc: func(ctx context.Context, gameID, userID string) (*game.Game, error) {
 			g := game.NewGame(gameID)
 			g.UserID1 = userID
 			return g, nil
 		},
-		makeMoveFunc: func(gameID, userID string, x, y int) (*game.Game, error) {
+		makeMoveFunc: func(ctx context.Context, gameID, userID string, x, y int) (*game.Game, error) {
 			g := game.NewGameInProgress(gameID, userID, "user-2")
 			g.Board[x][y] = 1
 			return g, nil
 		},
-		giveUpFunc: func(gameID, userID string) (*game.Game, error) {
+		giveUpFunc: func(ctx context.Context, gameID, userID string) (*game.Game, error) {
 			g := game.NewGameInProgress(gameID, userID, "user-2")
 			g.Status = game.StatusFinished
 			return g, nil
 		},
-		getGameFunc: func(gameID string) (*game.Game, error) {
+		getGameFunc: func(ctx context.Context, gameID string) (*game.Game, error) {
 			return game.NewGameInProgress(gameID, "user-1", "user-2"), nil
 		},
 	}
@@ -190,7 +191,7 @@ func TestGameRouter(t *testing.T) {
 // TestGameRouterWithMiddleware verifies that custom middlewares can be injected
 func TestGameRouterWithMiddleware(t *testing.T) {
 	mockSvc := &mockGameService{
-		createGameFunc: func() (*game.Game, error) {
+		createGameFunc: func(ctx context.Context) (*game.Game, error) {
 			return game.NewGame("test-id"), nil
 		},
 	}

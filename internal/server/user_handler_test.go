@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"log/slog"
 	"net/http"
@@ -11,28 +12,28 @@ import (
 )
 
 type mockUserService struct {
-	signupFunc       func(userID, password string) (*user.User, *auth.TokenPair, error)
-	loginFunc        func(userID, password string) (*user.User, *auth.TokenPair, error)
-	refreshTokenFunc func(userID, refreshToken string) (*user.User, *auth.TokenPair, error)
+	signupFunc       func(ctx context.Context, userID, password string) (*user.User, *auth.TokenPair, error)
+	loginFunc        func(ctx context.Context, userID, password string) (*user.User, *auth.TokenPair, error)
+	refreshTokenFunc func(ctx context.Context, userID, refreshToken string) (*user.User, *auth.TokenPair, error)
 }
 
-func (m *mockUserService) Signup(userID, password string) (*user.User, *auth.TokenPair, error) {
-	return m.signupFunc(userID, password)
+func (m *mockUserService) Signup(ctx context.Context, userID, password string) (*user.User, *auth.TokenPair, error) {
+	return m.signupFunc(ctx, userID, password)
 }
 
-func (m *mockUserService) Login(userID, password string) (*user.User, *auth.TokenPair, error) {
-	return m.loginFunc(userID, password)
+func (m *mockUserService) Login(ctx context.Context, userID, password string) (*user.User, *auth.TokenPair, error) {
+	return m.loginFunc(ctx, userID, password)
 }
 
-func (m *mockUserService) RefreshToken(userID, refreshToken string) (*user.User, *auth.TokenPair, error) {
-	return m.refreshTokenFunc(userID, refreshToken)
+func (m *mockUserService) RefreshToken(ctx context.Context, userID, refreshToken string) (*user.User, *auth.TokenPair, error) {
+	return m.refreshTokenFunc(ctx, userID, refreshToken)
 }
 
 func TestUserHandler_Signup(t *testing.T) {
 	for _, tt := range []struct {
 		name           string
 		requestBody    UserSignupRequest
-		signupFunc     func(userID, password string) (*user.User, *auth.TokenPair, error)
+		signupFunc     func(ctx context.Context, userID, password string) (*user.User, *auth.TokenPair, error)
 		expectedStatus int
 		checkResponse  func(t *testing.T, body []byte)
 	}{
@@ -42,7 +43,7 @@ func TestUserHandler_Signup(t *testing.T) {
 				UserID:   "testuser",
 				Password: "testpass",
 			},
-			signupFunc: func(userID, password string) (*user.User, *auth.TokenPair, error) {
+			signupFunc: func(ctx context.Context, userID, password string) (*user.User, *auth.TokenPair, error) {
 				return &user.User{ID: userID}, &auth.TokenPair{AccessToken: "access", RefreshToken: "refresh"}, nil
 			},
 			expectedStatus: http.StatusOK,
@@ -62,7 +63,7 @@ func TestUserHandler_Signup(t *testing.T) {
 				UserID:   "testuser",
 				Password: "testpass",
 			},
-			signupFunc: func(userID, password string) (*user.User, *auth.TokenPair, error) {
+			signupFunc: func(ctx context.Context, userID, password string) (*user.User, *auth.TokenPair, error) {
 				return nil, nil, user.ErrUserAlreadyExists
 			},
 			expectedStatus: http.StatusConflict,
@@ -88,7 +89,7 @@ func TestUserHandler_Login(t *testing.T) {
 	for _, tt := range []struct {
 		name           string
 		requestBody    UserLoginRequest
-		loginFunc      func(userID, password string) (*user.User, *auth.TokenPair, error)
+		loginFunc      func(ctx context.Context, userID, password string) (*user.User, *auth.TokenPair, error)
 		expectedStatus int
 		checkResponse  func(t *testing.T, body []byte)
 	}{
@@ -98,7 +99,7 @@ func TestUserHandler_Login(t *testing.T) {
 				UserID:   "testuser",
 				Password: "testpass",
 			},
-			loginFunc: func(userID, password string) (*user.User, *auth.TokenPair, error) {
+			loginFunc: func(ctx context.Context, userID, password string) (*user.User, *auth.TokenPair, error) {
 				return &user.User{ID: userID}, &auth.TokenPair{AccessToken: "access", RefreshToken: "refresh"}, nil
 			},
 			expectedStatus: http.StatusOK,
@@ -118,7 +119,7 @@ func TestUserHandler_Login(t *testing.T) {
 				UserID:   "testuser",
 				Password: "testpass",
 			},
-			loginFunc: func(userID, password string) (*user.User, *auth.TokenPair, error) {
+			loginFunc: func(ctx context.Context, userID, password string) (*user.User, *auth.TokenPair, error) {
 				return nil, nil, user.ErrInvalidCredentials
 			},
 			expectedStatus: http.StatusUnauthorized,
@@ -144,7 +145,7 @@ func TestUserHandler_RefreshToken(t *testing.T) {
 	for _, tt := range []struct {
 		name             string
 		requestBody      UserRefreshTokenRequest
-		refreshTokenFunc func(userID, refreshToken string) (*user.User, *auth.TokenPair, error)
+		refreshTokenFunc func(ctx context.Context, userID, refreshToken string) (*user.User, *auth.TokenPair, error)
 		expectedStatus   int
 		checkResponse    func(t *testing.T, body []byte)
 	}{
@@ -154,7 +155,7 @@ func TestUserHandler_RefreshToken(t *testing.T) {
 				UserID:       "testuser",
 				RefreshToken: "valid-refresh-token",
 			},
-			refreshTokenFunc: func(userID, refreshToken string) (*user.User, *auth.TokenPair, error) {
+			refreshTokenFunc: func(ctx context.Context, userID, refreshToken string) (*user.User, *auth.TokenPair, error) {
 				return &user.User{ID: userID}, &auth.TokenPair{AccessToken: "new-access", RefreshToken: "new-refresh"}, nil
 			},
 			expectedStatus: http.StatusOK,
@@ -174,7 +175,7 @@ func TestUserHandler_RefreshToken(t *testing.T) {
 				UserID:       "testuser",
 				RefreshToken: "invalid-refresh-token",
 			},
-			refreshTokenFunc: func(userID, refreshToken string) (*user.User, *auth.TokenPair, error) {
+			refreshTokenFunc: func(ctx context.Context, userID, refreshToken string) (*user.User, *auth.TokenPair, error) {
 				return nil, nil, auth.ErrTokenInvalid
 			},
 			expectedStatus: http.StatusUnauthorized,

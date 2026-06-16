@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 
@@ -10,13 +11,13 @@ import (
 )
 
 type GameService interface {
-	CreateGame() (*game.Game, error)
-	CreatePrivateGame() (*game.Game, error)
-	JoinGame(gameID, userID string) (*game.Game, error)
-	JoinAnyGame(userID string) (*game.Game, error)
-	MakeMove(gameID, userID string, x, y int) (*game.Game, error)
-	GiveUp(gameID, userID string) (*game.Game, error)
-	GetGame(gameID string) (*game.Game, error)
+	CreateGame(ctx context.Context) (*game.Game, error)
+	CreatePrivateGame(ctx context.Context) (*game.Game, error)
+	JoinGame(ctx context.Context, gameID, userID string) (*game.Game, error)
+	JoinAnyGame(ctx context.Context, userID string) (*game.Game, error)
+	MakeMove(ctx context.Context, gameID, userID string, x, y int) (*game.Game, error)
+	GiveUp(ctx context.Context, gameID, userID string) (*game.Game, error)
+	GetGame(ctx context.Context, gameID string) (*game.Game, error)
 }
 
 type GameHandler struct {
@@ -42,6 +43,7 @@ func NewGameHandler(svc GameService, logger *slog.Logger) *GameHandler {
 //	@Failure	500		{object}	ErrorResponse
 //	@Router		/api/games [post]
 func (h *GameHandler) CreateGame(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	var req CreateGameRequest
 	if err := parseRequestBody(r, &req, h.logger, w); err != nil {
 		return // parseRequestBody already wrote the error response
@@ -51,9 +53,9 @@ func (h *GameHandler) CreateGame(w http.ResponseWriter, r *http.Request) {
 	var err error
 
 	if req.Private {
-		g, err = h.svc.CreatePrivateGame()
+		g, err = h.svc.CreatePrivateGame(ctx)
 	} else {
-		g, err = h.svc.CreateGame()
+		g, err = h.svc.CreateGame(ctx)
 	}
 
 	if err != nil {
@@ -63,7 +65,7 @@ func (h *GameHandler) CreateGame(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if req.UserID != "" {
-		g2, err := h.svc.JoinGame(g.ID, req.UserID)
+		g2, err := h.svc.JoinGame(ctx, g.ID, req.UserID)
 		if err != nil {
 			h.logger.Warn("join game failed", "gameID", g.ID, "userID", req.UserID, "error", err)
 			writeDomainError(w, err)
@@ -90,6 +92,7 @@ func (h *GameHandler) CreateGame(w http.ResponseWriter, r *http.Request) {
 //	@Failure	409		{object}	ErrorResponse
 //	@Router		/api/games/{gameID}/join [post]
 func (h *GameHandler) JoinGame(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	gameID := chi.URLParam(r, "gameID")
 	var req JoinGameRequest
 	if err := parseRequestBody(r, &req, h.logger, w); err != nil {
@@ -98,7 +101,7 @@ func (h *GameHandler) JoinGame(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Debug("request", "method", r.Method, "path", r.URL.Path, "gameID", gameID, "userID", req.UserID)
 
-	g, err := h.svc.JoinGame(gameID, req.UserID)
+	g, err := h.svc.JoinGame(ctx, gameID, req.UserID)
 	if err != nil {
 		h.logger.Warn("join game failed", "gameID", gameID, "userID", req.UserID, "error", err)
 		writeDomainError(w, err)
@@ -122,6 +125,7 @@ func (h *GameHandler) JoinGame(w http.ResponseWriter, r *http.Request) {
 //	@Failure	409		{object}	ErrorResponse
 //	@Router		/api/games/join [post]
 func (h *GameHandler) JoinAnyGame(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	var req JoinAnyGameRequest
 	if err := parseRequestBody(r, &req, h.logger, w); err != nil {
 		return // parseRequestBody already wrote the error response
@@ -129,7 +133,7 @@ func (h *GameHandler) JoinAnyGame(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Debug("request", "method", r.Method, "path", r.URL.Path, "userID", req.UserID)
 
-	g, err := h.svc.JoinAnyGame(req.UserID)
+	g, err := h.svc.JoinAnyGame(ctx, req.UserID)
 	if err != nil {
 		h.logger.Warn("join any game failed", "userID", req.UserID, "error", err)
 		writeDomainError(w, err)
@@ -154,6 +158,7 @@ func (h *GameHandler) JoinAnyGame(w http.ResponseWriter, r *http.Request) {
 //	@Failure	409		{object}	ErrorResponse
 //	@Router		/api/games/{gameID}/move [post]
 func (h *GameHandler) MakeMove(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	gameID := chi.URLParam(r, "gameID")
 	var req MoveRequest
 	if err := parseRequestBody(r, &req, h.logger, w); err != nil {
@@ -162,7 +167,7 @@ func (h *GameHandler) MakeMove(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Debug("request", "method", r.Method, "path", r.URL.Path, "gameID", gameID, "userID", req.UserID, "x", req.X, "y", req.Y)
 
-	g, err := h.svc.MakeMove(gameID, req.UserID, req.X, req.Y)
+	g, err := h.svc.MakeMove(ctx, gameID, req.UserID, req.X, req.Y)
 	if err != nil {
 		h.logger.Warn("make move failed", "gameID", gameID, "userID", req.UserID, "x", req.X, "y", req.Y, "error", err)
 		writeDomainError(w, err)
@@ -187,6 +192,7 @@ func (h *GameHandler) MakeMove(w http.ResponseWriter, r *http.Request) {
 //	@Failure	409		{object}	ErrorResponse
 //	@Router		/api/games/{gameID}/giveup [post]
 func (h *GameHandler) GiveUp(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	gameID := chi.URLParam(r, "gameID")
 	var req GiveUpRequest
 	if err := parseRequestBody(r, &req, h.logger, w); err != nil {
@@ -195,7 +201,7 @@ func (h *GameHandler) GiveUp(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Debug("request", "method", r.Method, "path", r.URL.Path, "gameID", gameID, "userID", req.UserID)
 
-	g, err := h.svc.GiveUp(gameID, req.UserID)
+	g, err := h.svc.GiveUp(ctx, gameID, req.UserID)
 	if err != nil {
 		h.logger.Warn("give up failed", "gameID", gameID, "userID", req.UserID, "error", err)
 		writeDomainError(w, err)
@@ -216,9 +222,10 @@ func (h *GameHandler) GiveUp(w http.ResponseWriter, r *http.Request) {
 //	@Failure	404		{object}	ErrorResponse
 //	@Router		/api/games/{gameID} [get]
 func (h *GameHandler) GetGame(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	gameID := chi.URLParam(r, "gameID")
 
-	g, err := h.svc.GetGame(gameID)
+	g, err := h.svc.GetGame(ctx, gameID)
 	if err != nil {
 		h.logger.Warn("get game failed", "gameID", gameID, "error", err)
 		writeDomainError(w, err)
@@ -227,4 +234,3 @@ func (h *GameHandler) GetGame(w http.ResponseWriter, r *http.Request) {
 
 	writeJSON(w, http.StatusOK, g)
 }
-

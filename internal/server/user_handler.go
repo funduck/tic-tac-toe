@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 
@@ -9,9 +10,9 @@ import (
 )
 
 type UserService interface {
-	Signup(userID, password string) (*user.User, *auth.TokenPair, error)
-	Login(userID, password string) (*user.User, *auth.TokenPair, error)
-	RefreshToken(userID, refreshToken string) (*user.User, *auth.TokenPair, error)
+	Signup(ctx context.Context, userID, password string) (*user.User, *auth.TokenPair, error)
+	Login(ctx context.Context, userID, password string) (*user.User, *auth.TokenPair, error)
+	RefreshToken(ctx context.Context, userID, refreshToken string) (*user.User, *auth.TokenPair, error)
 }
 
 type UserHandler struct {
@@ -40,12 +41,13 @@ func NewUserHandler(userService UserService, logger *slog.Logger) *UserHandler {
 //	@Failure	500		{object}	ErrorResponse
 //	@Router		/api/users/signup [post]
 func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	var req UserSignupRequest
 	if err := parseRequestBody(r, &req, h.logger, w); err != nil {
 		return
 	}
 
-	_, tokens, err := h.svc.Signup(req.UserID, req.Password)
+	_, tokens, err := h.svc.Signup(ctx, req.UserID, req.Password)
 	if err != nil {
 		h.logger.Warn("signup failed", "user_id", req.UserID, "error", err)
 		writeDomainError(w, err)
@@ -69,12 +71,13 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 //	@Failure	500		{object}	ErrorResponse
 //	@Router		/api/users/login [post]
 func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	var req UserLoginRequest
 	if err := parseRequestBody(r, &req, h.logger, w); err != nil {
 		return
 	}
 
-	_, tokens, err := h.svc.Login(req.UserID, req.Password)
+	_, tokens, err := h.svc.Login(ctx, req.UserID, req.Password)
 	if err != nil {
 		h.logger.Warn("login failed", "user_id", req.UserID, "error", err)
 		writeDomainError(w, err)
@@ -98,12 +101,13 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 //	@Failure	500		{object}	ErrorResponse
 //	@Router		/api/users/refresh-token [post]
 func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	var req UserRefreshTokenRequest
 	if err := parseRequestBody(r, &req, h.logger, w); err != nil {
 		return
 	}
 
-	_, tokens, err := h.svc.RefreshToken(req.UserID, req.RefreshToken)
+	_, tokens, err := h.svc.RefreshToken(ctx, req.UserID, req.RefreshToken)
 	if err != nil {
 		h.logger.Warn("refresh token failed", "user_id", req.UserID, "error", err)
 		writeDomainError(w, err)

@@ -1,6 +1,7 @@
 package game
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"testing"
@@ -21,7 +22,7 @@ func newMockRepo() *mockRepo {
 	return &mockRepo{games: make(map[string]*Game)}
 }
 
-func (m *mockRepo) Create(game *Game) error {
+func (m *mockRepo) Create(ctx context.Context, game *Game) error {
 	if m.createErr != nil {
 		return m.createErr
 	}
@@ -30,7 +31,7 @@ func (m *mockRepo) Create(game *Game) error {
 	return nil
 }
 
-func (m *mockRepo) FindByID(gameID string) (*Game, error) {
+func (m *mockRepo) FindByID(ctx context.Context, gameID string) (*Game, error) {
 	if m.getErr != nil {
 		return nil, m.getErr
 	}
@@ -41,7 +42,7 @@ func (m *mockRepo) FindByID(gameID string) (*Game, error) {
 	return g, nil
 }
 
-func (m *mockRepo) Update(game *Game) error {
+func (m *mockRepo) Update(ctx context.Context, game *Game) error {
 	if m.updateErr != nil {
 		return m.updateErr
 	}
@@ -52,7 +53,7 @@ func (m *mockRepo) Update(game *Game) error {
 	return nil
 }
 
-func (m *mockRepo) FindLatestForUser(userID string) (*Game, error) {
+func (m *mockRepo) FindLatestForUser(ctx context.Context, userID string) (*Game, error) {
 	if m.getErr != nil {
 		return nil, m.getErr
 	}
@@ -65,7 +66,7 @@ func (m *mockRepo) FindLatestForUser(userID string) (*Game, error) {
 	return nil, ErrGameNotFound
 }
 
-func (m *mockRepo) FindGameToJoin(userID string) (*Game, error) {
+func (m *mockRepo) FindGameToJoin(ctx context.Context, userID string) (*Game, error) {
 	if m.getErr != nil {
 		return nil, m.getErr
 	}
@@ -81,10 +82,11 @@ func (m *mockRepo) FindGameToJoin(userID string) (*Game, error) {
 // --- CreateGame ---
 
 func TestGameService_CreateGame(t *testing.T) {
+	ctx := context.Background()
 	repo := newMockRepo()
 	svc := NewGameService(repo, slog.Default())
 
-	g, err := svc.CreateGame()
+	g, err := svc.CreateGame(ctx)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -95,7 +97,7 @@ func TestGameService_CreateGame(t *testing.T) {
 		t.Errorf("expected status %s, got %s", StatusWaiting, g.Status)
 	}
 	// verify persisted
-	stored, err := repo.FindByID(g.ID)
+	stored, err := repo.FindByID(ctx, g.ID)
 	if err != nil {
 		t.Fatalf("game not found in repo: %v", err)
 	}
@@ -105,21 +107,23 @@ func TestGameService_CreateGame(t *testing.T) {
 }
 
 func TestGameService_CreateGame_Errors(t *testing.T) {
+	ctx := context.Background()
 	repo := newMockRepo()
 	repo.createErr = errors.New("storage failure")
 	svc := NewGameService(repo, slog.Default())
 
-	_, err := svc.CreateGame()
+	_, err := svc.CreateGame(ctx)
 	if err == nil {
 		t.Error("expected error, got nil")
 	}
 }
 
 func TestGameService_CreatePrivateGame(t *testing.T) {
+	ctx := context.Background()
 	repo := newMockRepo()
 	svc := NewGameService(repo, slog.Default())
 
-	g, err := svc.CreatePrivateGame()
+	g, err := svc.CreatePrivateGame(ctx)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -137,11 +141,12 @@ func TestGameService_CreatePrivateGame(t *testing.T) {
 // --- JoinGame ---
 
 func TestGameService_JoinGame(t *testing.T) {
+	ctx := context.Background()
 	repo := newMockRepo()
 	svc := NewGameService(repo, slog.Default())
-	g, _ := svc.CreateGame()
+	g, _ := svc.CreateGame(ctx)
 
-	updated, err := svc.JoinGame(g.ID, "alice")
+	updated, err := svc.JoinGame(ctx, g.ID, "alice")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -152,7 +157,7 @@ func TestGameService_JoinGame(t *testing.T) {
 		t.Errorf("expected status still waiting, got %s", updated.Status)
 	}
 
-	updated, err = svc.JoinGame(g.ID, "bob")
+	updated, err = svc.JoinGame(ctx, g.ID, "bob")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -165,6 +170,7 @@ func TestGameService_JoinGame(t *testing.T) {
 }
 
 func TestGameService_JoinGame_Errors(t *testing.T) {
+	ctx := context.Background()
 	var mockRepo *mockRepo
 
 	for _, tc := range []struct {
@@ -182,9 +188,9 @@ func TestGameService_JoinGame_Errors(t *testing.T) {
 		{
 			name: "game not waiting",
 			setup: func(svc *GameService) (string, string) {
-				g, _ := svc.CreateGame()
-				svc.JoinGame(g.ID, "alice")
-				svc.JoinGame(g.ID, "bob")
+				g, _ := svc.CreateGame(ctx)
+				svc.JoinGame(ctx, g.ID, "alice")
+				svc.JoinGame(ctx, g.ID, "bob")
 				return g.ID, "charlie"
 			},
 			wantErr: func() error { return ErrGameNotWaiting },
@@ -192,8 +198,8 @@ func TestGameService_JoinGame_Errors(t *testing.T) {
 		{
 			name: "repo update fails",
 			setup: func(svc *GameService) (string, string) {
-				g, _ := svc.CreateGame()
-				svc.JoinGame(g.ID, "alice")
+				g, _ := svc.CreateGame(ctx)
+				svc.JoinGame(ctx, g.ID, "alice")
 				mockRepo.updateErr = errors.New("update failure")
 				return g.ID, "bob"
 			},
@@ -204,7 +210,7 @@ func TestGameService_JoinGame_Errors(t *testing.T) {
 			mockRepo = newMockRepo()
 			svc := NewGameService(mockRepo, slog.Default())
 			gameID, userID := tc.setup(svc)
-			_, err := svc.JoinGame(gameID, userID)
+			_, err := svc.JoinGame(ctx, gameID, userID)
 			if !errors.Is(err, tc.wantErr()) {
 				t.Errorf("expected %v, got %v", tc.wantErr(), err)
 			}
@@ -215,23 +221,24 @@ func TestGameService_JoinGame_Errors(t *testing.T) {
 // --- GetLatestGameForUser ---
 
 func TestGameService_GetLatestGameForUser(t *testing.T) {
+	ctx := context.Background()
 	repo := newMockRepo()
 	svc := NewGameService(repo, slog.Default())
 
 	// no games for user
-	_, err := svc.GetLatestGameForUser("alice")
+	_, err := svc.GetLatestGameForUser(ctx, "alice")
 	if !errors.Is(err, ErrGameNotFound) {
 		t.Errorf("expected ErrGameNotFound, got %v", err)
 	}
 
 	// create some games
-	g1, _ := svc.CreateGame()
-	svc.JoinGame(g1.ID, "alice")
-	g2, _ := svc.CreateGame()
-	svc.JoinGame(g2.ID, "alice")
-	svc.JoinGame(g2.ID, "bob")
+	g1, _ := svc.CreateGame(ctx)
+	svc.JoinGame(ctx, g1.ID, "alice")
+	g2, _ := svc.CreateGame(ctx)
+	svc.JoinGame(ctx, g2.ID, "alice")
+	svc.JoinGame(ctx, g2.ID, "bob")
 
-	latest, err := svc.GetLatestGameForUser("alice")
+	latest, err := svc.GetLatestGameForUser(ctx, "alice")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -241,11 +248,12 @@ func TestGameService_GetLatestGameForUser(t *testing.T) {
 }
 
 func TestGameService_GetLatestGameForUser_Errors(t *testing.T) {
+	ctx := context.Background()
 	repo := newMockRepo()
 	repo.getErr = errors.New("storage failure")
 	svc := NewGameService(repo, slog.Default())
 
-	_, err := svc.GetLatestGameForUser("alice")
+	_, err := svc.GetLatestGameForUser(ctx, "alice")
 	if !errors.Is(err, repo.getErr) {
 		t.Errorf("expected %v, got %v", repo.getErr, err)
 	}
@@ -254,14 +262,15 @@ func TestGameService_GetLatestGameForUser_Errors(t *testing.T) {
 // --- helper to create a game in progress between two users ---
 
 func createGameInProgressHelper(svc *GameService, userID1, userID2 string) (*Game, error) {
-	g, err := svc.CreateGame()
+	ctx := context.Background()
+	g, err := svc.CreateGame(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if _, err := svc.JoinGame(g.ID, userID1); err != nil {
+	if _, err := svc.JoinGame(ctx, g.ID, userID1); err != nil {
 		return nil, err
 	}
-	if _, err := svc.JoinGame(g.ID, userID2); err != nil {
+	if _, err := svc.JoinGame(ctx, g.ID, userID2); err != nil {
 		return nil, err
 	}
 	return g, nil
@@ -270,11 +279,12 @@ func createGameInProgressHelper(svc *GameService, userID1, userID2 string) (*Gam
 // --- GetGame ---
 
 func TestGameService_GetGame(t *testing.T) {
+	ctx := context.Background()
 	repo := newMockRepo()
 	svc := NewGameService(repo, slog.Default())
 	g, _ := createGameInProgressHelper(svc, "alice", "bob")
 
-	got, err := svc.GetGame(g.ID)
+	got, err := svc.GetGame(ctx, g.ID)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -284,8 +294,9 @@ func TestGameService_GetGame(t *testing.T) {
 }
 
 func TestGameService_GetGame_NotFound(t *testing.T) {
+	ctx := context.Background()
 	svc := NewGameService(newMockRepo(), slog.Default())
-	_, err := svc.GetGame("nonexistent")
+	_, err := svc.GetGame(ctx, "nonexistent")
 	if !errors.Is(err, ErrGameNotFound) {
 		t.Errorf("expected ErrGameNotFound, got %v", err)
 	}
@@ -294,11 +305,12 @@ func TestGameService_GetGame_NotFound(t *testing.T) {
 // --- MakeMove ---
 
 func TestGameService_MakeMove(t *testing.T) {
+	ctx := context.Background()
 	repo := newMockRepo()
 	svc := NewGameService(repo, slog.Default())
 	g, _ := createGameInProgressHelper(svc, "alice", "bob")
 
-	updated, err := svc.MakeMove(g.ID, "alice", 0, 0)
+	updated, err := svc.MakeMove(ctx, g.ID, "alice", 0, 0)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -311,6 +323,7 @@ func TestGameService_MakeMove(t *testing.T) {
 }
 
 func TestGameService_MakeMove_Errors(t *testing.T) {
+	ctx := context.Background()
 	var mockRepo *mockRepo
 
 	for _, tc := range []struct {
@@ -347,7 +360,7 @@ func TestGameService_MakeMove_Errors(t *testing.T) {
 			mockRepo = newMockRepo()
 			svc := NewGameService(mockRepo, slog.Default())
 			gameID, userID, x, y := tc.setup(svc)
-			_, err := svc.MakeMove(gameID, userID, x, y)
+			_, err := svc.MakeMove(ctx, gameID, userID, x, y)
 			if !errors.Is(err, tc.wantErr()) {
 				t.Errorf("expected %v, got %v", tc.wantErr(), err)
 			}
@@ -358,11 +371,12 @@ func TestGameService_MakeMove_Errors(t *testing.T) {
 // --- GiveUp ---
 
 func TestGameService_GiveUp(t *testing.T) {
+	ctx := context.Background()
 	repo := newMockRepo()
 	svc := NewGameService(repo, slog.Default())
 	g, _ := createGameInProgressHelper(svc, "alice", "bob")
 
-	updated, err := svc.GiveUp(g.ID, "alice")
+	updated, err := svc.GiveUp(ctx, g.ID, "alice")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -375,6 +389,7 @@ func TestGameService_GiveUp(t *testing.T) {
 }
 
 func TestGameService_GiveUp_Errors(t *testing.T) {
+	ctx := context.Background()
 	var mockRepo *mockRepo
 
 	for _, tc := range []struct {
@@ -411,7 +426,7 @@ func TestGameService_GiveUp_Errors(t *testing.T) {
 			mockRepo = newMockRepo()
 			svc := NewGameService(mockRepo, slog.Default())
 			gameID, userID := tc.setup(svc)
-			_, err := svc.GiveUp(gameID, userID)
+			_, err := svc.GiveUp(ctx, gameID, userID)
 			if !errors.Is(err, tc.wantErr()) {
 				t.Errorf("expected %v, got %v", tc.wantErr(), err)
 			}

@@ -1,6 +1,8 @@
 package user
 
+import "context"
+
 type UserRepo interface {
-	FindByID(id string) (*User, error)
-	Save(user *User) error
+	FindByID(ctx context.Context, id string) (*User, error)
+	Save(ctx context.Context, user *User) error
 }

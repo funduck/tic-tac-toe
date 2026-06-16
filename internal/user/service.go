@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 
@@ -35,14 +36,12 @@ func NewUserService(userRepo UserRepo, tokenService TokenService, logger *slog.L
 }
 
 // Signup creates a new user and returns a token pair.
-func (s *UserService) Signup(userID, password string) (*User, *auth.TokenPair, error) {
-	// Check password length
+func (s *UserService) Signup(ctx context.Context, userID, password string) (*User, *auth.TokenPair, error) {
 	if len(password) < 6 {
 		return nil, nil, ErrPasswordIsTooShort
 	}
 
-	// Check if user already exists
-	existingUser, err := s.userRepo.FindByID(userID)
+	existingUser, err := s.userRepo.FindByID(ctx, userID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -50,18 +49,15 @@ func (s *UserService) Signup(userID, password string) (*User, *auth.TokenPair, e
 		return nil, nil, ErrUserAlreadyExists
 	}
 
-	// Generate password hash
 	passwordHash, err := auth.HashPassword(password)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	// Generate token pair
 	tokenPair, err := s.tokenService.GenerateToken(userID)
 	if err != nil {
 		return nil, nil, err
 	}
-	// Hash the refresh token before storing it
 	refreshTokenHash := auth.HashRefreshToken(tokenPair.RefreshToken)
 
 	user := &User{
@@ -69,7 +65,7 @@ func (s *UserService) Signup(userID, password string) (*User, *auth.TokenPair, e
 		Password:     passwordHash,
 		RefreshToken: refreshTokenHash,
 	}
-	if err := s.userRepo.Save(user); err != nil {
+	if err := s.userRepo.Save(ctx, user); err != nil {
 		return nil, nil, err
 	}
 
@@ -79,9 +75,8 @@ func (s *UserService) Signup(userID, password string) (*User, *auth.TokenPair, e
 }
 
 // Login authenticates a user and returns a token pair.
-func (s *UserService) Login(userID, password string) (*User, *auth.TokenPair, error) {
-	// Find user by ID
-	user, err := s.userRepo.FindByID(userID)
+func (s *UserService) Login(ctx context.Context, userID, password string) (*User, *auth.TokenPair, error) {
+	user, err := s.userRepo.FindByID(ctx, userID)
 	if err != nil {
 		return nil, nil, errors.Join(err, ErrUserNotFound)
 	}
@@ -94,17 +89,15 @@ func (s *UserService) Login(userID, password string) (*User, *auth.TokenPair, er
 		return nil, nil, ErrInvalidCredentials
 	}
 
-	// Generate token pair
 	tokenPair, err := s.tokenService.GenerateToken(userID)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	// Hash the refresh token before storing it
 	refreshTokenHash := auth.HashRefreshToken(tokenPair.RefreshToken)
 
 	user.RefreshToken = refreshTokenHash
-	if err := s.userRepo.Save(user); err != nil {
+	if err := s.userRepo.Save(ctx, user); err != nil {
 		return nil, nil, err
 	}
 
@@ -114,8 +107,7 @@ func (s *UserService) Login(userID, password string) (*User, *auth.TokenPair, er
 }
 
 // RefreshToken validates the refresh token and returns a new token pair if valid.
-func (s *UserService) RefreshToken(userID, refreshToken string) (*User, *auth.TokenPair, error) {
-	// Validate refresh token
+func (s *UserService) RefreshToken(ctx context.Context, userID, refreshToken string) (*User, *auth.TokenPair, error) {
 	subject, err := s.tokenService.ValidateRefreshToken(refreshToken)
 	if err != nil {
 		return nil, nil, err
@@ -125,8 +117,7 @@ func (s *UserService) RefreshToken(userID, refreshToken string) (*User, *auth.To
 		return nil, nil, ErrUserNotFound
 	}
 
-	// Find user by ID
-	user, err := s.userRepo.FindByID(userID)
+	user, err := s.userRepo.FindByID(ctx, userID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -134,22 +125,19 @@ func (s *UserService) RefreshToken(userID, refreshToken string) (*User, *auth.To
 		return nil, nil, ErrUserNotFound
 	}
 
-	// Validate the refresh token against the stored hash
 	if !auth.ValidateRefreshTokenHash(refreshToken, user.RefreshToken) {
 		return nil, nil, ErrRefreshTokenDeleted
 	}
 
-	// Generate new token pair
 	tokenPair, err := s.tokenService.GenerateToken(userID)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	// Hash the refresh token before storing it
 	refreshTokenHash := auth.HashRefreshToken(tokenPair.RefreshToken)
 
 	user.RefreshToken = refreshTokenHash
-	if err := s.userRepo.Save(user); err != nil {
+	if err := s.userRepo.Save(ctx, user); err != nil {
 		return nil, nil, err
 	}
 

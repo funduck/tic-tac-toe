@@ -1,6 +1,7 @@
 package game
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"os"
@@ -12,6 +13,8 @@ import (
 // without race conditions or data corruption. This test creates 3 games with
 // 6 different players (2 per game) and plays them concurrently.
 func TestConcurrentGames(t *testing.T) {
+	ctx := context.Background()
+
 	// Setup: create service with shared repository
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelError, // Reduce noise during test
@@ -44,21 +47,21 @@ func TestConcurrentGames(t *testing.T) {
 			player2 := fmt.Sprintf("player_%d_2", gameIndex)
 
 			// Create game
-			game, err := service.CreateGame()
+			game, err := service.CreateGame(ctx)
 			if err != nil {
 				errChan <- fmt.Errorf("game %d: failed to create game: %w", gameIndex, err)
 				return
 			}
 
 			// Player 1 joins
-			game, err = service.JoinGame(game.ID, player1)
+			game, err = service.JoinGame(ctx, game.ID, player1)
 			if err != nil {
 				errChan <- fmt.Errorf("game %d: player 1 failed to join: %w", gameIndex, err)
 				return
 			}
 
 			// Player 2 joins
-			game, err = service.JoinGame(game.ID, player2)
+			game, err = service.JoinGame(ctx, game.ID, player2)
 			if err != nil {
 				errChan <- fmt.Errorf("game %d: player 2 failed to join: %w", gameIndex, err)
 				return
@@ -84,7 +87,7 @@ func TestConcurrentGames(t *testing.T) {
 			}
 
 			for _, move := range moves {
-				game, err = service.MakeMove(game.ID, move.player, move.x, move.y)
+				game, err = service.MakeMove(ctx, game.ID, move.player, move.x, move.y)
 				if err != nil {
 					errChan <- fmt.Errorf("game %d: move failed at (%d,%d): %w", gameIndex, move.x, move.y, err)
 					return
@@ -148,6 +151,7 @@ func TestConcurrentGames(t *testing.T) {
 // TestConcurrentJoinAnyGame tests the matchmaking functionality under concurrent load.
 // It verifies that multiple players can simultaneously join waiting games without conflicts.
 func TestConcurrentJoinAnyGame(t *testing.T) {
+	ctx := context.Background()
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelError,
 	}))
@@ -155,24 +159,24 @@ func TestConcurrentJoinAnyGame(t *testing.T) {
 	service := NewGameService(repo, logger)
 
 	// Create 2 waiting games
-	game1, err := service.CreateGame()
+	game1, err := service.CreateGame(ctx)
 	if err != nil {
 		t.Fatalf("Failed to create game 1: %v", err)
 	}
 
-	game2, err := service.CreateGame()
+	game2, err := service.CreateGame(ctx)
 	if err != nil {
 		t.Fatalf("Failed to create game 2: %v", err)
 	}
 
 	// Player 1 joins game 1
-	_, err = service.JoinGame(game1.ID, "player1")
+	_, err = service.JoinGame(ctx, game1.ID, "player1")
 	if err != nil {
 		t.Fatalf("Player 1 failed to join game 1: %v", err)
 	}
 
 	// Player 2 joins game 2
-	_, err = service.JoinGame(game2.ID, "player2")
+	_, err = service.JoinGame(ctx, game2.ID, "player2")
 	if err != nil {
 		t.Fatalf("Player 2 failed to join game 2: %v", err)
 	}
@@ -187,7 +191,7 @@ func TestConcurrentJoinAnyGame(t *testing.T) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		game, err := service.JoinAnyGame("player3")
+		game, err := service.JoinAnyGame(ctx, "player3")
 		if err != nil {
 			errChan <- fmt.Errorf("player3 failed to join: %w", err)
 			return
@@ -199,7 +203,7 @@ func TestConcurrentJoinAnyGame(t *testing.T) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		game, err := service.JoinAnyGame("player4")
+		game, err := service.JoinAnyGame(ctx, "player4")
 		if err != nil {
 			errChan <- fmt.Errorf("player4 failed to join: %w", err)
 			return
@@ -244,6 +248,7 @@ func TestConcurrentJoinAnyGame(t *testing.T) {
 // TestRepositoryConcurrentAccess validates thread-safety of the repository layer
 // by performing many concurrent reads and writes.
 func TestRepositoryConcurrentAccess(t *testing.T) {
+	ctx := context.Background()
 	repo := NewMemoryRepo()
 
 	// Create initial game
@@ -253,7 +258,7 @@ func TestRepositoryConcurrentAccess(t *testing.T) {
 	game.Status = StatusInProgress
 	game.CurrentPlayerID = "player1"
 
-	err := repo.Create(game)
+	err := repo.Create(ctx, game)
 	if err != nil {
 		t.Fatalf("Failed to create game: %v", err)
 	}
@@ -271,7 +276,7 @@ func TestRepositoryConcurrentAccess(t *testing.T) {
 		go func(readerID int) {
 			defer wg.Done()
 			for j := 0; j < operationsPerGoroutine; j++ {
-				_, err := repo.FindByID("test-game-123")
+				_, err := repo.FindByID(ctx, "test-game-123")
 				if err != nil {
 					errChan <- fmt.Errorf("reader %d: read failed: %w", readerID, err)
 					return
@@ -286,7 +291,7 @@ func TestRepositoryConcurrentAccess(t *testing.T) {
 		go func(writerID int) {
 			defer wg.Done()
 			for j := 0; j < operationsPerGoroutine; j++ {
-				g, err := repo.FindByID("test-game-123")
+				g, err := repo.FindByID(ctx, "test-game-123")
 				if err != nil {
 					errChan <- fmt.Errorf("writer %d: read failed: %w", writerID, err)
 					return
@@ -299,7 +304,7 @@ func TestRepositoryConcurrentAccess(t *testing.T) {
 					g.CurrentPlayerID = "player1"
 				}
 
-				err = repo.Update(g)
+				err = repo.Update(ctx, g)
 				if err != nil {
 					errChan <- fmt.Errorf("writer %d: update failed: %w", writerID, err)
 					return
@@ -326,7 +331,7 @@ func TestRepositoryConcurrentAccess(t *testing.T) {
 	}
 
 	// Verify final state is consistent
-	finalGame, err := repo.FindByID("test-game-123")
+	finalGame, err := repo.FindByID(ctx, "test-game-123")
 	if err != nil {
 		t.Fatalf("Failed to read final game state: %v", err)
 	}
