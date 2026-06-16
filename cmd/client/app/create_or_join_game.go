@@ -21,6 +21,7 @@ func CreateOrJoinGame(ctx context.Context, gameSvc *lib.GameService, displaySvc 
 			displaySvc.PrintInfo(fmt.Sprintf("Joined game: %s with %s", g.GetID(), g.GetOpponentID()))
 			return nil
 		}
+
 		// Only fall through to create if no game was available; surface real errors.
 		var apiErr *lib.APIError
 		if !errors.As(err, &apiErr) || !apiErr.HasCode(openapi.CodeGameNotFound) {
