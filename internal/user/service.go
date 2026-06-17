@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 
 	"github.com/funduck/tic-tac-toe/internal/auth"
@@ -38,7 +39,7 @@ func NewUserService(userRepo UserRepo, tokenService TokenService, logger *slog.L
 // Signup creates a new user and returns a token pair.
 func (s *UserService) Signup(ctx context.Context, userID, password string) (*User, *auth.TokenPair, error) {
 	if len(password) < 6 {
-		return nil, nil, ErrPasswordIsTooShort
+		return nil, nil, fmt.Errorf("signup: %w, should contain at least 6 characters", ErrPasswordIsTooShort)
 	}
 
 	existingUser, err := s.userRepo.FindByID(ctx, userID)
