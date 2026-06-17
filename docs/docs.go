@@ -80,17 +80,6 @@ const docTemplate = `{
                 ],
                 "summary": "Join any available game",
                 "operationId": "joinAnyGame",
-                "parameters": [
-                    {
-                        "description": "Join any game request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/server.JoinAnyGameRequest"
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -567,14 +556,8 @@ const docTemplate = `{
         "server.CreateGameRequest": {
             "type": "object",
             "properties": {
-                "gameID": {
-                    "type": "string"
-                },
                 "private": {
                     "type": "boolean"
-                },
-                "userID": {
-                    "type": "string"
                 }
             }
         },
@@ -631,17 +614,6 @@ const docTemplate = `{
             "properties": {
                 "gameID": {
                     "type": "string"
-                },
-                "userID": {
-                    "type": "string"
-                }
-            }
-        },
-        "server.JoinAnyGameRequest": {
-            "type": "object",
-            "properties": {
-                "userID": {
-                    "type": "string"
                 }
             }
         },
@@ -650,9 +622,6 @@ const docTemplate = `{
             "properties": {
                 "gameID": {
                     "type": "string"
-                },
-                "userID": {
-                    "type": "string"
                 }
             }
         },
@@ -660,9 +629,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "gameID": {
-                    "type": "string"
-                },
-                "userID": {
                     "type": "string"
                 },
                 "x": {

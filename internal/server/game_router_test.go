@@ -42,8 +42,15 @@ func TestGameRouter(t *testing.T) {
 	}
 
 	handler := NewGameHandler(mockSvc, slog.New(slog.NewTextHandler(io.Discard, nil)))
-	// Create router without any additional middlewares (clean test environment)
+	// Inject a fixed test userID simulating what AuthMiddleware does in production
+	testUserMiddleware := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := context.WithValue(r.Context(), userIDContextKey, "test-user")
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
 	router := chi.NewRouter()
+	router.Use(testUserMiddleware)
 	router.Route("/api", func(r chi.Router) {
 		GameRouter(r, handler)
 	})
@@ -71,12 +78,10 @@ func TestGameRouter(t *testing.T) {
 			},
 		},
 		{
-			name:   "POST /api/games/{gameID}/join - join game",
-			method: http.MethodPost,
-			path:   "/api/games/game-123/join",
-			body: JoinGameRequest{
-				UserID: "user-456",
-			},
+			name:           "POST /api/games/{gameID}/join - join game",
+			method:         http.MethodPost,
+			path:           "/api/games/game-123/join",
+			body:           nil,
 			expectedStatus: http.StatusOK,
 			checkResponse: func(t *testing.T, resp *http.Response) {
 				var g game.Game
@@ -84,8 +89,8 @@ func TestGameRouter(t *testing.T) {
 				if g.ID != "game-123" {
 					t.Errorf("expected game ID 'game-123' (from URL), got '%s'", g.ID)
 				}
-				if g.UserID1 != "user-456" {
-					t.Errorf("expected UserID1 'user-456', got '%s'", g.UserID1)
+				if g.UserID1 != "test-user" {
+					t.Errorf("expected UserID1 'test-user' (from context), got '%s'", g.UserID1)
 				}
 			},
 		},
@@ -94,9 +99,8 @@ func TestGameRouter(t *testing.T) {
 			method: http.MethodPost,
 			path:   "/api/games/game-456/move",
 			body: MoveRequest{
-				UserID: "user-1",
-				X:      0,
-				Y:      0,
+				X: 0,
+				Y: 0,
 			},
 			expectedStatus: http.StatusOK,
 			checkResponse: func(t *testing.T, resp *http.Response) {
@@ -114,9 +118,7 @@ func TestGameRouter(t *testing.T) {
 			name:   "POST /api/games/{gameID}/giveup - give up",
 			method: http.MethodPost,
 			path:   "/api/games/game-789/giveup",
-			body: GiveUpRequest{
-				UserID: "user-1",
-			},
+			body:   nil,
 			expectedStatus: http.StatusOK,
 			checkResponse: func(t *testing.T, resp *http.Response) {
 				var g game.Game

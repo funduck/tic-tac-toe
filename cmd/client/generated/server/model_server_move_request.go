@@ -20,7 +20,6 @@ var _ MappedNullable = &ServerMoveRequest{}
 // ServerMoveRequest struct for ServerMoveRequest
 type ServerMoveRequest struct {
 	GameID *string `json:"gameID,omitempty"`
-	UserID *string `json:"userID,omitempty"`
 	X *int32 `json:"x,omitempty"`
 	Y *int32 `json:"y,omitempty"`
 }
@@ -72,38 +71,6 @@ func (o *ServerMoveRequest) HasGameID() bool {
 // SetGameID gets a reference to the given string and assigns it to the GameID field.
 func (o *ServerMoveRequest) SetGameID(v string) {
 	o.GameID = &v
-}
-
-// GetUserID returns the UserID field value if set, zero value otherwise.
-func (o *ServerMoveRequest) GetUserID() string {
-	if o == nil || IsNil(o.UserID) {
-		var ret string
-		return ret
-	}
-	return *o.UserID
-}
-
-// GetUserIDOk returns a tuple with the UserID field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *ServerMoveRequest) GetUserIDOk() (*string, bool) {
-	if o == nil || IsNil(o.UserID) {
-		return nil, false
-	}
-	return o.UserID, true
-}
-
-// HasUserID returns a boolean if a field has been set.
-func (o *ServerMoveRequest) HasUserID() bool {
-	if o != nil && !IsNil(o.UserID) {
-		return true
-	}
-
-	return false
-}
-
-// SetUserID gets a reference to the given string and assigns it to the UserID field.
-func (o *ServerMoveRequest) SetUserID(v string) {
-	o.UserID = &v
 }
 
 // GetX returns the X field value if set, zero value otherwise.
@@ -182,9 +149,6 @@ func (o ServerMoveRequest) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.GameID) {
 		toSerialize["gameID"] = o.GameID
-	}
-	if !IsNil(o.UserID) {
-		toSerialize["userID"] = o.UserID
 	}
 	if !IsNil(o.X) {
 		toSerialize["x"] = o.X

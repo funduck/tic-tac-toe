@@ -5,7 +5,6 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **GameID** | Pointer to **string** |  | [optional] 
-**UserID** | Pointer to **string** |  | [optional] 
 **X** | Pointer to **int32** |  | [optional] 
 **Y** | Pointer to **int32** |  | [optional] 
 
@@ -52,31 +51,6 @@ SetGameID sets GameID field to given value.
 `func (o *ServerMoveRequest) HasGameID() bool`
 
 HasGameID returns a boolean if a field has been set.
-
-### GetUserID
-
-`func (o *ServerMoveRequest) GetUserID() string`
-
-GetUserID returns the UserID field if non-nil, zero value otherwise.
-
-### GetUserIDOk
-
-`func (o *ServerMoveRequest) GetUserIDOk() (*string, bool)`
-
-GetUserIDOk returns a tuple with the UserID field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetUserID
-
-`func (o *ServerMoveRequest) SetUserID(v string)`
-
-SetUserID sets UserID field to given value.
-
-### HasUserID
-
-`func (o *ServerMoveRequest) HasUserID() bool`
-
-HasUserID returns a boolean if a field has been set.
 
 ### GetX
 

@@ -217,7 +217,7 @@ No authorization required
 
 ## JoinAnyGame
 
-> GameGame JoinAnyGame(ctx).Request(request).Execute()
+> GameGame JoinAnyGame(ctx).Execute()
 
 Join any available game
 
@@ -234,11 +234,10 @@ import (
 )
 
 func main() {
-	request := *openapiclient.NewServerJoinAnyGameRequest() // ServerJoinAnyGameRequest | Join any game request
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
-	resp, r, err := apiClient.GamesAPI.JoinAnyGame(context.Background()).Request(request).Execute()
+	resp, r, err := apiClient.GamesAPI.JoinAnyGame(context.Background()).Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when calling `GamesAPI.JoinAnyGame``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -250,16 +249,12 @@ func main() {
 
 ### Path Parameters
 
-
+This endpoint does not need any parameter.
 
 ### Other Parameters
 
 Other parameters are passed through a pointer to a apiJoinAnyGameRequest struct via the builder pattern
 
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **request** | [**ServerJoinAnyGameRequest**](ServerJoinAnyGameRequest.md) | Join any game request | 
 
 ### Return type
 
@@ -271,7 +266,7 @@ No authorization required
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: Not defined
 - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)

@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"log/slog"
@@ -37,6 +38,11 @@ func writeDomainError(w http.ResponseWriter, err error) {
 func writeError(w http.ResponseWriter, status int, err error) {
 	_, code := lookupError(err)
 	writeJSON(w, status, ErrorResponse{Error: err.Error(), Code: code})
+}
+
+func userIDFromContext(ctx context.Context) string {
+	v, _ := ctx.Value(userIDContextKey).(string)
+	return v
 }
 
 func getBodyBytes(r *http.Request) ([]byte, error) {

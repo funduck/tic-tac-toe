@@ -54,12 +54,8 @@ definitions:
     - StatusFinished
   server.CreateGameRequest:
     properties:
-      gameID:
-        type: string
       private:
         type: boolean
-      userID:
-        type: string
     type: object
   server.ErrorCode:
     enum:
@@ -106,26 +102,15 @@ definitions:
     properties:
       gameID:
         type: string
-      userID:
-        type: string
-    type: object
-  server.JoinAnyGameRequest:
-    properties:
-      userID:
-        type: string
     type: object
   server.JoinGameRequest:
     properties:
       gameID:
         type: string
-      userID:
-        type: string
     type: object
   server.MoveRequest:
     properties:
       gameID:
-        type: string
-      userID:
         type: string
       x:
         type: integer
@@ -339,13 +324,6 @@ paths:
       consumes:
       - application/json
       operationId: joinAnyGame
-      parameters:
-      - description: Join any game request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/server.JoinAnyGameRequest'
       produces:
       - application/json
       responses:

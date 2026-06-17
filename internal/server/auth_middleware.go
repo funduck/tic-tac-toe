@@ -1,8 +1,7 @@
 package server
 
 import (
-	"bytes"
-	"encoding/json"
+	"context"
 	"errors"
 	"net/http"
 	"regexp"
@@ -16,9 +15,9 @@ type TokenService interface {
 
 var reAuthorization = regexp.MustCompile(`^Bearer (.+)$`)
 
-type dtoWithUserID struct {
-	UserID string `json:"userID"`
-}
+type contextKey string
+
+const userIDContextKey contextKey = "userID"
 
 // AuthMiddleware is a middleware that handles authentication
 func AuthMiddleware(tokenService TokenService) func(next http.Handler) http.Handler {
@@ -49,22 +48,9 @@ func AuthMiddleware(tokenService TokenService) func(next http.Handler) http.Hand
 			}
 			userID := token.UserID
 
-			// check if body contains userID and if so, validate it matches the token's userID
-			if r.Body != nil && r.Header.Get("Content-Type") == "application/json" {
-				bodyBytes, err := getBodyBytes(r)
-				if err != nil {
-					writeError(w, http.StatusBadRequest, errors.New("failed to read body"))
-					return
-				}
-
-				var dto dtoWithUserID
-				if err := json.NewDecoder(bytes.NewBuffer(bodyBytes)).Decode(&dto); err == nil {
-					if dto.UserID != userID {
-						writeError(w, http.StatusUnauthorized, errors.New("unauthorized"))
-						return
-					}
-				}
-			}
+			// Propagate userID to the request context for downstream handlers
+			ctx := context.WithValue(r.Context(), userIDContextKey, userID)
+			r = r.WithContext(ctx)
 
 			// If valid, call the next handler
 			next.ServeHTTP(w, r)

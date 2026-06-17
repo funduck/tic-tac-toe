@@ -20,7 +20,6 @@ func NewGameService(apiClient *openapi.APIClient) *GameService {
 // CreateGame creates a new game
 func (gs *GameService) CreateGame(ctx context.Context, userID string, private bool) (*Game, error) {
 	req := openapi.NewServerCreateGameRequest()
-	req.SetUserID(userID)
 	req.SetPrivate(private)
 	g, r, err := gs.api.CreateGame(ctx).Request(*req).Execute()
 	if err != nil {
@@ -32,7 +31,6 @@ func (gs *GameService) CreateGame(ctx context.Context, userID string, private bo
 // JoinGame joins an existing game
 func (gs *GameService) JoinGame(ctx context.Context, gameID, userID string) (*Game, error) {
 	req := openapi.NewServerJoinGameRequest()
-	req.SetUserID(userID)
 	g, r, err := gs.api.JoinGame(ctx, gameID).Request(*req).Execute()
 	if err != nil {
 		return nil, parseError(r, err)
@@ -42,9 +40,7 @@ func (gs *GameService) JoinGame(ctx context.Context, gameID, userID string) (*Ga
 
 // JoinAnyGame joins an existing game
 func (gs *GameService) JoinAnyGame(ctx context.Context, userID string) (*Game, error) {
-	req := openapi.NewServerJoinAnyGameRequest()
-	req.SetUserID(userID)
-	g, r, err := gs.api.JoinAnyGame(ctx).Request(*req).Execute()
+	g, r, err := gs.api.JoinAnyGame(ctx).Execute()
 	if err != nil {
 		return nil, parseError(r, err)
 	}
@@ -54,7 +50,6 @@ func (gs *GameService) JoinAnyGame(ctx context.Context, userID string) (*Game, e
 // MakeMove makes a move in the game
 func (gs *GameService) MakeMove(ctx context.Context, gameID, userID string, x, y int) (*Game, error) {
 	req := openapi.NewServerMoveRequest()
-	req.SetUserID(userID)
 	req.SetX(int32(x))
 	req.SetY(int32(y))
 	g, r, err := gs.api.MakeMove(ctx, gameID).Request(*req).Execute()
@@ -67,7 +62,6 @@ func (gs *GameService) MakeMove(ctx context.Context, gameID, userID string, x, y
 // GiveUp gives up the game
 func (gs *GameService) GiveUp(ctx context.Context, gameID, userID string) (*Game, error) {
 	req := openapi.NewServerGiveUpRequest()
-	req.SetUserID(userID)
 	g, r, err := gs.api.GiveUpGame(ctx, gameID).Request(*req).Execute()
 	if err != nil {
 		return nil, parseError(r, err)

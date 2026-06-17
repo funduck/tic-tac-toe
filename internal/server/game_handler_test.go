@@ -84,6 +84,11 @@ func makeJSONRequest(method, url string, body interface{}) *http.Request {
 	return req
 }
 
+// withUserID injects a userID into the request context (simulates AuthMiddleware)
+func withUserID(req *http.Request, userID string) *http.Request {
+	return req.WithContext(context.WithValue(req.Context(), userIDContextKey, userID))
+}
+
 // executeRequest executes a request and returns the response recorder
 func executeRequest(handler http.HandlerFunc, req *http.Request) *httptest.ResponseRecorder {
 	w := httptest.NewRecorder()
@@ -148,28 +153,13 @@ func TestGameHandler_CreateGame(t *testing.T) {
 	tests := []struct {
 		name           string
 		mockSetup      func() *mockGameService
+		userID         string
 		requestBody    CreateGameRequest
 		expectedStatus int
 		checkResponse  func(t *testing.T, body []byte)
 	}{
 		{
-			name: "create game without user",
-			mockSetup: func() *mockGameService {
-				return &mockGameService{
-					createGameFunc: func(ctx context.Context) (*game.Game, error) {
-						return game.NewGame("test-game-id-123"), nil
-					},
-				}
-			},
-			requestBody:    CreateGameRequest{},
-			expectedStatus: http.StatusCreated,
-			checkResponse: checkGameMatches(game.Game{
-				ID:     "test-game-id-123",
-				Status: game.StatusWaiting,
-			}),
-		},
-		{
-			name: "create game with user",
+			name: "create game",
 			mockSetup: func() *mockGameService {
 				return &mockGameService{
 					createGameFunc: func(ctx context.Context) (*game.Game, error) {
@@ -182,9 +172,8 @@ func TestGameHandler_CreateGame(t *testing.T) {
 					},
 				}
 			},
-			requestBody: CreateGameRequest{
-				UserID: "user-123",
-			},
+			userID:         "user-123",
+			requestBody:    CreateGameRequest{},
 			expectedStatus: http.StatusCreated,
 			checkResponse: checkGameMatches(game.Game{
 				ID:      "test-game-id-123",
@@ -193,7 +182,7 @@ func TestGameHandler_CreateGame(t *testing.T) {
 			}),
 		},
 		{
-			name: "create private game with user",
+			name: "create private game",
 			mockSetup: func() *mockGameService {
 				return &mockGameService{
 					createPrivateGameFunc: func(ctx context.Context) (*game.Game, error) {
@@ -208,10 +197,8 @@ func TestGameHandler_CreateGame(t *testing.T) {
 					},
 				}
 			},
-			requestBody: CreateGameRequest{
-				UserID:  "user-123",
-				Private: true,
-			},
+			userID:         "user-123",
+			requestBody:    CreateGameRequest{Private: true},
 			expectedStatus: http.StatusCreated,
 			checkResponse: checkGameMatches(game.Game{
 				ID:      "test-game-id-123",
@@ -229,6 +216,7 @@ func TestGameHandler_CreateGame(t *testing.T) {
 					},
 				}
 			},
+			userID:         "user-123",
 			requestBody:    CreateGameRequest{},
 			expectedStatus: http.StatusInternalServerError,
 			checkResponse:  checkErrorResponse("database error"),
@@ -245,9 +233,8 @@ func TestGameHandler_CreateGame(t *testing.T) {
 					},
 				}
 			},
-			requestBody: CreateGameRequest{
-				UserID: "user-123",
-			},
+			userID:         "user-123",
+			requestBody:    CreateGameRequest{},
 			expectedStatus: http.StatusInternalServerError,
 			checkResponse:  checkErrorResponse("join error"),
 		},
@@ -261,6 +248,7 @@ func TestGameHandler_CreateGame(t *testing.T) {
 			)
 
 			req := makeJSONRequest(http.MethodPost, "/api/games", tt.requestBody)
+			req = withUserID(req, tt.userID)
 			w := executeRequest(h.CreateGame, req)
 
 			checkStatusCode(tt.expectedStatus)(t, w)
@@ -276,7 +264,7 @@ func TestGameHandler_JoinGame(t *testing.T) {
 		name           string
 		mockSetup      func() *mockGameService
 		gameID         string
-		requestBody    JoinGameRequest
+		userID         string
 		expectedStatus int
 		checkResponse  func(t *testing.T, body []byte)
 	}{
@@ -292,9 +280,7 @@ func TestGameHandler_JoinGame(t *testing.T) {
 				}
 			},
 			gameID: "game-123",
-			requestBody: JoinGameRequest{
-				UserID: "user-456",
-			},
+			userID: "user-456",
 			expectedStatus: http.StatusOK,
 			checkResponse: checkGameMatches(game.Game{
 				ID:      "game-123",
@@ -311,10 +297,8 @@ func TestGameHandler_JoinGame(t *testing.T) {
 					},
 				}
 			},
-			gameID: "nonexistent",
-			requestBody: JoinGameRequest{
-				UserID: "user-456",
-			},
+			gameID:         "nonexistent",
+			userID:         "user-456",
 			expectedStatus: http.StatusNotFound,
 			checkResponse:  checkErrorResponse(game.ErrGameNotFound.Error()),
 		},
@@ -327,10 +311,8 @@ func TestGameHandler_JoinGame(t *testing.T) {
 					},
 				}
 			},
-			gameID: "game-123",
-			requestBody: JoinGameRequest{
-				UserID: "user-456",
-			},
+			gameID:         "game-123",
+			userID:         "user-456",
 			expectedStatus: http.StatusConflict,
 			checkResponse:  checkErrorResponse(game.ErrGameNotWaiting.Error()),
 		},
@@ -343,11 +325,11 @@ func TestGameHandler_JoinGame(t *testing.T) {
 				slog.New(slog.NewTextHandler(io.Discard, nil)), // silent logger for tests
 			)
 
-			req := makeJSONRequest(http.MethodPost, "/api/games/"+tt.gameID+"/join", tt.requestBody)
-			// Add URL param to context
+			req := httptest.NewRequest(http.MethodPost, "/api/games/"+tt.gameID+"/join", nil)
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("gameID", tt.gameID)
 			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+			req = withUserID(req, tt.userID)
 
 			w := executeRequest(h.JoinGame, req)
 
@@ -363,7 +345,7 @@ func TestGameHandler_JoinAnyGame(t *testing.T) {
 	tests := []struct {
 		name           string
 		mockSetup      func() *mockGameService
-		requestBody    JoinAnyGameRequest
+		userID         string
 		expectedStatus int
 		checkResponse  func(t *testing.T, body []byte)
 	}{
@@ -378,9 +360,7 @@ func TestGameHandler_JoinAnyGame(t *testing.T) {
 					},
 				}
 			},
-			requestBody: JoinAnyGameRequest{
-				UserID: "user-456",
-			},
+			userID:         "user-456",
 			expectedStatus: http.StatusOK,
 			checkResponse: checkGameMatches(game.Game{
 				ID:      "game-123",
@@ -397,9 +377,7 @@ func TestGameHandler_JoinAnyGame(t *testing.T) {
 					},
 				}
 			},
-			requestBody: JoinAnyGameRequest{
-				UserID: "user-456",
-			},
+			userID:         "user-456",
 			expectedStatus: http.StatusNotFound,
 			checkResponse:  checkErrorResponse(game.ErrGameNotFound.Error()),
 		},
@@ -412,7 +390,8 @@ func TestGameHandler_JoinAnyGame(t *testing.T) {
 				slog.New(slog.NewTextHandler(io.Discard, nil)), // silent logger for tests
 			)
 
-			req := makeJSONRequest(http.MethodPost, "/api/games/join", tt.requestBody)
+			req := httptest.NewRequest(http.MethodPost, "/api/games/join", nil)
+			req = withUserID(req, tt.userID)
 			w := executeRequest(h.JoinAnyGame, req)
 
 			checkStatusCode(tt.expectedStatus)(t, w)
@@ -428,6 +407,7 @@ func TestGameHandler_MakeMove(t *testing.T) {
 		name           string
 		mockSetup      func() *mockGameService
 		gameID         string
+		userID         string
 		requestBody    MoveRequest
 		expectedStatus int
 		checkResponse  func(t *testing.T, body []byte)
@@ -445,10 +425,10 @@ func TestGameHandler_MakeMove(t *testing.T) {
 				}
 			},
 			gameID: "game-123",
+			userID: "user-1",
 			requestBody: MoveRequest{
-				UserID: "user-1",
-				X:      0,
-				Y:      0,
+				X: 0,
+				Y: 0,
 			},
 			expectedStatus: http.StatusOK,
 			checkResponse: checkGameMatches(game.Game{
@@ -469,10 +449,10 @@ func TestGameHandler_MakeMove(t *testing.T) {
 				}
 			},
 			gameID: "game-123",
+			userID: "user-2",
 			requestBody: MoveRequest{
-				UserID: "user-2",
-				X:      0,
-				Y:      0,
+				X: 0,
+				Y: 0,
 			},
 			expectedStatus: http.StatusConflict,
 			checkResponse:  checkErrorResponse(game.ErrNotYourTurn.Error()),
@@ -487,10 +467,10 @@ func TestGameHandler_MakeMove(t *testing.T) {
 				}
 			},
 			gameID: "game-123",
+			userID: "user-1",
 			requestBody: MoveRequest{
-				UserID: "user-1",
-				X:      1,
-				Y:      1,
+				X: 1,
+				Y: 1,
 			},
 			expectedStatus: http.StatusBadRequest,
 			checkResponse:  checkErrorResponse(game.ErrCellOccupied.Error()),
@@ -508,6 +488,7 @@ func TestGameHandler_MakeMove(t *testing.T) {
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("gameID", tt.gameID)
 			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+			req = withUserID(req, tt.userID)
 
 			w := executeRequest(h.MakeMove, req)
 
@@ -524,7 +505,7 @@ func TestGameHandler_GiveUp(t *testing.T) {
 		name           string
 		mockSetup      func() *mockGameService
 		gameID         string
-		requestBody    GiveUpRequest
+		userID         string
 		expectedStatus int
 		checkResponse  func(t *testing.T, body []byte)
 	}{
@@ -541,10 +522,8 @@ func TestGameHandler_GiveUp(t *testing.T) {
 					},
 				}
 			},
-			gameID: "game-123",
-			requestBody: GiveUpRequest{
-				UserID: "user-1",
-			},
+			gameID:         "game-123",
+			userID:         "user-1",
 			expectedStatus: http.StatusOK,
 			checkResponse: checkGameMatches(game.Game{
 				ID:       "game-123",
@@ -562,10 +541,8 @@ func TestGameHandler_GiveUp(t *testing.T) {
 					},
 				}
 			},
-			gameID: "game-123",
-			requestBody: GiveUpRequest{
-				UserID: "user-999",
-			},
+			gameID:         "game-123",
+			userID:         "user-999",
 			expectedStatus: http.StatusConflict,
 			checkResponse:  checkErrorResponse(game.ErrNotInGame.Error()),
 		},
@@ -578,10 +555,11 @@ func TestGameHandler_GiveUp(t *testing.T) {
 				slog.New(slog.NewTextHandler(io.Discard, nil)), // silent logger for tests
 			)
 
-			req := makeJSONRequest(http.MethodPost, "/api/games/"+tt.gameID+"/giveup", tt.requestBody)
+			req := httptest.NewRequest(http.MethodPost, "/api/games/"+tt.gameID+"/giveup", nil)
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("gameID", tt.gameID)
 			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+			req = withUserID(req, tt.userID)
 
 			w := executeRequest(h.GiveUp, req)
 

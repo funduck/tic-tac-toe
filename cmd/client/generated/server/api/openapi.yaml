@@ -49,13 +49,6 @@ paths:
   /api/games/join:
     post:
       operationId: joinAnyGame
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/server.JoinAnyGameRequest"
-        description: Join any game request
-        required: true
       responses:
         "200":
           content:
@@ -84,7 +77,6 @@ paths:
       summary: Join any available game
       tags:
       - games
-      x-codegen-request-body-name: request
   /api/games/{gameID}:
     get:
       operationId: getGame
@@ -380,19 +372,19 @@ components:
       type: object
     game.Game:
       example:
-        currentPlayerID: currentPlayerID
-        result: win
-        userID1: userID1
-        private: true
-        userID2: userID2
-        winnerID: winnerID
-        id: id
         board:
         - - 0
           - 0
         - - 0
           - 0
+        currentPlayerID: currentPlayerID
+        id: id
+        private: true
+        result: win
         status: waiting
+        userID1: userID1
+        userID2: userID2
+        winnerID: winnerID
       properties:
         board:
           items:
@@ -439,12 +431,8 @@ components:
       - StatusFinished
     server.CreateGameRequest:
       properties:
-        gameID:
-          type: string
         private:
           type: boolean
-        userID:
-          type: string
       type: object
     server.ErrorCode:
       enum:
@@ -494,26 +482,15 @@ components:
       properties:
         gameID:
           type: string
-        userID:
-          type: string
-      type: object
-    server.JoinAnyGameRequest:
-      properties:
-        userID:
-          type: string
       type: object
     server.JoinGameRequest:
       properties:
         gameID:
           type: string
-        userID:
-          type: string
       type: object
     server.MoveRequest:
       properties:
         gameID:
-          type: string
-        userID:
           type: string
         x:
           type: integer
