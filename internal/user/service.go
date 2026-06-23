@@ -24,7 +24,6 @@ var ErrRefreshTokenDeleted = errors.New("refresh token deleted")
 type UserService struct {
 	userRepo     UserRepo
 	tokenService TokenService
-	secret       string
 	logger       *slog.Logger
 }
 

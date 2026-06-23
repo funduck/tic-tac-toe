@@ -18,14 +18,13 @@ import (
 	"net/url"
 )
 
-
 // UsersAPIService UsersAPI service
 type UsersAPIService service
 
 type ApiLoginRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *UsersAPIService
-	request *ServerUserLoginRequest
+	request    *ServerUserLoginRequest
 }
 
 // User login request
@@ -41,24 +40,25 @@ func (r ApiLoginRequest) Execute() (*AuthTokenPair, *http.Response, error) {
 /*
 Login Log in an existing user
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiLoginRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiLoginRequest
 */
 func (a *UsersAPIService) Login(ctx context.Context) ApiLoginRequest {
 	return ApiLoginRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return AuthTokenPair
+//
+//	@return AuthTokenPair
 func (a *UsersAPIService) LoginExecute(r ApiLoginRequest) (*AuthTokenPair, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *AuthTokenPair
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *AuthTokenPair
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "UsersAPIService.Login")
@@ -123,8 +123,8 @@ func (a *UsersAPIService) LoginExecute(r ApiLoginRequest) (*AuthTokenPair, *http
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -134,8 +134,8 @@ func (a *UsersAPIService) LoginExecute(r ApiLoginRequest) (*AuthTokenPair, *http
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -145,8 +145,8 @@ func (a *UsersAPIService) LoginExecute(r ApiLoginRequest) (*AuthTokenPair, *http
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -164,9 +164,9 @@ func (a *UsersAPIService) LoginExecute(r ApiLoginRequest) (*AuthTokenPair, *http
 }
 
 type ApiRefreshTokenRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *UsersAPIService
-	request *ServerUserRefreshTokenRequest
+	request    *ServerUserRefreshTokenRequest
 }
 
 // User refresh token request
@@ -182,24 +182,25 @@ func (r ApiRefreshTokenRequest) Execute() (*AuthTokenPair, *http.Response, error
 /*
 RefreshToken Refresh access token using refresh token
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiRefreshTokenRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiRefreshTokenRequest
 */
 func (a *UsersAPIService) RefreshToken(ctx context.Context) ApiRefreshTokenRequest {
 	return ApiRefreshTokenRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return AuthTokenPair
+//
+//	@return AuthTokenPair
 func (a *UsersAPIService) RefreshTokenExecute(r ApiRefreshTokenRequest) (*AuthTokenPair, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *AuthTokenPair
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *AuthTokenPair
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "UsersAPIService.RefreshToken")
@@ -264,8 +265,8 @@ func (a *UsersAPIService) RefreshTokenExecute(r ApiRefreshTokenRequest) (*AuthTo
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -275,8 +276,8 @@ func (a *UsersAPIService) RefreshTokenExecute(r ApiRefreshTokenRequest) (*AuthTo
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -286,8 +287,8 @@ func (a *UsersAPIService) RefreshTokenExecute(r ApiRefreshTokenRequest) (*AuthTo
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -305,9 +306,9 @@ func (a *UsersAPIService) RefreshTokenExecute(r ApiRefreshTokenRequest) (*AuthTo
 }
 
 type ApiSignupRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *UsersAPIService
-	request *ServerUserSignupRequest
+	request    *ServerUserSignupRequest
 }
 
 // User signup request
@@ -323,24 +324,25 @@ func (r ApiSignupRequest) Execute() (*AuthTokenPair, *http.Response, error) {
 /*
 Signup Sign up a new user
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiSignupRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiSignupRequest
 */
 func (a *UsersAPIService) Signup(ctx context.Context) ApiSignupRequest {
 	return ApiSignupRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return AuthTokenPair
+//
+//	@return AuthTokenPair
 func (a *UsersAPIService) SignupExecute(r ApiSignupRequest) (*AuthTokenPair, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *AuthTokenPair
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *AuthTokenPair
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "UsersAPIService.Signup")
@@ -405,8 +407,8 @@ func (a *UsersAPIService) SignupExecute(r ApiSignupRequest) (*AuthTokenPair, *ht
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 409 {
@@ -416,8 +418,8 @@ func (a *UsersAPIService) SignupExecute(r ApiSignupRequest) (*AuthTokenPair, *ht
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -427,8 +429,8 @@ func (a *UsersAPIService) SignupExecute(r ApiSignupRequest) (*AuthTokenPair, *ht
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}

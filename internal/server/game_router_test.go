@@ -115,10 +115,10 @@ func TestGameRouter(t *testing.T) {
 			},
 		},
 		{
-			name:   "POST /api/games/{gameID}/giveup - give up",
-			method: http.MethodPost,
-			path:   "/api/games/game-789/giveup",
-			body:   nil,
+			name:           "POST /api/games/{gameID}/giveup - give up",
+			method:         http.MethodPost,
+			path:           "/api/games/game-789/giveup",
+			body:           nil,
 			expectedStatus: http.StatusOK,
 			checkResponse: func(t *testing.T, resp *http.Response) {
 				var g game.Game

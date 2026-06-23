@@ -3,10 +3,16 @@ install:
 	cd cmd/client && go mod download
 	go install github.com/swaggo/swag/cmd/swag@latest
 	go install github.com/air-verse/air@latest
+	go install golang.org/x/tools/cmd/goimports@latest
+
+lint:
+	goimports -w .
+	gofmt -s -w .
+	go vet -v ./...
+	golangci-lint run --timeout 5m --tests=false
 
 tests:
 	go test -v ./...
-	go vet ./...
 
 test-race:
 	go test -race -v ./...

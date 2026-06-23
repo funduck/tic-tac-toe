@@ -20,7 +20,7 @@ var _ MappedNullable = &ServerUserRefreshTokenRequest{}
 // ServerUserRefreshTokenRequest struct for ServerUserRefreshTokenRequest
 type ServerUserRefreshTokenRequest struct {
 	RefreshToken *string `json:"refreshToken,omitempty"`
-	UserID *string `json:"userID,omitempty"`
+	UserID       *string `json:"userID,omitempty"`
 }
 
 // NewServerUserRefreshTokenRequest instantiates a new ServerUserRefreshTokenRequest object
@@ -105,7 +105,7 @@ func (o *ServerUserRefreshTokenRequest) SetUserID(v string) {
 }
 
 func (o ServerUserRefreshTokenRequest) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -158,5 +158,3 @@ func (v *NullableServerUserRefreshTokenRequest) UnmarshalJSON(src []byte) error 
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

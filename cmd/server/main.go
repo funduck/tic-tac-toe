@@ -47,7 +47,7 @@ func main() {
 	authMiddleware := server.AuthMiddleware(tokenService)
 
 	// Router setup
-	router := newRouter()
+	router := newRouter(logger)
 	router.Route("/api", func(r chi.Router) {
 		server.GameRouter(r, gameHandler, authMiddleware)
 		server.UserRouter(r, userHandler)
@@ -83,7 +83,7 @@ func main() {
 }
 
 // Basic router setup with Swagger UI and OpenAPI spec endpoint
-func newRouter() *chi.Mux {
+func newRouter(logger *slog.Logger) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.Recoverer)
 
@@ -100,7 +100,10 @@ func newRouter() *chi.Mux {
 	// Health check endpoint (dummy for now)
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
+		_, err := w.Write([]byte("OK"))
+		if err != nil {
+			logger.Error("Failed to write health check response", "error", err)
+		}
 	})
 
 	return r

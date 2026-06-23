@@ -22,14 +22,14 @@ type GameGame struct {
 	Board [][]int32 `json:"board,omitempty"`
 	// user ID of the player whose turn it is
 	CurrentPlayerID *string `json:"currentPlayerID,omitempty"`
-	Id *string `json:"id,omitempty"`
+	Id              *string `json:"id,omitempty"`
 	// optional field to indicate if the game is private or public
-	Private *bool `json:"private,omitempty"`
-	Result *GameGameResult `json:"result,omitempty"`
-	Status *GameGameStatus `json:"status,omitempty"`
-	UserID1 *string `json:"userID1,omitempty"`
-	UserID2 *string `json:"userID2,omitempty"`
-	WinnerID *string `json:"winnerID,omitempty"`
+	Private  *bool           `json:"private,omitempty"`
+	Result   *GameGameResult `json:"result,omitempty"`
+	Status   *GameGameStatus `json:"status,omitempty"`
+	UserID1  *string         `json:"userID1,omitempty"`
+	UserID2  *string         `json:"userID2,omitempty"`
+	WinnerID *string         `json:"winnerID,omitempty"`
 }
 
 // NewGameGame instantiates a new GameGame object
@@ -338,7 +338,7 @@ func (o *GameGame) SetWinnerID(v string) {
 }
 
 func (o GameGame) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -412,5 +412,3 @@ func (v *NullableGameGame) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

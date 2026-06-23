@@ -279,8 +279,8 @@ func TestGameHandler_JoinGame(t *testing.T) {
 					},
 				}
 			},
-			gameID: "game-123",
-			userID: "user-456",
+			gameID:         "game-123",
+			userID:         "user-456",
 			expectedStatus: http.StatusOK,
 			checkResponse: checkGameMatches(game.Game{
 				ID:      "game-123",

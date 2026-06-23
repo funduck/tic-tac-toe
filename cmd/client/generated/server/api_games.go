@@ -19,14 +19,13 @@ import (
 	"strings"
 )
 
-
 // GamesAPIService GamesAPI service
 type GamesAPIService service
 
 type ApiCreateGameRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *GamesAPIService
-	request *ServerCreateGameRequest
+	request    *ServerCreateGameRequest
 }
 
 // Create game request
@@ -42,24 +41,25 @@ func (r ApiCreateGameRequest) Execute() (*GameGame, *http.Response, error) {
 /*
 CreateGame Create a new game
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiCreateGameRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiCreateGameRequest
 */
 func (a *GamesAPIService) CreateGame(ctx context.Context) ApiCreateGameRequest {
 	return ApiCreateGameRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return GameGame
+//
+//	@return GameGame
 func (a *GamesAPIService) CreateGameExecute(r ApiCreateGameRequest) (*GameGame, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *GameGame
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *GameGame
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "GamesAPIService.CreateGame")
@@ -124,8 +124,8 @@ func (a *GamesAPIService) CreateGameExecute(r ApiCreateGameRequest) (*GameGame, 
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 409 {
@@ -135,8 +135,8 @@ func (a *GamesAPIService) CreateGameExecute(r ApiCreateGameRequest) (*GameGame, 
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -146,8 +146,8 @@ func (a *GamesAPIService) CreateGameExecute(r ApiCreateGameRequest) (*GameGame, 
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -165,9 +165,9 @@ func (a *GamesAPIService) CreateGameExecute(r ApiCreateGameRequest) (*GameGame, 
 }
 
 type ApiGetGameRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *GamesAPIService
-	gameID string
+	gameID     string
 }
 
 func (r ApiGetGameRequest) Execute() (*GameGame, *http.Response, error) {
@@ -177,26 +177,27 @@ func (r ApiGetGameRequest) Execute() (*GameGame, *http.Response, error) {
 /*
 GetGame Get game state
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param gameID Game ID
- @return ApiGetGameRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param gameID Game ID
+	@return ApiGetGameRequest
 */
 func (a *GamesAPIService) GetGame(ctx context.Context, gameID string) ApiGetGameRequest {
 	return ApiGetGameRequest{
 		ApiService: a,
-		ctx: ctx,
-		gameID: gameID,
+		ctx:        ctx,
+		gameID:     gameID,
 	}
 }
 
 // Execute executes the request
-//  @return GameGame
+//
+//	@return GameGame
 func (a *GamesAPIService) GetGameExecute(r ApiGetGameRequest) (*GameGame, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *GameGame
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *GameGame
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "GamesAPIService.GetGame")
@@ -257,8 +258,8 @@ func (a *GamesAPIService) GetGameExecute(r ApiGetGameRequest) (*GameGame, *http.
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -276,10 +277,10 @@ func (a *GamesAPIService) GetGameExecute(r ApiGetGameRequest) (*GameGame, *http.
 }
 
 type ApiGiveUpGameRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *GamesAPIService
-	gameID string
-	request *ServerGiveUpRequest
+	gameID     string
+	request    *ServerGiveUpRequest
 }
 
 // Give up request
@@ -295,26 +296,27 @@ func (r ApiGiveUpGameRequest) Execute() (*GameGame, *http.Response, error) {
 /*
 GiveUpGame Give up the game
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param gameID Game ID
- @return ApiGiveUpGameRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param gameID Game ID
+	@return ApiGiveUpGameRequest
 */
 func (a *GamesAPIService) GiveUpGame(ctx context.Context, gameID string) ApiGiveUpGameRequest {
 	return ApiGiveUpGameRequest{
 		ApiService: a,
-		ctx: ctx,
-		gameID: gameID,
+		ctx:        ctx,
+		gameID:     gameID,
 	}
 }
 
 // Execute executes the request
-//  @return GameGame
+//
+//	@return GameGame
 func (a *GamesAPIService) GiveUpGameExecute(r ApiGiveUpGameRequest) (*GameGame, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *GameGame
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *GameGame
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "GamesAPIService.GiveUpGame")
@@ -380,8 +382,8 @@ func (a *GamesAPIService) GiveUpGameExecute(r ApiGiveUpGameRequest) (*GameGame, 
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -391,8 +393,8 @@ func (a *GamesAPIService) GiveUpGameExecute(r ApiGiveUpGameRequest) (*GameGame, 
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 409 {
@@ -402,8 +404,8 @@ func (a *GamesAPIService) GiveUpGameExecute(r ApiGiveUpGameRequest) (*GameGame, 
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -421,7 +423,7 @@ func (a *GamesAPIService) GiveUpGameExecute(r ApiGiveUpGameRequest) (*GameGame, 
 }
 
 type ApiJoinAnyGameRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *GamesAPIService
 }
 
@@ -432,24 +434,25 @@ func (r ApiJoinAnyGameRequest) Execute() (*GameGame, *http.Response, error) {
 /*
 JoinAnyGame Join any available game
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiJoinAnyGameRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiJoinAnyGameRequest
 */
 func (a *GamesAPIService) JoinAnyGame(ctx context.Context) ApiJoinAnyGameRequest {
 	return ApiJoinAnyGameRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return GameGame
+//
+//	@return GameGame
 func (a *GamesAPIService) JoinAnyGameExecute(r ApiJoinAnyGameRequest) (*GameGame, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *GameGame
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *GameGame
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "GamesAPIService.JoinAnyGame")
@@ -509,8 +512,8 @@ func (a *GamesAPIService) JoinAnyGameExecute(r ApiJoinAnyGameRequest) (*GameGame
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -520,8 +523,8 @@ func (a *GamesAPIService) JoinAnyGameExecute(r ApiJoinAnyGameRequest) (*GameGame
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 409 {
@@ -531,8 +534,8 @@ func (a *GamesAPIService) JoinAnyGameExecute(r ApiJoinAnyGameRequest) (*GameGame
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -550,10 +553,10 @@ func (a *GamesAPIService) JoinAnyGameExecute(r ApiJoinAnyGameRequest) (*GameGame
 }
 
 type ApiJoinGameRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *GamesAPIService
-	gameID string
-	request *ServerJoinGameRequest
+	gameID     string
+	request    *ServerJoinGameRequest
 }
 
 // Join game request
@@ -569,26 +572,27 @@ func (r ApiJoinGameRequest) Execute() (*GameGame, *http.Response, error) {
 /*
 JoinGame Join a waiting game
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param gameID Game ID
- @return ApiJoinGameRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param gameID Game ID
+	@return ApiJoinGameRequest
 */
 func (a *GamesAPIService) JoinGame(ctx context.Context, gameID string) ApiJoinGameRequest {
 	return ApiJoinGameRequest{
 		ApiService: a,
-		ctx: ctx,
-		gameID: gameID,
+		ctx:        ctx,
+		gameID:     gameID,
 	}
 }
 
 // Execute executes the request
-//  @return GameGame
+//
+//	@return GameGame
 func (a *GamesAPIService) JoinGameExecute(r ApiJoinGameRequest) (*GameGame, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *GameGame
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *GameGame
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "GamesAPIService.JoinGame")
@@ -654,8 +658,8 @@ func (a *GamesAPIService) JoinGameExecute(r ApiJoinGameRequest) (*GameGame, *htt
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -665,8 +669,8 @@ func (a *GamesAPIService) JoinGameExecute(r ApiJoinGameRequest) (*GameGame, *htt
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 409 {
@@ -676,8 +680,8 @@ func (a *GamesAPIService) JoinGameExecute(r ApiJoinGameRequest) (*GameGame, *htt
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -695,10 +699,10 @@ func (a *GamesAPIService) JoinGameExecute(r ApiJoinGameRequest) (*GameGame, *htt
 }
 
 type ApiMakeMoveRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *GamesAPIService
-	gameID string
-	request *ServerMoveRequest
+	gameID     string
+	request    *ServerMoveRequest
 }
 
 // Move request
@@ -714,26 +718,27 @@ func (r ApiMakeMoveRequest) Execute() (*GameGame, *http.Response, error) {
 /*
 MakeMove Make a move
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param gameID Game ID
- @return ApiMakeMoveRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param gameID Game ID
+	@return ApiMakeMoveRequest
 */
 func (a *GamesAPIService) MakeMove(ctx context.Context, gameID string) ApiMakeMoveRequest {
 	return ApiMakeMoveRequest{
 		ApiService: a,
-		ctx: ctx,
-		gameID: gameID,
+		ctx:        ctx,
+		gameID:     gameID,
 	}
 }
 
 // Execute executes the request
-//  @return GameGame
+//
+//	@return GameGame
 func (a *GamesAPIService) MakeMoveExecute(r ApiMakeMoveRequest) (*GameGame, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *GameGame
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *GameGame
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "GamesAPIService.MakeMove")
@@ -799,8 +804,8 @@ func (a *GamesAPIService) MakeMoveExecute(r ApiMakeMoveRequest) (*GameGame, *htt
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -810,8 +815,8 @@ func (a *GamesAPIService) MakeMoveExecute(r ApiMakeMoveRequest) (*GameGame, *htt
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 409 {
@@ -821,8 +826,8 @@ func (a *GamesAPIService) MakeMoveExecute(r ApiMakeMoveRequest) (*GameGame, *htt
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
