@@ -28,9 +28,10 @@ type UserLoginRequest struct {
 	Password string `json:"password"`
 }
 
-type UserRefreshTokenRequest struct {
-	UserID       string `json:"user_id"`
-	RefreshToken string `json:"refresh_token"`
+// AccessTokenResponse is the body returned by the auth endpoints. The refresh
+// token is delivered separately as an HttpOnly cookie, never in the body.
+type AccessTokenResponse struct {
+	AccessToken string `json:"access_token"`
 }
 
 // ErrorCode is the machine-readable identifier returned in every error response.

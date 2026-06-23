@@ -189,7 +189,7 @@ func TestAuthService_RefreshToken(t *testing.T) {
 	}
 
 	// Now, try to refresh the token using the refresh token
-	refreshedUser, newTokenPair, err := authService.RefreshToken(ctx, userID, tokenPair.RefreshToken)
+	refreshedUser, newTokenPair, err := authService.RefreshToken(ctx, tokenPair.RefreshToken)
 	if err != nil {
 		t.Fatalf("unexpected error during token refresh: %v", err)
 	}
@@ -235,17 +235,15 @@ func TestAuthService_RefreshToken_Errors(t *testing.T) {
 
 	for _, tc := range []struct {
 		name          string
-		userID        string
 		refreshToken  string
 		expectedError error
 	}{
-		{"invalid refresh token", "testuser", "invalidtoken", auth.ErrTokenInvalid},
-		{"token user not matches user", "nonexistent", tokenPair.RefreshToken, ErrUserNotFound},
-		{"user not found", "testuser", tokenPair.RefreshToken, ErrUserNotFound},
-		{"refresh token hash mismatch", "testuser2", tokenPair2.RefreshToken, ErrRefreshTokenDeleted},
+		{"invalid refresh token", "invalidtoken", auth.ErrTokenInvalid},
+		{"user not found", tokenPair.RefreshToken, ErrUserNotFound},
+		{"refresh token hash mismatch", tokenPair2.RefreshToken, ErrRefreshTokenDeleted},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			_, _, err := authService.RefreshToken(ctx, tc.userID, tc.refreshToken)
+			_, _, err := authService.RefreshToken(ctx, tc.refreshToken)
 			if !errors.Is(err, tc.expectedError) {
 				t.Fatalf("expected error %v, got %v", tc.expectedError, err)
 			}

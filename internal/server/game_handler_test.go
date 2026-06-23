@@ -96,6 +96,16 @@ func executeRequest(handler http.HandlerFunc, req *http.Request) *httptest.Respo
 	return w
 }
 
+// findCookie returns the cookie with the given name from a recorded response, or nil.
+func findCookie(w *httptest.ResponseRecorder, name string) *http.Cookie {
+	for _, c := range w.Result().Cookies() {
+		if c.Name == name {
+			return c
+		}
+	}
+	return nil
+}
+
 // checkStatusCode returns a function that checks the HTTP status code
 func checkStatusCode(expectedStatus int) func(t *testing.T, w *httptest.ResponseRecorder) {
 	return func(t *testing.T, w *httptest.ResponseRecorder) {

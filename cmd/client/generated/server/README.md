@@ -84,10 +84,10 @@ Class | Method | HTTP request | Description
 
 ## Documentation For Models
 
- - [AuthTokenPair](docs/AuthTokenPair.md)
  - [GameGame](docs/GameGame.md)
  - [GameGameResult](docs/GameGameResult.md)
  - [GameGameStatus](docs/GameGameStatus.md)
+ - [ServerAccessTokenResponse](docs/ServerAccessTokenResponse.md)
  - [ServerCreateGameRequest](docs/ServerCreateGameRequest.md)
  - [ServerErrorCode](docs/ServerErrorCode.md)
  - [ServerErrorResponse](docs/ServerErrorResponse.md)
@@ -95,7 +95,6 @@ Class | Method | HTTP request | Description
  - [ServerJoinGameRequest](docs/ServerJoinGameRequest.md)
  - [ServerMoveRequest](docs/ServerMoveRequest.md)
  - [ServerUserLoginRequest](docs/ServerUserLoginRequest.md)
- - [ServerUserRefreshTokenRequest](docs/ServerUserRefreshTokenRequest.md)
  - [ServerUserSignupRequest](docs/ServerUserSignupRequest.md)
 
 

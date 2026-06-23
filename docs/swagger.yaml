@@ -1,12 +1,5 @@
 basePath: /
 definitions:
-  auth.TokenPair:
-    properties:
-      access_token:
-        type: string
-      refresh_token:
-        type: string
-    type: object
   game.Game:
     properties:
       board:
@@ -52,6 +45,11 @@ definitions:
     - StatusWaiting
     - StatusInProgress
     - StatusFinished
+  server.AccessTokenResponse:
+    properties:
+      access_token:
+        type: string
+    type: object
   server.CreateGameRequest:
     properties:
       private:
@@ -120,13 +118,6 @@ definitions:
   server.UserLoginRequest:
     properties:
       password:
-        type: string
-      user_id:
-        type: string
-    type: object
-  server.UserRefreshTokenRequest:
-    properties:
-      refresh_token:
         type: string
       user_id:
         type: string
@@ -364,7 +355,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/auth.TokenPair'
+            $ref: '#/definitions/server.AccessTokenResponse'
         "400":
           description: Bad Request
           schema:
@@ -385,24 +376,13 @@ paths:
       consumes:
       - application/json
       operationId: refresh-token
-      parameters:
-      - description: User refresh token request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/server.UserRefreshTokenRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/auth.TokenPair'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/server.ErrorResponse'
+            $ref: '#/definitions/server.AccessTokenResponse'
         "401":
           description: Unauthorized
           schema:
@@ -432,7 +412,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/auth.TokenPair'
+            $ref: '#/definitions/server.AccessTokenResponse'
         "400":
           description: Bad Request
           schema:

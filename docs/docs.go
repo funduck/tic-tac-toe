@@ -348,7 +348,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/auth.TokenPair"
+                            "$ref": "#/definitions/server.AccessTokenResponse"
                         }
                     },
                     "400": {
@@ -385,28 +385,11 @@ const docTemplate = `{
                 ],
                 "summary": "Refresh access token using refresh token",
                 "operationId": "refresh-token",
-                "parameters": [
-                    {
-                        "description": "User refresh token request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/server.UserRefreshTokenRequest"
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/auth.TokenPair"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/server.ErrorResponse"
+                            "$ref": "#/definitions/server.AccessTokenResponse"
                         }
                     },
                     "401": {
@@ -452,7 +435,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/auth.TokenPair"
+                            "$ref": "#/definitions/server.AccessTokenResponse"
                         }
                     },
                     "400": {
@@ -478,17 +461,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "auth.TokenPair": {
-            "type": "object",
-            "properties": {
-                "access_token": {
-                    "type": "string"
-                },
-                "refresh_token": {
-                    "type": "string"
-                }
-            }
-        },
         "game.Game": {
             "type": "object",
             "properties": {
@@ -552,6 +524,14 @@ const docTemplate = `{
                 "StatusInProgress",
                 "StatusFinished"
             ]
+        },
+        "server.AccessTokenResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                }
+            }
         },
         "server.CreateGameRequest": {
             "type": "object",
@@ -643,17 +623,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "password": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "server.UserRefreshTokenRequest": {
-            "type": "object",
-            "properties": {
-                "refresh_token": {
                     "type": "string"
                 },
                 "user_id": {

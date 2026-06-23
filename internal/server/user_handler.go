@@ -12,18 +12,20 @@ import (
 type UserService interface {
 	Signup(ctx context.Context, userID, password string) (*user.User, *auth.TokenPair, error)
 	Login(ctx context.Context, userID, password string) (*user.User, *auth.TokenPair, error)
-	RefreshToken(ctx context.Context, userID, refreshToken string) (*user.User, *auth.TokenPair, error)
+	RefreshToken(ctx context.Context, refreshToken string) (*user.User, *auth.TokenPair, error)
 }
 
 type UserHandler struct {
-	svc    UserService
-	logger *slog.Logger
+	svc          UserService
+	logger       *slog.Logger
+	secureCookie bool
 }
 
-func NewUserHandler(svc UserService, logger *slog.Logger) *UserHandler {
+func NewUserHandler(svc UserService, logger *slog.Logger, secureCookie bool) *UserHandler {
 	return &UserHandler{
-		svc:    svc,
-		logger: logger,
+		svc:          svc,
+		logger:       logger,
+		secureCookie: secureCookie,
 	}
 }
 
@@ -35,7 +37,7 @@ func NewUserHandler(svc UserService, logger *slog.Logger) *UserHandler {
 //	@Accept		json
 //	@Produce	json
 //	@Param		request	body		UserSignupRequest	true	"User signup request"
-//	@Success	200		{object}	auth.TokenPair
+//	@Success	200		{object}	AccessTokenResponse
 //	@Failure	400		{object}	ErrorResponse
 //	@Failure	409		{object}	ErrorResponse
 //	@Failure	500		{object}	ErrorResponse
@@ -54,7 +56,8 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, tokens)
+	setRefreshTokenCookie(w, tokens.RefreshToken, h.secureCookie)
+	writeJSON(w, http.StatusOK, AccessTokenResponse{AccessToken: tokens.AccessToken})
 }
 
 // Login godoc
@@ -65,7 +68,7 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 //	@Accept		json
 //	@Produce	json
 //	@Param		request	body		UserLoginRequest	true	"User login request"
-//	@Success	200		{object}	auth.TokenPair
+//	@Success	200		{object}	AccessTokenResponse
 //	@Failure	400		{object}	ErrorResponse
 //	@Failure	401		{object}	ErrorResponse
 //	@Failure	500		{object}	ErrorResponse
@@ -84,7 +87,8 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, tokens)
+	setRefreshTokenCookie(w, tokens.RefreshToken, h.secureCookie)
+	writeJSON(w, http.StatusOK, AccessTokenResponse{AccessToken: tokens.AccessToken})
 }
 
 // RefreshToken godoc
@@ -94,25 +98,29 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 //	@Tags		users
 //	@Accept		json
 //	@Produce	json
-//	@Param		request	body		UserRefreshTokenRequest	true	"User refresh token request"
-//	@Success	200		{object}	auth.TokenPair
-//	@Failure	400		{object}	ErrorResponse
-//	@Failure	401		{object}	ErrorResponse
-//	@Failure	500		{object}	ErrorResponse
+//	@Success	200	{object}	AccessTokenResponse
+//	@Failure	401	{object}	ErrorResponse
+//	@Failure	500	{object}	ErrorResponse
 //	@Router		/api/users/refresh-token [post]
+//
+// The refresh token is read from the HttpOnly refresh_token cookie, not the body.
 func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	var req UserRefreshTokenRequest
-	if err := parseRequestBody(r, &req, h.logger, w); err != nil {
+
+	refreshToken, err := readRefreshTokenCookie(r)
+	if err != nil {
+		h.logger.Warn("refresh token failed: missing cookie", "error", err)
+		writeDomainError(w, auth.ErrTokenInvalid)
 		return
 	}
 
-	_, tokens, err := h.svc.RefreshToken(ctx, req.UserID, req.RefreshToken)
+	_, tokens, err := h.svc.RefreshToken(ctx, refreshToken)
 	if err != nil {
-		h.logger.Warn("refresh token failed", "userID", req.UserID, "error", err)
+		h.logger.Warn("refresh token failed", "error", err)
 		writeDomainError(w, err)
 		return
 	}
 
-	writeJSON(w, http.StatusOK, tokens)
+	setRefreshTokenCookie(w, tokens.RefreshToken, h.secureCookie)
+	writeJSON(w, http.StatusOK, AccessTokenResponse{AccessToken: tokens.AccessToken})
 }

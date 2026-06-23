@@ -42,7 +42,10 @@ func main() {
 
 	userRepo := user.NewMemoryUserRepo()
 	userSvc := user.NewUserService(userRepo, tokenService, logger)
-	userHandler := server.NewUserHandler(userSvc, logger)
+	// COOKIE_SECURE marks the refresh token cookie as Secure (HTTPS only). Disabled
+	// by default so the cookie also works over plain http in local development.
+	secureCookie := os.Getenv("COOKIE_SECURE") != ""
+	userHandler := server.NewUserHandler(userSvc, logger, secureCookie)
 
 	authMiddleware := server.AuthMiddleware(tokenService)
 

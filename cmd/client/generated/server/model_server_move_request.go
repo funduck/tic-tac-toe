@@ -20,8 +20,8 @@ var _ MappedNullable = &ServerMoveRequest{}
 // ServerMoveRequest struct for ServerMoveRequest
 type ServerMoveRequest struct {
 	GameId *string `json:"game_id,omitempty"`
-	X *int32 `json:"x,omitempty"`
-	Y *int32 `json:"y,omitempty"`
+	X      *int32  `json:"x,omitempty"`
+	Y      *int32  `json:"y,omitempty"`
 }
 
 // NewServerMoveRequest instantiates a new ServerMoveRequest object
@@ -138,7 +138,7 @@ func (o *ServerMoveRequest) SetY(v int32) {
 }
 
 func (o ServerMoveRequest) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -194,5 +194,3 @@ func (v *NullableServerMoveRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

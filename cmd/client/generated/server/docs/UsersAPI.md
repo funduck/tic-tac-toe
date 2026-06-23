@@ -12,7 +12,7 @@ Method | HTTP request | Description
 
 ## Login
 
-> AuthTokenPair Login(ctx).Request(request).Execute()
+> ServerAccessTokenResponse Login(ctx).Request(request).Execute()
 
 Log in an existing user
 
@@ -38,7 +38,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error when calling `UsersAPI.Login``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
 	}
-	// response from `Login`: AuthTokenPair
+	// response from `Login`: ServerAccessTokenResponse
 	fmt.Fprintf(os.Stdout, "Response from `UsersAPI.Login`: %v\n", resp)
 }
 ```
@@ -58,7 +58,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**AuthTokenPair**](AuthTokenPair.md)
+[**ServerAccessTokenResponse**](ServerAccessTokenResponse.md)
 
 ### Authorization
 
@@ -76,7 +76,7 @@ No authorization required
 
 ## RefreshToken
 
-> AuthTokenPair RefreshToken(ctx).Request(request).Execute()
+> ServerAccessTokenResponse RefreshToken(ctx).Execute()
 
 Refresh access token using refresh token
 
@@ -93,36 +93,31 @@ import (
 )
 
 func main() {
-	request := *openapiclient.NewServerUserRefreshTokenRequest() // ServerUserRefreshTokenRequest | User refresh token request
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
-	resp, r, err := apiClient.UsersAPI.RefreshToken(context.Background()).Request(request).Execute()
+	resp, r, err := apiClient.UsersAPI.RefreshToken(context.Background()).Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when calling `UsersAPI.RefreshToken``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
 	}
-	// response from `RefreshToken`: AuthTokenPair
+	// response from `RefreshToken`: ServerAccessTokenResponse
 	fmt.Fprintf(os.Stdout, "Response from `UsersAPI.RefreshToken`: %v\n", resp)
 }
 ```
 
 ### Path Parameters
 
-
+This endpoint does not need any parameter.
 
 ### Other Parameters
 
 Other parameters are passed through a pointer to a apiRefreshTokenRequest struct via the builder pattern
 
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **request** | [**ServerUserRefreshTokenRequest**](ServerUserRefreshTokenRequest.md) | User refresh token request | 
-
 ### Return type
 
-[**AuthTokenPair**](AuthTokenPair.md)
+[**ServerAccessTokenResponse**](ServerAccessTokenResponse.md)
 
 ### Authorization
 
@@ -130,7 +125,7 @@ No authorization required
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: Not defined
 - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
@@ -140,7 +135,7 @@ No authorization required
 
 ## Signup
 
-> AuthTokenPair Signup(ctx).Request(request).Execute()
+> ServerAccessTokenResponse Signup(ctx).Request(request).Execute()
 
 Sign up a new user
 
@@ -166,7 +161,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error when calling `UsersAPI.Signup``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
 	}
-	// response from `Signup`: AuthTokenPair
+	// response from `Signup`: ServerAccessTokenResponse
 	fmt.Fprintf(os.Stdout, "Response from `UsersAPI.Signup`: %v\n", resp)
 }
 ```
@@ -186,7 +181,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**AuthTokenPair**](AuthTokenPair.md)
+[**ServerAccessTokenResponse**](ServerAccessTokenResponse.md)
 
 ### Authorization
 

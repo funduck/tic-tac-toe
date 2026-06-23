@@ -16,38 +16,38 @@ func NewUserService(apiClient *openapi.APIClient) *UserService {
 	return &UserService{api: apiClient.UsersAPI}
 }
 
-// Signup registers a new user and returns a token pair
-func (s *UserService) Signup(ctx context.Context, userID, password string) (*openapi.AuthTokenPair, error) {
+// Signup registers a new user and returns the access token. The refresh token is
+// returned as an HttpOnly cookie and stored by the HTTP client's cookie jar.
+func (s *UserService) Signup(ctx context.Context, userID, password string) (*openapi.ServerAccessTokenResponse, error) {
 	req := openapi.NewServerUserSignupRequest()
 	req.SetUserId(userID)
 	req.SetPassword(password)
-	tokenPair, r, err := s.api.Signup(ctx).Request(*req).Execute()
+	resp, r, err := s.api.Signup(ctx).Request(*req).Execute()
 	if err != nil {
 		return nil, parseError(r, err)
 	}
-	return tokenPair, nil
+	return resp, nil
 }
 
-// Login authenticates an existing user and returns a token pair
-func (s *UserService) Login(ctx context.Context, userID, password string) (*openapi.AuthTokenPair, error) {
+// Login authenticates an existing user and returns the access token. The refresh
+// token is returned as an HttpOnly cookie and stored by the cookie jar.
+func (s *UserService) Login(ctx context.Context, userID, password string) (*openapi.ServerAccessTokenResponse, error) {
 	req := openapi.NewServerUserLoginRequest()
 	req.SetUserId(userID)
 	req.SetPassword(password)
-	tokenPair, r, err := s.api.Login(ctx).Request(*req).Execute()
+	resp, r, err := s.api.Login(ctx).Request(*req).Execute()
 	if err != nil {
 		return nil, parseError(r, err)
 	}
-	return tokenPair, nil
+	return resp, nil
 }
 
-// RefreshToken exchanges a refresh token for a new token pair
-func (s *UserService) RefreshToken(ctx context.Context, userID, refreshToken string) (*openapi.AuthTokenPair, error) {
-	req := openapi.NewServerUserRefreshTokenRequest()
-	req.SetUserId(userID)
-	req.SetRefreshToken(refreshToken)
-	tokenPair, r, err := s.api.RefreshToken(ctx).Request(*req).Execute()
+// RefreshToken exchanges the refresh token (sent automatically as an HttpOnly
+// cookie by the cookie jar) for a new access token.
+func (s *UserService) RefreshToken(ctx context.Context) (*openapi.ServerAccessTokenResponse, error) {
+	resp, r, err := s.api.RefreshToken(ctx).Execute()
 	if err != nil {
 		return nil, parseError(r, err)
 	}
-	return tokenPair, nil
+	return resp, nil
 }

@@ -19,8 +19,8 @@ var _ MappedNullable = &ServerErrorResponse{}
 
 // ServerErrorResponse struct for ServerErrorResponse
 type ServerErrorResponse struct {
-	Code *ServerErrorCode `json:"code,omitempty"`
-	Error *string `json:"error,omitempty"`
+	Code  *ServerErrorCode `json:"code,omitempty"`
+	Error *string          `json:"error,omitempty"`
 }
 
 // NewServerErrorResponse instantiates a new ServerErrorResponse object
@@ -105,7 +105,7 @@ func (o *ServerErrorResponse) SetError(v string) {
 }
 
 func (o ServerErrorResponse) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -158,5 +158,3 @@ func (v *NullableServerErrorResponse) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

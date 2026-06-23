@@ -109,14 +109,11 @@ func (s *UserService) Login(ctx context.Context, userID, password string) (*User
 }
 
 // RefreshToken validates the refresh token and returns a new token pair if valid.
-func (s *UserService) RefreshToken(ctx context.Context, userID, refreshToken string) (*User, *auth.TokenPair, error) {
-	subject, err := s.tokenService.ValidateRefreshToken(refreshToken)
+// The user is identified by the token's subject, so no userID needs to be supplied.
+func (s *UserService) RefreshToken(ctx context.Context, refreshToken string) (*User, *auth.TokenPair, error) {
+	userID, err := s.tokenService.ValidateRefreshToken(refreshToken)
 	if err != nil {
 		return nil, nil, err
-	}
-
-	if userID != subject {
-		return nil, nil, ErrUserNotFound
 	}
 
 	user, err := s.userRepo.FindByID(ctx, userID)
