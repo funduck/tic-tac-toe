@@ -5,32 +5,32 @@ type CreateGameRequest struct {
 }
 
 type JoinGameRequest struct {
-	GameID string `json:"gameID"`
+	GameID string `json:"game_id"`
 }
 
 type MoveRequest struct {
-	GameID string `json:"gameID"`
+	GameID string `json:"game_id"`
 	X      int    `json:"x"`
 	Y      int    `json:"y"`
 }
 
 type GiveUpRequest struct {
-	GameID string `json:"gameID"`
+	GameID string `json:"game_id"`
 }
 
 type UserSignupRequest struct {
-	UserID   string `json:"userID"`
+	UserID   string `json:"user_id"`
 	Password string `json:"password"`
 }
 
 type UserLoginRequest struct {
-	UserID   string `json:"userID"`
+	UserID   string `json:"user_id"`
 	Password string `json:"password"`
 }
 
 type UserRefreshTokenRequest struct {
-	UserID       string `json:"userID"`
-	RefreshToken string `json:"refreshToken"`
+	UserID       string `json:"user_id"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 // ErrorCode is the machine-readable identifier returned in every error response.

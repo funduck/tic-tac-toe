@@ -330,12 +330,12 @@ paths:
         description: User signup request
         required: true
       responses:
-        "201":
+        "200":
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/auth.TokenPair"
-          description: Created
+          description: OK
         "400":
           content:
             application/json:
@@ -377,14 +377,14 @@ components:
           - 0
         - - 0
           - 0
-        currentPlayerID: currentPlayerID
+        current_player_id: current_player_id
         id: id
         private: true
         result: win
         status: waiting
-        userID1: userID1
-        userID2: userID2
-        winnerID: winnerID
+        user_id1: user_id1
+        user_id2: user_id2
+        winner_id: winner_id
       properties:
         board:
           items:
@@ -392,7 +392,7 @@ components:
               type: integer
             type: array
           type: array
-        currentPlayerID:
+        current_player_id:
           description: user ID of the player whose turn it is
           type: string
         id:
@@ -404,11 +404,11 @@ components:
           $ref: "#/components/schemas/game.GameResult"
         status:
           $ref: "#/components/schemas/game.GameStatus"
-        userID1:
+        user_id1:
           type: string
-        userID2:
+        user_id2:
           type: string
-        winnerID:
+        winner_id:
           type: string
       type: object
     game.GameResult:
@@ -480,17 +480,17 @@ components:
       type: object
     server.GiveUpRequest:
       properties:
-        gameID:
+        game_id:
           type: string
       type: object
     server.JoinGameRequest:
       properties:
-        gameID:
+        game_id:
           type: string
       type: object
     server.MoveRequest:
       properties:
-        gameID:
+        game_id:
           type: string
         x:
           type: integer
@@ -501,21 +501,21 @@ components:
       properties:
         password:
           type: string
-        userID:
+        user_id:
           type: string
       type: object
     server.UserRefreshTokenRequest:
       properties:
-        refreshToken:
+        refresh_token:
           type: string
-        userID:
+        user_id:
           type: string
       type: object
     server.UserSignupRequest:
       properties:
         password:
           type: string
-        userID:
+        user_id:
           type: string
       type: object
 x-original-swagger-version: "2.0"

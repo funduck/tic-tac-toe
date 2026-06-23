@@ -19,9 +19,9 @@ var _ MappedNullable = &ServerMoveRequest{}
 
 // ServerMoveRequest struct for ServerMoveRequest
 type ServerMoveRequest struct {
-	GameID *string `json:"gameID,omitempty"`
-	X      *int32  `json:"x,omitempty"`
-	Y      *int32  `json:"y,omitempty"`
+	GameId *string `json:"game_id,omitempty"`
+	X *int32 `json:"x,omitempty"`
+	Y *int32 `json:"y,omitempty"`
 }
 
 // NewServerMoveRequest instantiates a new ServerMoveRequest object
@@ -41,36 +41,36 @@ func NewServerMoveRequestWithDefaults() *ServerMoveRequest {
 	return &this
 }
 
-// GetGameID returns the GameID field value if set, zero value otherwise.
-func (o *ServerMoveRequest) GetGameID() string {
-	if o == nil || IsNil(o.GameID) {
+// GetGameId returns the GameId field value if set, zero value otherwise.
+func (o *ServerMoveRequest) GetGameId() string {
+	if o == nil || IsNil(o.GameId) {
 		var ret string
 		return ret
 	}
-	return *o.GameID
+	return *o.GameId
 }
 
-// GetGameIDOk returns a tuple with the GameID field value if set, nil otherwise
+// GetGameIdOk returns a tuple with the GameId field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ServerMoveRequest) GetGameIDOk() (*string, bool) {
-	if o == nil || IsNil(o.GameID) {
+func (o *ServerMoveRequest) GetGameIdOk() (*string, bool) {
+	if o == nil || IsNil(o.GameId) {
 		return nil, false
 	}
-	return o.GameID, true
+	return o.GameId, true
 }
 
-// HasGameID returns a boolean if a field has been set.
-func (o *ServerMoveRequest) HasGameID() bool {
-	if o != nil && !IsNil(o.GameID) {
+// HasGameId returns a boolean if a field has been set.
+func (o *ServerMoveRequest) HasGameId() bool {
+	if o != nil && !IsNil(o.GameId) {
 		return true
 	}
 
 	return false
 }
 
-// SetGameID gets a reference to the given string and assigns it to the GameID field.
-func (o *ServerMoveRequest) SetGameID(v string) {
-	o.GameID = &v
+// SetGameId gets a reference to the given string and assigns it to the GameId field.
+func (o *ServerMoveRequest) SetGameId(v string) {
+	o.GameId = &v
 }
 
 // GetX returns the X field value if set, zero value otherwise.
@@ -138,7 +138,7 @@ func (o *ServerMoveRequest) SetY(v int32) {
 }
 
 func (o ServerMoveRequest) MarshalJSON() ([]byte, error) {
-	toSerialize, err := o.ToMap()
+	toSerialize,err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -147,8 +147,8 @@ func (o ServerMoveRequest) MarshalJSON() ([]byte, error) {
 
 func (o ServerMoveRequest) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.GameID) {
-		toSerialize["gameID"] = o.GameID
+	if !IsNil(o.GameId) {
+		toSerialize["game_id"] = o.GameId
 	}
 	if !IsNil(o.X) {
 		toSerialize["x"] = o.X
@@ -194,3 +194,5 @@ func (v *NullableServerMoveRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

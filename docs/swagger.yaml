@@ -15,7 +15,7 @@ definitions:
             type: integer
           type: array
         type: array
-      currentPlayerID:
+      current_player_id:
         description: user ID of the player whose turn it is
         type: string
       id:
@@ -27,11 +27,11 @@ definitions:
         $ref: '#/definitions/game.GameResult'
       status:
         $ref: '#/definitions/game.GameStatus'
-      userID1:
+      user_id1:
         type: string
-      userID2:
+      user_id2:
         type: string
-      winnerID:
+      winner_id:
         type: string
     type: object
   game.GameResult:
@@ -100,17 +100,17 @@ definitions:
     type: object
   server.GiveUpRequest:
     properties:
-      gameID:
+      game_id:
         type: string
     type: object
   server.JoinGameRequest:
     properties:
-      gameID:
+      game_id:
         type: string
     type: object
   server.MoveRequest:
     properties:
-      gameID:
+      game_id:
         type: string
       x:
         type: integer
@@ -121,21 +121,21 @@ definitions:
     properties:
       password:
         type: string
-      userID:
+      user_id:
         type: string
     type: object
   server.UserRefreshTokenRequest:
     properties:
-      refreshToken:
+      refresh_token:
         type: string
-      userID:
+      user_id:
         type: string
     type: object
   server.UserSignupRequest:
     properties:
       password:
         type: string
-      userID:
+      user_id:
         type: string
     type: object
 host: localhost:8080
@@ -429,8 +429,8 @@ paths:
       produces:
       - application/json
       responses:
-        "201":
-          description: Created
+        "200":
+          description: OK
           schema:
             $ref: '#/definitions/auth.TokenPair'
         "400":

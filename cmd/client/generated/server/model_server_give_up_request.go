@@ -19,7 +19,7 @@ var _ MappedNullable = &ServerGiveUpRequest{}
 
 // ServerGiveUpRequest struct for ServerGiveUpRequest
 type ServerGiveUpRequest struct {
-	GameID *string `json:"gameID,omitempty"`
+	GameId *string `json:"game_id,omitempty"`
 }
 
 // NewServerGiveUpRequest instantiates a new ServerGiveUpRequest object
@@ -39,40 +39,40 @@ func NewServerGiveUpRequestWithDefaults() *ServerGiveUpRequest {
 	return &this
 }
 
-// GetGameID returns the GameID field value if set, zero value otherwise.
-func (o *ServerGiveUpRequest) GetGameID() string {
-	if o == nil || IsNil(o.GameID) {
+// GetGameId returns the GameId field value if set, zero value otherwise.
+func (o *ServerGiveUpRequest) GetGameId() string {
+	if o == nil || IsNil(o.GameId) {
 		var ret string
 		return ret
 	}
-	return *o.GameID
+	return *o.GameId
 }
 
-// GetGameIDOk returns a tuple with the GameID field value if set, nil otherwise
+// GetGameIdOk returns a tuple with the GameId field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ServerGiveUpRequest) GetGameIDOk() (*string, bool) {
-	if o == nil || IsNil(o.GameID) {
+func (o *ServerGiveUpRequest) GetGameIdOk() (*string, bool) {
+	if o == nil || IsNil(o.GameId) {
 		return nil, false
 	}
-	return o.GameID, true
+	return o.GameId, true
 }
 
-// HasGameID returns a boolean if a field has been set.
-func (o *ServerGiveUpRequest) HasGameID() bool {
-	if o != nil && !IsNil(o.GameID) {
+// HasGameId returns a boolean if a field has been set.
+func (o *ServerGiveUpRequest) HasGameId() bool {
+	if o != nil && !IsNil(o.GameId) {
 		return true
 	}
 
 	return false
 }
 
-// SetGameID gets a reference to the given string and assigns it to the GameID field.
-func (o *ServerGiveUpRequest) SetGameID(v string) {
-	o.GameID = &v
+// SetGameId gets a reference to the given string and assigns it to the GameId field.
+func (o *ServerGiveUpRequest) SetGameId(v string) {
+	o.GameId = &v
 }
 
 func (o ServerGiveUpRequest) MarshalJSON() ([]byte, error) {
-	toSerialize, err := o.ToMap()
+	toSerialize,err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -81,8 +81,8 @@ func (o ServerGiveUpRequest) MarshalJSON() ([]byte, error) {
 
 func (o ServerGiveUpRequest) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.GameID) {
-		toSerialize["gameID"] = o.GameID
+	if !IsNil(o.GameId) {
+		toSerialize["game_id"] = o.GameId
 	}
 	return toSerialize, nil
 }
@@ -122,3 +122,5 @@ func (v *NullableServerGiveUpRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

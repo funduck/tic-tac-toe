@@ -20,9 +20,9 @@ type GameGameStatus string
 
 // List of game.GameStatus
 const (
-	StatusWaiting    GameGameStatus = "waiting"
+	StatusWaiting GameGameStatus = "waiting"
 	StatusInProgress GameGameStatus = "in_progress"
-	StatusFinished   GameGameStatus = "finished"
+	StatusFinished GameGameStatus = "finished"
 )
 
 // All allowed values of GameGameStatus enum
@@ -110,3 +110,4 @@ func (v *NullableGameGameStatus) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+

@@ -11,11 +11,10 @@ package openapi
 
 import (
 	"context"
-	"testing"
-
-	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"testing"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
 )
 
 func Test_openapi_UsersAPIService(t *testing.T) {
@@ -25,7 +24,7 @@ func Test_openapi_UsersAPIService(t *testing.T) {
 
 	t.Run("Test UsersAPIService Login", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		resp, httpRes, err := apiClient.UsersAPI.Login(context.Background()).Execute()
 
@@ -37,7 +36,7 @@ func Test_openapi_UsersAPIService(t *testing.T) {
 
 	t.Run("Test UsersAPIService RefreshToken", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		resp, httpRes, err := apiClient.UsersAPI.RefreshToken(context.Background()).Execute()
 
@@ -49,7 +48,7 @@ func Test_openapi_UsersAPIService(t *testing.T) {
 
 	t.Run("Test UsersAPIService Signup", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		resp, httpRes, err := apiClient.UsersAPI.Signup(context.Background()).Execute()
 

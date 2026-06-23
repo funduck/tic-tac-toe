@@ -20,20 +20,20 @@ type ServerErrorCode string
 
 // List of server.ErrorCode
 const (
-	CodeGameNotFound          ServerErrorCode = "ERR_GAME_NOT_FOUND"
-	CodeGameNotWaiting        ServerErrorCode = "ERR_GAME_NOT_WAITING"
-	CodeGameNotActive         ServerErrorCode = "ERR_GAME_NOT_ACTIVE"
-	CodeNotYourTurn           ServerErrorCode = "ERR_NOT_YOUR_TURN"
-	CodeNotInGame             ServerErrorCode = "ERR_NOT_IN_GAME"
-	CodeCellOccupied          ServerErrorCode = "ERR_CELL_OCCUPIED"
-	CodeOutOfBounds           ServerErrorCode = "ERR_OUT_OF_BOUNDS"
-	CodePasswordTooShort      ServerErrorCode = "ERR_PASSWORD_TOO_SHORT"
-	CodeUserAlreadyExists     ServerErrorCode = "ERR_USER_ALREADY_EXISTS"
-	CodeUserNotFound          ServerErrorCode = "ERR_USER_NOT_FOUND"
-	CodeInvalidCredentials    ServerErrorCode = "ERR_INVALID_CREDENTIALS"
-	CodeRefreshTokenDeleted   ServerErrorCode = "ERR_REFRESH_TOKEN_DELETED"
-	CodeTokenInvalid          ServerErrorCode = "ERR_TOKEN_INVALID"
-	CodeTokenExpired          ServerErrorCode = "ERR_TOKEN_EXPIRED"
+	CodeGameNotFound ServerErrorCode = "ERR_GAME_NOT_FOUND"
+	CodeGameNotWaiting ServerErrorCode = "ERR_GAME_NOT_WAITING"
+	CodeGameNotActive ServerErrorCode = "ERR_GAME_NOT_ACTIVE"
+	CodeNotYourTurn ServerErrorCode = "ERR_NOT_YOUR_TURN"
+	CodeNotInGame ServerErrorCode = "ERR_NOT_IN_GAME"
+	CodeCellOccupied ServerErrorCode = "ERR_CELL_OCCUPIED"
+	CodeOutOfBounds ServerErrorCode = "ERR_OUT_OF_BOUNDS"
+	CodePasswordTooShort ServerErrorCode = "ERR_PASSWORD_TOO_SHORT"
+	CodeUserAlreadyExists ServerErrorCode = "ERR_USER_ALREADY_EXISTS"
+	CodeUserNotFound ServerErrorCode = "ERR_USER_NOT_FOUND"
+	CodeInvalidCredentials ServerErrorCode = "ERR_INVALID_CREDENTIALS"
+	CodeRefreshTokenDeleted ServerErrorCode = "ERR_REFRESH_TOKEN_DELETED"
+	CodeTokenInvalid ServerErrorCode = "ERR_TOKEN_INVALID"
+	CodeTokenExpired ServerErrorCode = "ERR_TOKEN_EXPIRED"
 	CodeTokenSignatureInvalid ServerErrorCode = "ERR_TOKEN_SIGNATURE_INVALID"
 )
 
@@ -134,3 +134,4 @@ func (v *NullableServerErrorCode) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+

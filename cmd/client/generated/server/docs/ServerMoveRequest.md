@@ -4,7 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**GameID** | Pointer to **string** |  | [optional] 
+**GameId** | Pointer to **string** |  | [optional] 
 **X** | Pointer to **int32** |  | [optional] 
 **Y** | Pointer to **int32** |  | [optional] 
 
@@ -27,30 +27,30 @@ NewServerMoveRequestWithDefaults instantiates a new ServerMoveRequest object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
-### GetGameID
+### GetGameId
 
-`func (o *ServerMoveRequest) GetGameID() string`
+`func (o *ServerMoveRequest) GetGameId() string`
 
-GetGameID returns the GameID field if non-nil, zero value otherwise.
+GetGameId returns the GameId field if non-nil, zero value otherwise.
 
-### GetGameIDOk
+### GetGameIdOk
 
-`func (o *ServerMoveRequest) GetGameIDOk() (*string, bool)`
+`func (o *ServerMoveRequest) GetGameIdOk() (*string, bool)`
 
-GetGameIDOk returns a tuple with the GameID field if it's non-nil, zero value otherwise
+GetGameIdOk returns a tuple with the GameId field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetGameID
+### SetGameId
 
-`func (o *ServerMoveRequest) SetGameID(v string)`
+`func (o *ServerMoveRequest) SetGameId(v string)`
 
-SetGameID sets GameID field to given value.
+SetGameId sets GameId field to given value.
 
-### HasGameID
+### HasGameId
 
-`func (o *ServerMoveRequest) HasGameID() bool`
+`func (o *ServerMoveRequest) HasGameId() bool`
 
-HasGameID returns a boolean if a field has been set.
+HasGameId returns a boolean if a field has been set.
 
 ### GetX
 

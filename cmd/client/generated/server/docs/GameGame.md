@@ -5,14 +5,14 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Board** | Pointer to **[][]int32** |  | [optional] 
-**CurrentPlayerID** | Pointer to **string** | user ID of the player whose turn it is | [optional] 
+**CurrentPlayerId** | Pointer to **string** | user ID of the player whose turn it is | [optional] 
 **Id** | Pointer to **string** |  | [optional] 
 **Private** | Pointer to **bool** | optional field to indicate if the game is private or public | [optional] 
 **Result** | Pointer to [**GameGameResult**](GameGameResult.md) |  | [optional] 
 **Status** | Pointer to [**GameGameStatus**](GameGameStatus.md) |  | [optional] 
-**UserID1** | Pointer to **string** |  | [optional] 
-**UserID2** | Pointer to **string** |  | [optional] 
-**WinnerID** | Pointer to **string** |  | [optional] 
+**UserId1** | Pointer to **string** |  | [optional] 
+**UserId2** | Pointer to **string** |  | [optional] 
+**WinnerId** | Pointer to **string** |  | [optional] 
 
 ## Methods
 
@@ -58,30 +58,30 @@ SetBoard sets Board field to given value.
 
 HasBoard returns a boolean if a field has been set.
 
-### GetCurrentPlayerID
+### GetCurrentPlayerId
 
-`func (o *GameGame) GetCurrentPlayerID() string`
+`func (o *GameGame) GetCurrentPlayerId() string`
 
-GetCurrentPlayerID returns the CurrentPlayerID field if non-nil, zero value otherwise.
+GetCurrentPlayerId returns the CurrentPlayerId field if non-nil, zero value otherwise.
 
-### GetCurrentPlayerIDOk
+### GetCurrentPlayerIdOk
 
-`func (o *GameGame) GetCurrentPlayerIDOk() (*string, bool)`
+`func (o *GameGame) GetCurrentPlayerIdOk() (*string, bool)`
 
-GetCurrentPlayerIDOk returns a tuple with the CurrentPlayerID field if it's non-nil, zero value otherwise
+GetCurrentPlayerIdOk returns a tuple with the CurrentPlayerId field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetCurrentPlayerID
+### SetCurrentPlayerId
 
-`func (o *GameGame) SetCurrentPlayerID(v string)`
+`func (o *GameGame) SetCurrentPlayerId(v string)`
 
-SetCurrentPlayerID sets CurrentPlayerID field to given value.
+SetCurrentPlayerId sets CurrentPlayerId field to given value.
 
-### HasCurrentPlayerID
+### HasCurrentPlayerId
 
-`func (o *GameGame) HasCurrentPlayerID() bool`
+`func (o *GameGame) HasCurrentPlayerId() bool`
 
-HasCurrentPlayerID returns a boolean if a field has been set.
+HasCurrentPlayerId returns a boolean if a field has been set.
 
 ### GetId
 
@@ -183,80 +183,80 @@ SetStatus sets Status field to given value.
 
 HasStatus returns a boolean if a field has been set.
 
-### GetUserID1
+### GetUserId1
 
-`func (o *GameGame) GetUserID1() string`
+`func (o *GameGame) GetUserId1() string`
 
-GetUserID1 returns the UserID1 field if non-nil, zero value otherwise.
+GetUserId1 returns the UserId1 field if non-nil, zero value otherwise.
 
-### GetUserID1Ok
+### GetUserId1Ok
 
-`func (o *GameGame) GetUserID1Ok() (*string, bool)`
+`func (o *GameGame) GetUserId1Ok() (*string, bool)`
 
-GetUserID1Ok returns a tuple with the UserID1 field if it's non-nil, zero value otherwise
+GetUserId1Ok returns a tuple with the UserId1 field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetUserID1
+### SetUserId1
 
-`func (o *GameGame) SetUserID1(v string)`
+`func (o *GameGame) SetUserId1(v string)`
 
-SetUserID1 sets UserID1 field to given value.
+SetUserId1 sets UserId1 field to given value.
 
-### HasUserID1
+### HasUserId1
 
-`func (o *GameGame) HasUserID1() bool`
+`func (o *GameGame) HasUserId1() bool`
 
-HasUserID1 returns a boolean if a field has been set.
+HasUserId1 returns a boolean if a field has been set.
 
-### GetUserID2
+### GetUserId2
 
-`func (o *GameGame) GetUserID2() string`
+`func (o *GameGame) GetUserId2() string`
 
-GetUserID2 returns the UserID2 field if non-nil, zero value otherwise.
+GetUserId2 returns the UserId2 field if non-nil, zero value otherwise.
 
-### GetUserID2Ok
+### GetUserId2Ok
 
-`func (o *GameGame) GetUserID2Ok() (*string, bool)`
+`func (o *GameGame) GetUserId2Ok() (*string, bool)`
 
-GetUserID2Ok returns a tuple with the UserID2 field if it's non-nil, zero value otherwise
+GetUserId2Ok returns a tuple with the UserId2 field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetUserID2
+### SetUserId2
 
-`func (o *GameGame) SetUserID2(v string)`
+`func (o *GameGame) SetUserId2(v string)`
 
-SetUserID2 sets UserID2 field to given value.
+SetUserId2 sets UserId2 field to given value.
 
-### HasUserID2
+### HasUserId2
 
-`func (o *GameGame) HasUserID2() bool`
+`func (o *GameGame) HasUserId2() bool`
 
-HasUserID2 returns a boolean if a field has been set.
+HasUserId2 returns a boolean if a field has been set.
 
-### GetWinnerID
+### GetWinnerId
 
-`func (o *GameGame) GetWinnerID() string`
+`func (o *GameGame) GetWinnerId() string`
 
-GetWinnerID returns the WinnerID field if non-nil, zero value otherwise.
+GetWinnerId returns the WinnerId field if non-nil, zero value otherwise.
 
-### GetWinnerIDOk
+### GetWinnerIdOk
 
-`func (o *GameGame) GetWinnerIDOk() (*string, bool)`
+`func (o *GameGame) GetWinnerIdOk() (*string, bool)`
 
-GetWinnerIDOk returns a tuple with the WinnerID field if it's non-nil, zero value otherwise
+GetWinnerIdOk returns a tuple with the WinnerId field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetWinnerID
+### SetWinnerId
 
-`func (o *GameGame) SetWinnerID(v string)`
+`func (o *GameGame) SetWinnerId(v string)`
 
-SetWinnerID sets WinnerID field to given value.
+SetWinnerId sets WinnerId field to given value.
 
-### HasWinnerID
+### HasWinnerId
 
-`func (o *GameGame) HasWinnerID() bool`
+`func (o *GameGame) HasWinnerId() bool`
 
-HasWinnerID returns a boolean if a field has been set.
+HasWinnerId returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

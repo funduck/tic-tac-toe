@@ -19,7 +19,7 @@ func NewUserService(apiClient *openapi.APIClient) *UserService {
 // Signup registers a new user and returns a token pair
 func (s *UserService) Signup(ctx context.Context, userID, password string) (*openapi.AuthTokenPair, error) {
 	req := openapi.NewServerUserSignupRequest()
-	req.SetUserID(userID)
+	req.SetUserId(userID)
 	req.SetPassword(password)
 	tokenPair, r, err := s.api.Signup(ctx).Request(*req).Execute()
 	if err != nil {
@@ -31,7 +31,7 @@ func (s *UserService) Signup(ctx context.Context, userID, password string) (*ope
 // Login authenticates an existing user and returns a token pair
 func (s *UserService) Login(ctx context.Context, userID, password string) (*openapi.AuthTokenPair, error) {
 	req := openapi.NewServerUserLoginRequest()
-	req.SetUserID(userID)
+	req.SetUserId(userID)
 	req.SetPassword(password)
 	tokenPair, r, err := s.api.Login(ctx).Request(*req).Execute()
 	if err != nil {
@@ -43,7 +43,7 @@ func (s *UserService) Login(ctx context.Context, userID, password string) (*open
 // RefreshToken exchanges a refresh token for a new token pair
 func (s *UserService) RefreshToken(ctx context.Context, userID, refreshToken string) (*openapi.AuthTokenPair, error) {
 	req := openapi.NewServerUserRefreshTokenRequest()
-	req.SetUserID(userID)
+	req.SetUserId(userID)
 	req.SetRefreshToken(refreshToken)
 	tokenPair, r, err := s.api.RefreshToken(ctx).Request(*req).Execute()
 	if err != nil {

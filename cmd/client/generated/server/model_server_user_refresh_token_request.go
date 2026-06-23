@@ -19,8 +19,8 @@ var _ MappedNullable = &ServerUserRefreshTokenRequest{}
 
 // ServerUserRefreshTokenRequest struct for ServerUserRefreshTokenRequest
 type ServerUserRefreshTokenRequest struct {
-	RefreshToken *string `json:"refreshToken,omitempty"`
-	UserID       *string `json:"userID,omitempty"`
+	RefreshToken *string `json:"refresh_token,omitempty"`
+	UserId *string `json:"user_id,omitempty"`
 }
 
 // NewServerUserRefreshTokenRequest instantiates a new ServerUserRefreshTokenRequest object
@@ -72,40 +72,40 @@ func (o *ServerUserRefreshTokenRequest) SetRefreshToken(v string) {
 	o.RefreshToken = &v
 }
 
-// GetUserID returns the UserID field value if set, zero value otherwise.
-func (o *ServerUserRefreshTokenRequest) GetUserID() string {
-	if o == nil || IsNil(o.UserID) {
+// GetUserId returns the UserId field value if set, zero value otherwise.
+func (o *ServerUserRefreshTokenRequest) GetUserId() string {
+	if o == nil || IsNil(o.UserId) {
 		var ret string
 		return ret
 	}
-	return *o.UserID
+	return *o.UserId
 }
 
-// GetUserIDOk returns a tuple with the UserID field value if set, nil otherwise
+// GetUserIdOk returns a tuple with the UserId field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ServerUserRefreshTokenRequest) GetUserIDOk() (*string, bool) {
-	if o == nil || IsNil(o.UserID) {
+func (o *ServerUserRefreshTokenRequest) GetUserIdOk() (*string, bool) {
+	if o == nil || IsNil(o.UserId) {
 		return nil, false
 	}
-	return o.UserID, true
+	return o.UserId, true
 }
 
-// HasUserID returns a boolean if a field has been set.
-func (o *ServerUserRefreshTokenRequest) HasUserID() bool {
-	if o != nil && !IsNil(o.UserID) {
+// HasUserId returns a boolean if a field has been set.
+func (o *ServerUserRefreshTokenRequest) HasUserId() bool {
+	if o != nil && !IsNil(o.UserId) {
 		return true
 	}
 
 	return false
 }
 
-// SetUserID gets a reference to the given string and assigns it to the UserID field.
-func (o *ServerUserRefreshTokenRequest) SetUserID(v string) {
-	o.UserID = &v
+// SetUserId gets a reference to the given string and assigns it to the UserId field.
+func (o *ServerUserRefreshTokenRequest) SetUserId(v string) {
+	o.UserId = &v
 }
 
 func (o ServerUserRefreshTokenRequest) MarshalJSON() ([]byte, error) {
-	toSerialize, err := o.ToMap()
+	toSerialize,err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -115,10 +115,10 @@ func (o ServerUserRefreshTokenRequest) MarshalJSON() ([]byte, error) {
 func (o ServerUserRefreshTokenRequest) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.RefreshToken) {
-		toSerialize["refreshToken"] = o.RefreshToken
+		toSerialize["refresh_token"] = o.RefreshToken
 	}
-	if !IsNil(o.UserID) {
-		toSerialize["userID"] = o.UserID
+	if !IsNil(o.UserId) {
+		toSerialize["user_id"] = o.UserId
 	}
 	return toSerialize, nil
 }
@@ -158,3 +158,5 @@ func (v *NullableServerUserRefreshTokenRequest) UnmarshalJSON(src []byte) error 
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

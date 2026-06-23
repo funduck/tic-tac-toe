@@ -20,7 +20,7 @@ type GameGameResult string
 
 // List of game.GameResult
 const (
-	ResultWin  GameGameResult = "win"
+	ResultWin GameGameResult = "win"
 	ResultDraw GameGameResult = "draw"
 )
 
@@ -108,3 +108,4 @@ func (v *NullableGameGameResult) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+

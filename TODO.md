@@ -1,6 +1,8 @@
-Unify code style across the project
+[x] Unify code style across the project
 
-Improve generated code quality by filling AGENTS.md
+[x] Improve generated code quality by filling AGENTS.md
+
+Return refresh token in cookie so that in browser client it is hidden from JS and not accessible to XSS attacks
 
 Allow forfeit for client at any time
 

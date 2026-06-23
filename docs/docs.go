@@ -449,8 +449,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created",
+                    "200": {
+                        "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/auth.TokenPair"
                         }
@@ -501,7 +501,7 @@ const docTemplate = `{
                         }
                     }
                 },
-                "currentPlayerID": {
+                "current_player_id": {
                     "description": "user ID of the player whose turn it is",
                     "type": "string"
                 },
@@ -518,13 +518,13 @@ const docTemplate = `{
                 "status": {
                     "$ref": "#/definitions/game.GameStatus"
                 },
-                "userID1": {
+                "user_id1": {
                     "type": "string"
                 },
-                "userID2": {
+                "user_id2": {
                     "type": "string"
                 },
-                "winnerID": {
+                "winner_id": {
                     "type": "string"
                 }
             }
@@ -612,7 +612,7 @@ const docTemplate = `{
         "server.GiveUpRequest": {
             "type": "object",
             "properties": {
-                "gameID": {
+                "game_id": {
                     "type": "string"
                 }
             }
@@ -620,7 +620,7 @@ const docTemplate = `{
         "server.JoinGameRequest": {
             "type": "object",
             "properties": {
-                "gameID": {
+                "game_id": {
                     "type": "string"
                 }
             }
@@ -628,7 +628,7 @@ const docTemplate = `{
         "server.MoveRequest": {
             "type": "object",
             "properties": {
-                "gameID": {
+                "game_id": {
                     "type": "string"
                 },
                 "x": {
@@ -645,7 +645,7 @@ const docTemplate = `{
                 "password": {
                     "type": "string"
                 },
-                "userID": {
+                "user_id": {
                     "type": "string"
                 }
             }
@@ -653,10 +653,10 @@ const docTemplate = `{
         "server.UserRefreshTokenRequest": {
             "type": "object",
             "properties": {
-                "refreshToken": {
+                "refresh_token": {
                     "type": "string"
                 },
-                "userID": {
+                "user_id": {
                     "type": "string"
                 }
             }
@@ -667,7 +667,7 @@ const docTemplate = `{
                 "password": {
                     "type": "string"
                 },
-                "userID": {
+                "user_id": {
                     "type": "string"
                 }
             }

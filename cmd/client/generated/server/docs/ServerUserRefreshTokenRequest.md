@@ -5,7 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **RefreshToken** | Pointer to **string** |  | [optional] 
-**UserID** | Pointer to **string** |  | [optional] 
+**UserId** | Pointer to **string** |  | [optional] 
 
 ## Methods
 
@@ -51,30 +51,30 @@ SetRefreshToken sets RefreshToken field to given value.
 
 HasRefreshToken returns a boolean if a field has been set.
 
-### GetUserID
+### GetUserId
 
-`func (o *ServerUserRefreshTokenRequest) GetUserID() string`
+`func (o *ServerUserRefreshTokenRequest) GetUserId() string`
 
-GetUserID returns the UserID field if non-nil, zero value otherwise.
+GetUserId returns the UserId field if non-nil, zero value otherwise.
 
-### GetUserIDOk
+### GetUserIdOk
 
-`func (o *ServerUserRefreshTokenRequest) GetUserIDOk() (*string, bool)`
+`func (o *ServerUserRefreshTokenRequest) GetUserIdOk() (*string, bool)`
 
-GetUserIDOk returns a tuple with the UserID field if it's non-nil, zero value otherwise
+GetUserIdOk returns a tuple with the UserId field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetUserID
+### SetUserId
 
-`func (o *ServerUserRefreshTokenRequest) SetUserID(v string)`
+`func (o *ServerUserRefreshTokenRequest) SetUserId(v string)`
 
-SetUserID sets UserID field to given value.
+SetUserId sets UserId field to given value.
 
-### HasUserID
+### HasUserId
 
-`func (o *ServerUserRefreshTokenRequest) HasUserID() bool`
+`func (o *ServerUserRefreshTokenRequest) HasUserId() bool`
 
-HasUserID returns a boolean if a field has been set.
+HasUserId returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

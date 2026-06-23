@@ -13,11 +13,11 @@ func (g *Game) GetOpponentID() string {
 	if g.GameGame == nil {
 		return ""
 	}
-	if g.UserID1 != nil && *g.UserID1 != UserID {
-		return *g.UserID1
+	if g.UserId1 != nil && *g.UserId1 != UserID {
+		return *g.UserId1
 	}
-	if g.UserID2 != nil && *g.UserID2 != UserID {
-		return *g.UserID2
+	if g.UserId2 != nil && *g.UserId2 != UserID {
+		return *g.UserId2
 	}
 	return ""
 }
@@ -40,34 +40,34 @@ func (g *Game) GetStatus() openapi.GameGameStatus {
 
 // GetCurrentPlayerID returns the current player ID
 func (g *Game) GetCurrentPlayerID() string {
-	if g.GameGame == nil || g.CurrentPlayerID == nil {
+	if g.GameGame == nil || g.CurrentPlayerId == nil {
 		return ""
 	}
-	return *g.CurrentPlayerID
+	return *g.CurrentPlayerId
 }
 
 // GetUserID1 returns the first player ID
 func (g *Game) GetUserID1() string {
-	if g.GameGame == nil || g.UserID1 == nil {
+	if g.GameGame == nil || g.UserId1 == nil {
 		return ""
 	}
-	return *g.UserID1
+	return *g.UserId1
 }
 
 // GetUserID2 returns the second player ID
 func (g *Game) GetUserID2() string {
-	if g.GameGame == nil || g.UserID2 == nil {
+	if g.GameGame == nil || g.UserId2 == nil {
 		return ""
 	}
-	return *g.UserID2
+	return *g.UserId2
 }
 
 // GetWinnerID returns the winner ID
 func (g *Game) GetWinnerID() string {
-	if g.GameGame == nil || g.WinnerID == nil {
+	if g.GameGame == nil || g.WinnerId == nil {
 		return ""
 	}
-	return *g.WinnerID
+	return *g.WinnerId
 }
 
 // GetResult returns the game result

@@ -4,7 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**GameID** | Pointer to **string** |  | [optional] 
+**GameId** | Pointer to **string** |  | [optional] 
 
 ## Methods
 
@@ -25,30 +25,30 @@ NewServerGiveUpRequestWithDefaults instantiates a new ServerGiveUpRequest object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
-### GetGameID
+### GetGameId
 
-`func (o *ServerGiveUpRequest) GetGameID() string`
+`func (o *ServerGiveUpRequest) GetGameId() string`
 
-GetGameID returns the GameID field if non-nil, zero value otherwise.
+GetGameId returns the GameId field if non-nil, zero value otherwise.
 
-### GetGameIDOk
+### GetGameIdOk
 
-`func (o *ServerGiveUpRequest) GetGameIDOk() (*string, bool)`
+`func (o *ServerGiveUpRequest) GetGameIdOk() (*string, bool)`
 
-GetGameIDOk returns a tuple with the GameID field if it's non-nil, zero value otherwise
+GetGameIdOk returns a tuple with the GameId field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetGameID
+### SetGameId
 
-`func (o *ServerGiveUpRequest) SetGameID(v string)`
+`func (o *ServerGiveUpRequest) SetGameId(v string)`
 
-SetGameID sets GameID field to given value.
+SetGameId sets GameId field to given value.
 
-### HasGameID
+### HasGameId
 
-`func (o *ServerGiveUpRequest) HasGameID() bool`
+`func (o *ServerGiveUpRequest) HasGameId() bool`
 
-HasGameID returns a boolean if a field has been set.
+HasGameId returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

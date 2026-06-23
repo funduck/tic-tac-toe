@@ -27,13 +27,13 @@ var (
 // UserID1 plays as X (mark 1), UserID2 plays as O (mark 2).
 type Game struct {
 	ID              string     `json:"id"`
-	UserID1         string     `json:"userID1"`
-	UserID2         string     `json:"userID2"`
+	UserID1         string     `json:"user_id1"`
+	UserID2         string     `json:"user_id2"`
 	Board           [3][3]int  `json:"board"`
-	CurrentPlayerID string     `json:"currentPlayerID"` // user ID of the player whose turn it is
+	CurrentPlayerID string     `json:"current_player_id"` // user ID of the player whose turn it is
 	Status          GameStatus `json:"status"`
 	Result          GameResult `json:"result,omitempty"`
-	WinnerID        string     `json:"winnerID,omitempty"`
+	WinnerID        string     `json:"winner_id,omitempty"`
 	Private         bool       `json:"private"` // optional field to indicate if the game is private or public
 }
 
