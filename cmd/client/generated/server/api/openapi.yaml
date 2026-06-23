@@ -241,6 +241,52 @@ paths:
       tags:
       - games
       x-codegen-request-body-name: request
+  /api/games/{gameID}/quit:
+    post:
+      operationId: quitGame
+      parameters:
+      - description: Game ID
+        in: path
+        name: gameID
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/server.QuitRequest"
+        description: Quit request
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/game.Game"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Bad Request
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Not Found
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Conflict
+      summary: Quit a game that is still waiting for an opponent
+      tags:
+      - games
+      x-codegen-request-body-name: request
   /api/users/login:
     post:
       operationId: login
@@ -400,11 +446,13 @@ components:
       - waiting
       - in_progress
       - finished
+      - cancelled
       type: string
       x-enum-varnames:
       - StatusWaiting
       - StatusInProgress
       - StatusFinished
+      - StatusCancelled
     server.AccessTokenResponse:
       example:
         access_token: access_token
@@ -479,6 +527,11 @@ components:
           type: integer
         "y":
           type: integer
+      type: object
+    server.QuitRequest:
+      properties:
+        game_id:
+          type: string
       type: object
     server.UserLoginRequest:
       properties:

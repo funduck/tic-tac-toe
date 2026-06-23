@@ -320,6 +320,65 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/games/{gameID}/quit": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "games"
+                ],
+                "summary": "Quit a game that is still waiting for an opponent",
+                "operationId": "quitGame",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Game ID",
+                        "name": "gameID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Quit request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/server.QuitRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/game.Game"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/server.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/server.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/server.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/users/login": {
             "post": {
                 "consumes": [
@@ -517,12 +576,14 @@ const docTemplate = `{
             "enum": [
                 "waiting",
                 "in_progress",
-                "finished"
+                "finished",
+                "cancelled"
             ],
             "x-enum-varnames": [
                 "StatusWaiting",
                 "StatusInProgress",
-                "StatusFinished"
+                "StatusFinished",
+                "StatusCancelled"
             ]
         },
         "server.AccessTokenResponse": {
@@ -616,6 +677,14 @@ const docTemplate = `{
                 },
                 "y": {
                     "type": "integer"
+                }
+            }
+        },
+        "server.QuitRequest": {
+            "type": "object",
+            "properties": {
+                "game_id": {
+                    "type": "string"
                 }
             }
         },

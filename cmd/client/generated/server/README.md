@@ -77,6 +77,7 @@ Class | Method | HTTP request | Description
 *GamesAPI* | [**JoinAnyGame**](docs/GamesAPI.md#joinanygame) | **Post** /api/games/join | Join any available game
 *GamesAPI* | [**JoinGame**](docs/GamesAPI.md#joingame) | **Post** /api/games/{gameID}/join | Join a waiting game
 *GamesAPI* | [**MakeMove**](docs/GamesAPI.md#makemove) | **Post** /api/games/{gameID}/move | Make a move
+*GamesAPI* | [**QuitGame**](docs/GamesAPI.md#quitgame) | **Post** /api/games/{gameID}/quit | Quit a game that is still waiting for an opponent
 *UsersAPI* | [**Login**](docs/UsersAPI.md#login) | **Post** /api/users/login | Log in an existing user
 *UsersAPI* | [**RefreshToken**](docs/UsersAPI.md#refreshtoken) | **Post** /api/users/refresh-token | Refresh access token using refresh token
 *UsersAPI* | [**Signup**](docs/UsersAPI.md#signup) | **Post** /api/users/signup | Sign up a new user
@@ -94,6 +95,7 @@ Class | Method | HTTP request | Description
  - [ServerGiveUpRequest](docs/ServerGiveUpRequest.md)
  - [ServerJoinGameRequest](docs/ServerJoinGameRequest.md)
  - [ServerMoveRequest](docs/ServerMoveRequest.md)
+ - [ServerQuitRequest](docs/ServerQuitRequest.md)
  - [ServerUserLoginRequest](docs/ServerUserLoginRequest.md)
  - [ServerUserSignupRequest](docs/ServerUserSignupRequest.md)
 

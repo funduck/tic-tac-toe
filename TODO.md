@@ -22,21 +22,21 @@ Proposals to make the CLI client feel like a game rather than a request log. Ord
 
 ### Display layer (self-contained, low risk)
 
-- [ ] **Make the board self-explanatory.** Render the coordinate inside empty cells (e.g. `a0 a1 a2 / b0 …`) so the move name is on the board. See `cmd/client/lib/display_service.go` (`PrintBoard`).
-- [ ] **Fix the axis mismatch.** Rows use `a`-`c` while columns use `0`-`2` (different bases). Switch to either classic `1-9` numpad layout or 1-based `a1`-`c3` so input is unambiguous. Update `PrintBoard` and `InputService.PromptMove`.
-- [ ] **Redraw in place instead of scrolling.** Clear the screen and redraw a single stable frame (board + "You are X" + whose turn) on each update, instead of appending a fresh board every poll/turn. Keep a `DEBUG`/no-TTY linear fallback.
-- [ ] **Highlight what changed.** Mark/colorize the last-played cell so the opponent's move is easy to spot; highlight the winning line on a win. See `PrintBoard` / `PrintResult`.
-- [ ] **Persistent status line.** Keep mark + whose turn + opponent name pinned above the board instead of printing "You are X" once at startup (`cmd/client/app/start.go`) where it scrolls away.
+- [x] **Make the board self-explanatory.** Numpad `1`-`9` layout; empty cells show their move number. `cmd/client/lib/display_service.go`.
+- [x] **Fix the axis mismatch.** Adopted classic `1-9` numpad layout; `InputService.ParseMove` accepts single keys `1`-`9`.
+- [x] **Redraw in place instead of scrolling.** `RenderFrame` clears + redraws a single frame on a TTY; linear fallback under `DEBUG`/piped output. `cmd/client/lib/terminal.go`, `display_service.go`.
+- [x] **Highlight what changed.** Last move (yellow) and winning line (green) highlighted. `LastMove` tracked in `state.go`, diffed in `play_game.go`.
+- [x] **Persistent status line.** Header (mark · opponent · whose turn) pinned above the board in `RenderFrame`.
 
 ### Friction / controls
 
-- [ ] **Forfeit / quit at any time.** (Also tracked in backlog above.) Input is only read on your turn in `cmd/client/app/play_game.go`, so a player waiting on an opponent cannot leave. Needs an input goroutine that listens while polling; also unblocks leaving a `waiting` game cleanly.
-- [ ] **Don't pass credentials on the command line.** `make start-client USER=alice PASSWORD=alicepass` leaks the password into shell history and the process list. Prompt for the password interactively (masked) when not provided.
+- [x] **Forfeit / quit at any time.** Concurrent stdin reader (`InputService.Lines`) + select loop in `play_game.go`; `q` forfeits an in-progress game via GiveUp. While still `waiting` for an opponent, `q` now cleanly leaves via the `POST /api/games/{gameID}/quit` endpoint, which cancels the game (`StatusCancelled`).
+- [x] **Don't pass credentials on the command line.** `-password` is now optional; masked prompt via `golang.org/x/term` when omitted. `cmd/client/main.go`.
 
 ### Messaging
 
-- [ ] **Friendlier connection errors.** Map `dial tcp ... connection refused` to something like "Can't reach the server — is it running on :8080?".
-- [ ] **Human-readable move rejections.** `Move rejected: %v` in `play_game.go` wraps the raw API error; map known error codes to short lines ("That cell is taken", "Not your turn"). Addresses the "are server responses meaningful?" backlog item.
+- [x] **Friendlier connection errors.** `lib.FriendlyMessage` maps network failures to "Can't reach the server — is it running on :8080?".
+- [x] **Human-readable move rejections.** `lib.FriendlyMessage` maps API error codes to short lines; used in `play_game.go`/`start.go`.
 
 ## Larger features (beyond polish)
 

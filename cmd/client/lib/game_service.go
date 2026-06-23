@@ -2,7 +2,6 @@ package lib
 
 import (
 	"context"
-	"time"
 
 	openapi "github.com/GIT_USER_ID/GIT_REPO_ID"
 )
@@ -69,6 +68,16 @@ func (s *GameService) GiveUp(ctx context.Context, gameID, userID string) (*Game,
 	return WrapGame(g), nil
 }
 
+// Quit leaves a game that is still waiting for an opponent, cancelling it.
+func (s *GameService) Quit(ctx context.Context, gameID, userID string) (*Game, error) {
+	req := openapi.NewServerQuitRequest()
+	g, r, err := s.api.QuitGame(ctx, gameID).Request(*req).Execute()
+	if err != nil {
+		return nil, parseError(r, err)
+	}
+	return WrapGame(g), nil
+}
+
 // GetGame retrieves the current game state
 func (s *GameService) GetGame(ctx context.Context, gameID string) (*Game, error) {
 	g, r, err := s.api.GetGame(ctx, gameID).Execute()
@@ -76,29 +85,4 @@ func (s *GameService) GetGame(ctx context.Context, gameID string) (*Game, error)
 		return nil, parseError(r, err)
 	}
 	return WrapGame(g), nil
-}
-
-// PollUntil polls the game until the predicate returns true or an error occurs
-// Retries up to maxRetries times with exponential backoff on errors
-func (s *GameService) PollUntil(ctx context.Context, gameID string, predicate func(*Game) bool, maxRetries int) (*Game, error) {
-	retries := 0
-	for {
-		g, err := s.GetGame(ctx, gameID)
-		if err != nil {
-			retries++
-			if retries >= maxRetries {
-				return nil, err
-			}
-			// Exponential backoff
-			time.Sleep(time.Duration(retries) * time.Second)
-			continue
-		}
-		// Reset retries on success
-		retries = 0
-
-		if predicate(g) {
-			return g, nil
-		}
-		time.Sleep(time.Second)
-	}
 }

@@ -18,6 +18,10 @@ type GiveUpRequest struct {
 	GameID string `json:"game_id"`
 }
 
+type QuitRequest struct {
+	GameID string `json:"game_id"`
+}
+
 type UserSignupRequest struct {
 	UserID   string `json:"user_id"`
 	Password string `json:"password"`

@@ -17,6 +17,7 @@ type GameService interface {
 	JoinAnyGame(ctx context.Context, userID string) (*game.Game, error)
 	MakeMove(ctx context.Context, gameID, userID string, x, y int) (*game.Game, error)
 	GiveUp(ctx context.Context, gameID, userID string) (*game.Game, error)
+	Quit(ctx context.Context, gameID, userID string) (*game.Game, error)
 	GetGame(ctx context.Context, gameID string) (*game.Game, error)
 }
 
@@ -194,6 +195,37 @@ func (h *GameHandler) GiveUp(w http.ResponseWriter, r *http.Request) {
 	g, err := h.svc.GiveUp(ctx, gameID, userID)
 	if err != nil {
 		h.logger.Warn("give up failed", "gameID", gameID, "userID", userID, "error", err)
+		writeDomainError(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, g)
+}
+
+// Quit godoc
+//
+//	@Summary	Quit a game that is still waiting for an opponent
+//	@ID		quitGame
+//	@Tags		games
+//	@Accept		json
+//	@Produce	json
+//	@Param		gameID	path		string		true	"Game ID"
+//	@Param		request	body		QuitRequest	true	"Quit request"
+//	@Success	200		{object}	game.Game
+//	@Failure	400		{object}	ErrorResponse
+//	@Failure	404		{object}	ErrorResponse
+//	@Failure	409		{object}	ErrorResponse
+//	@Router		/api/games/{gameID}/quit [post]
+func (h *GameHandler) Quit(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	userID := userIDFromContext(ctx)
+	gameID := chi.URLParam(r, "gameID")
+
+	h.logger.Debug("request", "method", r.Method, "path", r.URL.Path, "gameID", gameID, "userID", userID)
+
+	g, err := h.svc.Quit(ctx, gameID, userID)
+	if err != nil {
+		h.logger.Warn("quit failed", "gameID", gameID, "userID", userID, "error", err)
 		writeDomainError(w, err)
 		return
 	}

@@ -23,6 +23,7 @@ const (
 	StatusWaiting    GameGameStatus = "waiting"
 	StatusInProgress GameGameStatus = "in_progress"
 	StatusFinished   GameGameStatus = "finished"
+	StatusCancelled  GameGameStatus = "cancelled"
 )
 
 // All allowed values of GameGameStatus enum
@@ -30,6 +31,7 @@ var AllowedGameGameStatusEnumValues = []GameGameStatus{
 	"waiting",
 	"in_progress",
 	"finished",
+	"cancelled",
 }
 
 func (v *GameGameStatus) UnmarshalJSON(src []byte) error {

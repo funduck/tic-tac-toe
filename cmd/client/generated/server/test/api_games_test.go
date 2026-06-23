@@ -103,4 +103,18 @@ func Test_openapi_GamesAPIService(t *testing.T) {
 
 	})
 
+	t.Run("Test GamesAPIService QuitGame", func(t *testing.T) {
+
+		t.Skip("skip test") // remove to run test
+
+		var gameID string
+
+		resp, httpRes, err := apiClient.GamesAPI.QuitGame(context.Background(), gameID).Execute()
+
+		require.Nil(t, err)
+		require.NotNil(t, resp)
+		assert.Equal(t, 200, httpRes.StatusCode)
+
+	})
+
 }

@@ -9,6 +9,7 @@ const (
 	StatusWaiting    GameStatus = "waiting"
 	StatusInProgress GameStatus = "in_progress"
 	StatusFinished   GameStatus = "finished"
+	StatusCancelled  GameStatus = "cancelled"
 
 	ResultWin  GameResult = "win"
 	ResultDraw GameResult = "draw"
@@ -141,6 +142,21 @@ func (g *Game) GiveUp(userID string) error {
 	g.Status = StatusFinished
 	g.Result = ResultWin
 	g.WinnerID = g.otherPlayer(userID)
+	return nil
+}
+
+// Quit lets a player leave a game that is still waiting for an opponent,
+// cancelling it. Unlike GiveUp there is no opponent to award a win to.
+func (g *Game) Quit(userID string) error {
+	// do not allow anyone except players in the game
+	if g.playerMark(userID) == 0 {
+		return ErrNotInGame
+	}
+
+	if g.Status != StatusWaiting {
+		return ErrGameNotWaiting
+	}
+	g.Status = StatusCancelled
 	return nil
 }
 

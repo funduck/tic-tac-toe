@@ -131,3 +131,19 @@ func (s *GameService) GiveUp(ctx context.Context, gameID, userID string) (*Game,
 	s.logger.Info("player gave up", "gameID", gameID, "userID", userID, "winnerID", g.WinnerID)
 	return g, nil
 }
+
+// Quit cancels a game that is still waiting for an opponent, on behalf of userID.
+func (s *GameService) Quit(ctx context.Context, gameID, userID string) (*Game, error) {
+	g, err := s.repo.FindByID(ctx, gameID)
+	if err != nil {
+		return nil, err
+	}
+	if err := g.Quit(userID); err != nil {
+		return nil, err
+	}
+	if err := s.repo.Update(ctx, g); err != nil {
+		return nil, err
+	}
+	s.logger.Info("player quit", "gameID", gameID, "userID", userID, "status", g.Status)
+	return g, nil
+}

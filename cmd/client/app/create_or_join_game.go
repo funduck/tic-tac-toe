@@ -4,8 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
-	"os"
+	"time"
 
 	openapi "github.com/GIT_USER_ID/GIT_REPO_ID"
 	"github.com/funduck/tic-tac-toe/client/lib"
@@ -49,19 +48,49 @@ func CreateOrJoinGame(ctx context.Context, gameSvc *lib.GameService, displaySvc 
 	return nil
 }
 
-func WaitForOpponent(ctx context.Context, gameSvc *lib.GameService, displaySvc *lib.DisplayService) error {
-	g := lib.GameState
-	if g.GetStatus() == openapi.StatusWaiting {
-		displaySvc.PrintInfo("⏳ Waiting for opponent to join...")
-		g, err := gameSvc.PollUntil(ctx, g.GetID(), func(g *lib.Game) bool {
-			return g.GetStatus() == openapi.StatusInProgress
-		}, 5)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "❌ Error: failed to wait for opponent: %v\n", err)
-			os.Exit(1)
-		}
-		lib.GameState = g
+// ErrUserQuit signals that the player chose to leave a still-waiting game with
+// 'q'. Callers treat it as a clean exit rather than an error.
+var ErrUserQuit = errors.New("user quit")
+
+// WaitForOpponent blocks until an opponent joins (status becomes in_progress),
+// polling the server while concurrently reading stdin so the player can leave
+// with 'q'. Leaving cancels the game via the quit endpoint and returns
+// ErrUserQuit.
+func WaitForOpponent(ctx context.Context, gameSvc *lib.GameService, displaySvc *lib.DisplayService, input <-chan string) error {
+	if lib.GameState.GetStatus() != openapi.StatusWaiting {
+		return nil
 	}
-	log.Println("game status changed:", g.GetStatus())
-	return nil
+	displaySvc.PrintInfo("⏳ Waiting for opponent to join (press 'q' to leave)...")
+
+	ticker := time.NewTicker(pollInterval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+
+		case line, ok := <-input:
+			if !ok {
+				input = nil // stdin closed; keep polling for an opponent
+				continue
+			}
+			if _, _, giveUp, _ := lib.ParseMove(line); giveUp {
+				if _, err := gameSvc.Quit(ctx, lib.GameState.GetID(), lib.UserID); err != nil {
+					return fmt.Errorf("failed to quit: %w", err)
+				}
+				return ErrUserQuit
+			}
+
+		case <-ticker.C:
+			g, err := gameSvc.GetGame(ctx, lib.GameState.GetID())
+			if err != nil {
+				continue // transient; retry on the next tick
+			}
+			if g.GetStatus() == openapi.StatusInProgress {
+				lib.GameState = g
+				return nil
+			}
+		}
+	}
 }

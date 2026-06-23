@@ -10,6 +10,7 @@ Method | HTTP request | Description
 [**JoinAnyGame**](GamesAPI.md#JoinAnyGame) | **Post** /api/games/join | Join any available game
 [**JoinGame**](GamesAPI.md#JoinGame) | **Post** /api/games/{gameID}/join | Join a waiting game
 [**MakeMove**](GamesAPI.md#MakeMove) | **Post** /api/games/{gameID}/move | Make a move
+[**QuitGame**](GamesAPI.md#QuitGame) | **Post** /api/games/{gameID}/quit | Quit a game that is still waiting for an opponent
 
 
 
@@ -395,6 +396,76 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
  **request** | [**ServerMoveRequest**](ServerMoveRequest.md) | Move request | 
+
+### Return type
+
+[**GameGame**](GameGame.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## QuitGame
+
+> GameGame QuitGame(ctx, gameID).Request(request).Execute()
+
+Quit a game that is still waiting for an opponent
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+	gameID := "gameID_example" // string | Game ID
+	request := *openapiclient.NewServerQuitRequest() // ServerQuitRequest | Quit request
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.GamesAPI.QuitGame(context.Background(), gameID).Request(request).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `GamesAPI.QuitGame``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `QuitGame`: GameGame
+	fmt.Fprintf(os.Stdout, "Response from `GamesAPI.QuitGame`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**gameID** | **string** | Game ID | 
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiQuitGameRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+
+ **request** | [**ServerQuitRequest**](ServerQuitRequest.md) | Quit request | 
 
 ### Return type
 

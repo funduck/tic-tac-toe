@@ -338,3 +338,35 @@ func TestGiveUp(t *testing.T) {
 		}
 	})
 }
+
+func TestQuit(t *testing.T) {
+	t.Run("creator quits waiting game, it is cancelled", func(t *testing.T) {
+		g := NewGame("id1")
+		if err := g.Join("alice"); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if err := g.Quit("alice"); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if g.Status != StatusCancelled {
+			t.Errorf("expected cancelled, got %s", g.Status)
+		}
+	})
+
+	t.Run("quit on in-progress game is rejected", func(t *testing.T) {
+		g := NewGameInProgress("id1", "alice", "bob")
+		if err := g.Quit("alice"); !errors.Is(err, ErrGameNotWaiting) {
+			t.Errorf("expected ErrGameNotWaiting, got %v", err)
+		}
+	})
+
+	t.Run("non-player quits", func(t *testing.T) {
+		g := NewGame("id1")
+		if err := g.Join("alice"); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if err := g.Quit("charlie"); !errors.Is(err, ErrNotInGame) {
+			t.Errorf("expected ErrNotInGame, got %v", err)
+		}
+	})
+}

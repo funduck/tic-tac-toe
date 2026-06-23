@@ -22,6 +22,7 @@ type mockGameService struct {
 	joinAnyGameFunc       func(ctx context.Context, userID string) (*game.Game, error)
 	makeMoveFunc          func(ctx context.Context, gameID, userID string, x, y int) (*game.Game, error)
 	giveUpFunc            func(ctx context.Context, gameID, userID string) (*game.Game, error)
+	quitFunc              func(ctx context.Context, gameID, userID string) (*game.Game, error)
 	getGameFunc           func(ctx context.Context, gameID string) (*game.Game, error)
 }
 
@@ -63,6 +64,13 @@ func (m *mockGameService) MakeMove(ctx context.Context, gameID, userID string, x
 func (m *mockGameService) GiveUp(ctx context.Context, gameID, userID string) (*game.Game, error) {
 	if m.giveUpFunc != nil {
 		return m.giveUpFunc(ctx, gameID, userID)
+	}
+	return nil, nil
+}
+
+func (m *mockGameService) Quit(ctx context.Context, gameID, userID string) (*game.Game, error) {
+	if m.quitFunc != nil {
+		return m.quitFunc(ctx, gameID, userID)
 	}
 	return nil, nil
 }
@@ -572,6 +580,89 @@ func TestGameHandler_GiveUp(t *testing.T) {
 			req = withUserID(req, tt.userID)
 
 			w := executeRequest(h.GiveUp, req)
+
+			checkStatusCode(tt.expectedStatus)(t, w)
+			if tt.checkResponse != nil {
+				tt.checkResponse(t, w.Body.Bytes())
+			}
+		})
+	}
+}
+
+func TestGameHandler_Quit(t *testing.T) {
+	tests := []struct {
+		name           string
+		mockSetup      func() *mockGameService
+		gameID         string
+		userID         string
+		expectedStatus int
+		checkResponse  func(t *testing.T, body []byte)
+	}{
+		{
+			name: "successfully quit waiting game",
+			mockSetup: func() *mockGameService {
+				return &mockGameService{
+					quitFunc: func(ctx context.Context, gameID, userID string) (*game.Game, error) {
+						g := game.NewGame(gameID)
+						g.UserID1 = userID
+						g.Status = game.StatusCancelled
+						return g, nil
+					},
+				}
+			},
+			gameID:         "game-123",
+			userID:         "user-1",
+			expectedStatus: http.StatusOK,
+			checkResponse: checkGameMatches(game.Game{
+				ID:      "game-123",
+				Status:  game.StatusCancelled,
+				UserID1: "user-1",
+			}),
+		},
+		{
+			name: "game not waiting",
+			mockSetup: func() *mockGameService {
+				return &mockGameService{
+					quitFunc: func(ctx context.Context, gameID, userID string) (*game.Game, error) {
+						return nil, game.ErrGameNotWaiting
+					},
+				}
+			},
+			gameID:         "game-123",
+			userID:         "user-1",
+			expectedStatus: http.StatusConflict,
+			checkResponse:  checkErrorResponse(game.ErrGameNotWaiting.Error()),
+		},
+		{
+			name: "player not in game",
+			mockSetup: func() *mockGameService {
+				return &mockGameService{
+					quitFunc: func(ctx context.Context, gameID, userID string) (*game.Game, error) {
+						return nil, game.ErrNotInGame
+					},
+				}
+			},
+			gameID:         "game-123",
+			userID:         "user-999",
+			expectedStatus: http.StatusConflict,
+			checkResponse:  checkErrorResponse(game.ErrNotInGame.Error()),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewGameHandler(
+				tt.mockSetup(),
+				slog.New(slog.NewTextHandler(io.Discard, nil)), // silent logger for tests
+			)
+
+			req := httptest.NewRequest(http.MethodPost, "/api/games/"+tt.gameID+"/quit", nil)
+			rctx := chi.NewRouteContext()
+			rctx.URLParams.Add("gameID", tt.gameID)
+			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+			req = withUserID(req, tt.userID)
+
+			w := executeRequest(h.Quit, req)
 
 			checkStatusCode(tt.expectedStatus)(t, w)
 			if tt.checkResponse != nil {

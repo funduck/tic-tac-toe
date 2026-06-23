@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 
@@ -10,36 +11,40 @@ import (
 
 func Start(ctx context.Context, gameSvc *lib.GameService, userSvc *lib.UserService, displaySvc *lib.DisplayService, inputSvc *lib.InputService) {
 	// Authenticate user (login or signup)
-	err := LoginOrSignup(ctx, userSvc, displaySvc)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "❌ Authentication failed:", err)
-		os.Exit(1)
+	if err := LoginOrSignup(ctx, userSvc, displaySvc); err != nil {
+		fatal("Authentication failed", err)
 	}
 
 	// Create or join game
-	err = CreateOrJoinGame(ctx, gameSvc, displaySvc)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "❌ Error:", err)
-		os.Exit(1)
+	if err := CreateOrJoinGame(ctx, gameSvc, displaySvc); err != nil {
+		fatal("Error", err)
 	}
+
+	// Read stdin once and share the channel: both the waiting phase and the game
+	// loop need to react to 'q' while concurrently polling the server.
+	input := inputSvc.Lines()
 
 	// Wait for opponent if needed
-	err = WaitForOpponent(ctx, gameSvc, displaySvc)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "❌ Error:", err)
-		os.Exit(1)
+	if err := WaitForOpponent(ctx, gameSvc, displaySvc, input); err != nil {
+		if errors.Is(err, ErrUserQuit) {
+			displaySvc.PrintInfo("👋 Left the game.")
+			return
+		}
+		fatal("Error", err)
 	}
 
-	displaySvc.PrintInfo(fmt.Sprintf("Game started! You are %s.", displaySvc.MyMark()))
-	displaySvc.PrintBoard()
-
-	// Game loop
-	err = PlayGame(ctx, gameSvc, displaySvc, inputSvc)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "❌ Error:", err)
-		os.Exit(1)
+	// Game loop (renders the board and reads moves)
+	if err := PlayGame(ctx, gameSvc, displaySvc, input); err != nil {
+		fatal("Error", err)
 	}
 
-	// Display result
+	// Final board + result
+	displaySvc.RenderFrame()
 	displaySvc.PrintResult()
+}
+
+// fatal prints a user-facing error and exits.
+func fatal(prefix string, err error) {
+	fmt.Fprintf(os.Stderr, "❌ %s: %s\n", prefix, lib.FriendlyMessage(err))
+	os.Exit(1)
 }

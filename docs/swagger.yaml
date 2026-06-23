@@ -40,11 +40,13 @@ definitions:
     - waiting
     - in_progress
     - finished
+    - cancelled
     type: string
     x-enum-varnames:
     - StatusWaiting
     - StatusInProgress
     - StatusFinished
+    - StatusCancelled
   server.AccessTokenResponse:
     properties:
       access_token:
@@ -114,6 +116,11 @@ definitions:
         type: integer
       "y":
         type: integer
+    type: object
+  server.QuitRequest:
+    properties:
+      game_id:
+        type: string
     type: object
   server.UserLoginRequest:
     properties:
@@ -308,6 +315,45 @@ paths:
           schema:
             $ref: '#/definitions/server.ErrorResponse'
       summary: Make a move
+      tags:
+      - games
+  /api/games/{gameID}/quit:
+    post:
+      consumes:
+      - application/json
+      operationId: quitGame
+      parameters:
+      - description: Game ID
+        in: path
+        name: gameID
+        required: true
+        type: string
+      - description: Quit request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/server.QuitRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/game.Game'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Quit a game that is still waiting for an opponent
       tags:
       - games
   /api/games/join:

@@ -73,3 +73,6 @@ func (s *AccessTokenService) ValidateToken(...) ...
 
 # JSON tags
 Use idiomatic snake_case for json: `json:"access_token"`, `json:"user_id"`
+
+# Tools
+Look into @Makefile for available commands like lint, tests, etc.
