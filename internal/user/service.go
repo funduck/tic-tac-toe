@@ -15,11 +15,13 @@ type TokenService interface {
 	ValidateRefreshToken(tokenStr string) (string, error)
 }
 
-var ErrPasswordIsTooShort = errors.New("password is too short")
-var ErrUserAlreadyExists = errors.New("user already exists")
-var ErrUserNotFound = errors.New("user not found")
-var ErrInvalidCredentials = errors.New("invalid credentials")
-var ErrRefreshTokenDeleted = errors.New("refresh token deleted")
+var (
+	ErrPasswordIsTooShort  = errors.New("password is too short")
+	ErrUserAlreadyExists   = errors.New("user already exists")
+	ErrUserNotFound        = errors.New("user not found")
+	ErrInvalidCredentials  = errors.New("invalid credentials")
+	ErrRefreshTokenDeleted = errors.New("refresh token deleted")
+)
 
 type UserService struct {
 	userRepo     UserRepo
@@ -69,7 +71,7 @@ func (s *UserService) Signup(ctx context.Context, userID, password string) (*Use
 		return nil, nil, err
 	}
 
-	s.logger.Info("User signed up", "userID", userID)
+	s.logger.Info("user signed up", "userID", userID)
 
 	return user, tokenPair, nil
 }
@@ -101,7 +103,7 @@ func (s *UserService) Login(ctx context.Context, userID, password string) (*User
 		return nil, nil, err
 	}
 
-	s.logger.Info("User logged in", "userID", userID)
+	s.logger.Info("user logged in", "userID", userID)
 
 	return user, tokenPair, nil
 }
@@ -141,7 +143,7 @@ func (s *UserService) RefreshToken(ctx context.Context, userID, refreshToken str
 		return nil, nil, err
 	}
 
-	s.logger.Info("User refreshed token", "userID", userID)
+	s.logger.Info("user refreshed token", "userID", userID)
 
 	return user, tokenPair, nil
 }

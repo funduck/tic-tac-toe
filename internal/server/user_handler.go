@@ -20,9 +20,9 @@ type UserHandler struct {
 	logger *slog.Logger
 }
 
-func NewUserHandler(userService UserService, logger *slog.Logger) *UserHandler {
+func NewUserHandler(svc UserService, logger *slog.Logger) *UserHandler {
 	return &UserHandler{
-		svc:    userService,
+		svc:    svc,
 		logger: logger,
 	}
 }
@@ -30,12 +30,12 @@ func NewUserHandler(userService UserService, logger *slog.Logger) *UserHandler {
 // Signup godoc
 //
 //	@Summary	Sign up a new user
-//	@ID			signup
+//	@ID		signup
 //	@Tags		users
 //	@Accept		json
 //	@Produce	json
 //	@Param		request	body		UserSignupRequest	true	"User signup request"
-//	@Success	201		{object}	auth.TokenPair
+//	@Success	200		{object}	auth.TokenPair
 //	@Failure	400		{object}	ErrorResponse
 //	@Failure	409		{object}	ErrorResponse
 //	@Failure	500		{object}	ErrorResponse
@@ -49,7 +49,7 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 
 	_, tokens, err := h.svc.Signup(ctx, req.UserID, req.Password)
 	if err != nil {
-		h.logger.Warn("signup failed", "user_id", req.UserID, "error", err)
+		h.logger.Warn("signup failed", "userID", req.UserID, "error", err)
 		writeDomainError(w, err)
 		return
 	}
@@ -60,7 +60,7 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 // Login godoc
 //
 //	@Summary	Log in an existing user
-//	@ID			login
+//	@ID		login
 //	@Tags		users
 //	@Accept		json
 //	@Produce	json
@@ -79,7 +79,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	_, tokens, err := h.svc.Login(ctx, req.UserID, req.Password)
 	if err != nil {
-		h.logger.Warn("login failed", "user_id", req.UserID, "error", err)
+		h.logger.Warn("login failed", "userID", req.UserID, "error", err)
 		writeDomainError(w, err)
 		return
 	}
@@ -90,7 +90,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 // RefreshToken godoc
 //
 //	@Summary	Refresh access token using refresh token
-//	@ID			refresh-token
+//	@ID		refresh-token
 //	@Tags		users
 //	@Accept		json
 //	@Produce	json
@@ -109,7 +109,7 @@ func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 
 	_, tokens, err := h.svc.RefreshToken(ctx, req.UserID, req.RefreshToken)
 	if err != nil {
-		h.logger.Warn("refresh token failed", "user_id", req.UserID, "error", err)
+		h.logger.Warn("refresh token failed", "userID", req.UserID, "error", err)
 		writeDomainError(w, err)
 		return
 	}

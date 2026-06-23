@@ -16,6 +16,7 @@ func NewUserService(apiClient *openapi.APIClient) *UserService {
 	return &UserService{api: apiClient.UsersAPI}
 }
 
+// Signup registers a new user and returns a token pair
 func (s *UserService) Signup(ctx context.Context, userID, password string) (*openapi.AuthTokenPair, error) {
 	req := openapi.NewServerUserSignupRequest()
 	req.SetUserID(userID)
@@ -27,6 +28,7 @@ func (s *UserService) Signup(ctx context.Context, userID, password string) (*ope
 	return tokenPair, nil
 }
 
+// Login authenticates an existing user and returns a token pair
 func (s *UserService) Login(ctx context.Context, userID, password string) (*openapi.AuthTokenPair, error) {
 	req := openapi.NewServerUserLoginRequest()
 	req.SetUserID(userID)
@@ -38,6 +40,7 @@ func (s *UserService) Login(ctx context.Context, userID, password string) (*open
 	return tokenPair, nil
 }
 
+// RefreshToken exchanges a refresh token for a new token pair
 func (s *UserService) RefreshToken(ctx context.Context, userID, refreshToken string) (*openapi.AuthTokenPair, error) {
 	req := openapi.NewServerUserRefreshTokenRequest()
 	req.SetUserID(userID)

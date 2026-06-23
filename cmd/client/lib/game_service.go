@@ -18,10 +18,10 @@ func NewGameService(apiClient *openapi.APIClient) *GameService {
 }
 
 // CreateGame creates a new game
-func (gs *GameService) CreateGame(ctx context.Context, userID string, private bool) (*Game, error) {
+func (s *GameService) CreateGame(ctx context.Context, userID string, private bool) (*Game, error) {
 	req := openapi.NewServerCreateGameRequest()
 	req.SetPrivate(private)
-	g, r, err := gs.api.CreateGame(ctx).Request(*req).Execute()
+	g, r, err := s.api.CreateGame(ctx).Request(*req).Execute()
 	if err != nil {
 		return nil, parseError(r, err)
 	}
@@ -29,9 +29,9 @@ func (gs *GameService) CreateGame(ctx context.Context, userID string, private bo
 }
 
 // JoinGame joins an existing game
-func (gs *GameService) JoinGame(ctx context.Context, gameID, userID string) (*Game, error) {
+func (s *GameService) JoinGame(ctx context.Context, gameID, userID string) (*Game, error) {
 	req := openapi.NewServerJoinGameRequest()
-	g, r, err := gs.api.JoinGame(ctx, gameID).Request(*req).Execute()
+	g, r, err := s.api.JoinGame(ctx, gameID).Request(*req).Execute()
 	if err != nil {
 		return nil, parseError(r, err)
 	}
@@ -39,8 +39,8 @@ func (gs *GameService) JoinGame(ctx context.Context, gameID, userID string) (*Ga
 }
 
 // JoinAnyGame joins an existing game
-func (gs *GameService) JoinAnyGame(ctx context.Context, userID string) (*Game, error) {
-	g, r, err := gs.api.JoinAnyGame(ctx).Execute()
+func (s *GameService) JoinAnyGame(ctx context.Context, userID string) (*Game, error) {
+	g, r, err := s.api.JoinAnyGame(ctx).Execute()
 	if err != nil {
 		return nil, parseError(r, err)
 	}
@@ -48,11 +48,11 @@ func (gs *GameService) JoinAnyGame(ctx context.Context, userID string) (*Game, e
 }
 
 // MakeMove makes a move in the game
-func (gs *GameService) MakeMove(ctx context.Context, gameID, userID string, x, y int) (*Game, error) {
+func (s *GameService) MakeMove(ctx context.Context, gameID, userID string, x, y int) (*Game, error) {
 	req := openapi.NewServerMoveRequest()
 	req.SetX(int32(x))
 	req.SetY(int32(y))
-	g, r, err := gs.api.MakeMove(ctx, gameID).Request(*req).Execute()
+	g, r, err := s.api.MakeMove(ctx, gameID).Request(*req).Execute()
 	if err != nil {
 		return nil, parseError(r, err)
 	}
@@ -60,9 +60,9 @@ func (gs *GameService) MakeMove(ctx context.Context, gameID, userID string, x, y
 }
 
 // GiveUp gives up the game
-func (gs *GameService) GiveUp(ctx context.Context, gameID, userID string) (*Game, error) {
+func (s *GameService) GiveUp(ctx context.Context, gameID, userID string) (*Game, error) {
 	req := openapi.NewServerGiveUpRequest()
-	g, r, err := gs.api.GiveUpGame(ctx, gameID).Request(*req).Execute()
+	g, r, err := s.api.GiveUpGame(ctx, gameID).Request(*req).Execute()
 	if err != nil {
 		return nil, parseError(r, err)
 	}
@@ -70,8 +70,8 @@ func (gs *GameService) GiveUp(ctx context.Context, gameID, userID string) (*Game
 }
 
 // GetGame retrieves the current game state
-func (gs *GameService) GetGame(ctx context.Context, gameID string) (*Game, error) {
-	g, r, err := gs.api.GetGame(ctx, gameID).Execute()
+func (s *GameService) GetGame(ctx context.Context, gameID string) (*Game, error) {
+	g, r, err := s.api.GetGame(ctx, gameID).Execute()
 	if err != nil {
 		return nil, parseError(r, err)
 	}
@@ -80,10 +80,10 @@ func (gs *GameService) GetGame(ctx context.Context, gameID string) (*Game, error
 
 // PollUntil polls the game until the predicate returns true or an error occurs
 // Retries up to maxRetries times with exponential backoff on errors
-func (gs *GameService) PollUntil(ctx context.Context, gameID string, predicate func(*Game) bool, maxRetries int) (*Game, error) {
+func (s *GameService) PollUntil(ctx context.Context, gameID string, predicate func(*Game) bool, maxRetries int) (*Game, error) {
 	retries := 0
 	for {
-		g, err := gs.GetGame(ctx, gameID)
+		g, err := s.GetGame(ctx, gameID)
 		if err != nil {
 			retries++
 			if retries >= maxRetries {

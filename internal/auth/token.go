@@ -9,9 +9,11 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var ErrTokenInvalid = errors.New("invalid token")
-var ErrTokenExpired = errors.New("token expired")
-var ErrTokenSignatureInvalid = errors.New("invalid token signature")
+var (
+	ErrTokenInvalid          = errors.New("invalid token")
+	ErrTokenExpired          = errors.New("token expired")
+	ErrTokenSignatureInvalid = errors.New("invalid token signature")
+)
 
 type CustomClaims struct {
 	UserID string `json:"user_id"`

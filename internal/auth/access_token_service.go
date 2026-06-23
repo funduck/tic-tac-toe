@@ -31,7 +31,7 @@ func (s *AccessTokenService) keyFunc(token *jwt.Token) (interface{}, error) {
 	return []byte(s.secret), nil
 }
 
-// Parses and validates the access token, returning the user ID and session ID if valid.
+// ValidateToken parses and validates the access token, returning the user ID and session ID if valid.
 func (s *AccessTokenService) ValidateToken(tokenStr string) (*Token, error) {
 	token, err := jwt.ParseWithClaims(tokenStr, &CustomClaims{}, s.keyFunc)
 	if err != nil {
@@ -50,7 +50,7 @@ func (s *AccessTokenService) ValidateToken(tokenStr string) (*Token, error) {
 	return nil, ErrTokenInvalid
 }
 
-// Parses and validates the refresh token, returning the user ID.
+// ValidateRefreshToken parses and validates the refresh token, returning the user ID.
 func (s *AccessTokenService) ValidateRefreshToken(tokenStr string) (string, error) {
 	token, err := jwt.ParseWithClaims(tokenStr, &jwt.RegisteredClaims{}, s.keyFunc)
 	if err != nil {
@@ -70,7 +70,7 @@ func (s *AccessTokenService) ValidateRefreshToken(tokenStr string) (string, erro
 	return "", ErrTokenInvalid
 }
 
-// Generates JWT token and refresh token for the given user ID. The refresh token is stored in the user repo for later validation.
+// GenerateToken generates a JWT token and refresh token for the given user ID. The refresh token is stored in the user repo for later validation.
 func (s *AccessTokenService) GenerateToken(userID string) (*TokenPair, error) {
 	now := time.Now()
 
