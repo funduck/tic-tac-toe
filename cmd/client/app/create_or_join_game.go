@@ -85,6 +85,9 @@ func WaitForOpponent(ctx context.Context, gameSvc *lib.GameService, displaySvc *
 		case <-ticker.C:
 			g, err := gameSvc.GetGame(ctx, lib.GameState.GetID())
 			if err != nil {
+				if lib.IsSessionError(err) {
+					return err
+				}
 				continue // transient; retry on the next tick
 			}
 			if g.GetStatus() == openapi.StatusInProgress {

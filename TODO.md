@@ -8,8 +8,7 @@
 
 ## Existing backlog
 
-- [ ] Allow forfeit for client at any time. Now it reads user's input only when it is user's turn. If there is no opponent, quit from game should just remove player and the game stays "waiting"
-- [ ] Fix client bug when 2 instances try to connect with same credentials
+- [x] Fix client bug when 2 instances try to connect with same credentials
 - [ ] Save "last_in_game" timestamp for both players in the game so clients can determine when opponent is offline for a long time and the game is set to auto-win
 - [ ] Add method to find/read currently playing game(s) for a user so it can reconnect to it
 - [ ] Document proper client usage in README.md (Makefile is for devs only, describe DEBUG option too)
@@ -43,6 +42,5 @@ Proposals to make the CLI client feel like a game rather than a request log. Ord
 - [ ] Real-time updates via WebSockets/SSE instead of 1s polling (TASK bonus).
 - [ ] Ranking / leaderboard endpoint (TASK bonus).
 - [ ] AFK detection + timeout-based auto-win (depends on the "last_in_game" timestamp item).
-- [ ] Reconnect to an in-progress game on client restart (depends on the lookup method above).
 - [ ] Matchmaking concurrency-safe without locks (SQL `SELECT FOR UPDATE`, or an in-memory queue with atomic ops/channels).
 - [ ] Pass `context` to services/repository for proper cancellation and timeouts once a real DB is used.

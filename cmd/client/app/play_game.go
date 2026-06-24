@@ -42,6 +42,9 @@ func PlayGame(ctx context.Context, gameSvc *lib.GameService, displaySvc *lib.Dis
 		case <-ticker.C:
 			g, err := gameSvc.GetGame(ctx, lib.GameState.GetID())
 			if err != nil {
+				if lib.IsSessionError(err) {
+					return err
+				}
 				continue // transient; retry on the next tick
 			}
 			applyUpdate(g, displaySvc)
@@ -77,6 +80,9 @@ func handleInput(ctx context.Context, gameSvc *lib.GameService, displaySvc *lib.
 
 	g, err := gameSvc.MakeMove(ctx, lib.GameState.GetID(), lib.UserID, row, col)
 	if err != nil {
+		if lib.IsSessionError(err) {
+			return false, err
+		}
 		displaySvc.PrintError(lib.FriendlyMessage(err))
 		// Refresh state in case the board moved on while we were typing.
 		if fresh, gerr := gameSvc.GetGame(ctx, lib.GameState.GetID()); gerr == nil {

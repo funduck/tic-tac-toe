@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/cookiejar"
+	"strings"
 	"sync"
 )
 
@@ -30,6 +31,13 @@ func NewAuthRoundTripper(userService *UserService) *AuthRoundTripper {
 func (a *AuthRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	// Clone the request to avoid modifying the original
 	reqClone := cloneRequest(req)
+
+	// The refresh-token request must never recurse through the refresh-on-401
+	// logic below: it would re-enter RoundTrip and deadlock on a.mu (already held
+	// by the in-flight refresh). Send it straight through.
+	if strings.HasSuffix(req.URL.Path, "/api/users/refresh-token") {
+		return a.transport.RoundTrip(reqClone)
+	}
 
 	// Add Authorization header if we have an access token
 	if AccessToken != "" {
@@ -71,7 +79,7 @@ func (a *AuthRoundTripper) refreshToken(ctx context.Context) error {
 	// The refresh token is sent automatically as an HttpOnly cookie by the cookie jar.
 	resp, err := a.userService.RefreshToken(ctx)
 	if err != nil {
-		return fmt.Errorf("refresh token request failed: %w", err)
+		return err
 	}
 
 	// Update the access token; the new refresh token is stored in the cookie jar.

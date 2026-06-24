@@ -142,7 +142,9 @@ Thorough Client development seems to be an overkill for such a task, so the beha
 
 **Debug mode**
 
-Add `DEBUG=true` to the command to enable debug logging in the client
+Add `DEBUG=true` to the command to enable debug logging in the client. HTTP
+requests and responses are written to a log file named `<userID>-<timestamp>.log`
+in the working directory (these `*.log` files are git-ignored).
 
 ```bash
 make start-client USER=alice PASSWORD=alicepass DEBUG=true

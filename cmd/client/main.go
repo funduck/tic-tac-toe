@@ -5,7 +5,9 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log"
 	"os"
+	"time"
 
 	openapi "github.com/GIT_USER_ID/GIT_REPO_ID"
 	"github.com/funduck/tic-tac-toe/client/app"
@@ -45,8 +47,17 @@ func main() {
 	cfg := openapi.NewConfiguration()
 	cfg.Servers = openapi.ServerConfigurations{{URL: *serverURL}}
 
+	// In debug mode, log all HTTP requests and responses to a file named with the user ID and timestamp.
 	if os.Getenv("DEBUG") != "" {
 		cfg.Debug = true
+		name := fmt.Sprintf("%s-%s.log", lib.UserID, time.Now().Format("20060102-150405"))
+		f, err := os.OpenFile(name, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "⚠️  could not open debug log file:", err)
+		} else {
+			log.SetOutput(f)
+			fmt.Fprintf(os.Stderr, "📝 debug logs → %s\n", name)
+		}
 	}
 
 	// Create a temporary API client for UserService initialization

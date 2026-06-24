@@ -29,6 +29,20 @@ func (e *APIError) HasCode(code openapi.ServerErrorCode) bool {
 	return e.Code == code
 }
 
+// sessionEndedMessage is shown for every code in sessionErrorCodes: the session is
+// gone (refresh token deleted by a login elsewhere, expired, or invalid) and the only
+// recovery is to log in again.
+const sessionEndedMessage = "Your session ended (you may have logged in elsewhere). Please log in again."
+
+// sessionErrorCodes are the server codes that mean the session is no longer valid.
+// IsSessionError matches them so callers can stop retrying and prompt a re-login.
+var sessionErrorCodes = map[openapi.ServerErrorCode]bool{
+	openapi.CodeRefreshTokenDeleted:   true,
+	openapi.CodeTokenInvalid:          true,
+	openapi.CodeTokenExpired:          true,
+	openapi.CodeTokenSignatureInvalid: true,
+}
+
 // friendlyMessages maps server error codes to short, user-facing text.
 var friendlyMessages = map[openapi.ServerErrorCode]string{
 	openapi.CodeCellOccupied:          "That cell is already taken",
@@ -42,10 +56,18 @@ var friendlyMessages = map[openapi.ServerErrorCode]string{
 	openapi.CodeUserNotFound:          "Wrong username or password",
 	openapi.CodeUserAlreadyExists:     "That username is taken",
 	openapi.CodePasswordTooShort:      "Password is too short (minimum 6 characters)",
-	openapi.CodeRefreshTokenDeleted:   "Session expired, please restart",
-	openapi.CodeTokenInvalid:          "Session expired, please restart",
-	openapi.CodeTokenExpired:          "Session expired, please restart",
-	openapi.CodeTokenSignatureInvalid: "Session expired, please restart",
+	openapi.CodeRefreshTokenDeleted:   sessionEndedMessage,
+	openapi.CodeTokenInvalid:          sessionEndedMessage,
+	openapi.CodeTokenExpired:          sessionEndedMessage,
+	openapi.CodeTokenSignatureInvalid: sessionEndedMessage,
+}
+
+// IsSessionError reports whether err means the session is gone and the user must
+// log in again (refresh token deleted server-side, expired, or invalid). It matches
+// even when the *APIError is wrapped (e.g. in *url.Error by the HTTP client).
+func IsSessionError(err error) bool {
+	var apiErr *APIError
+	return errors.As(err, &apiErr) && sessionErrorCodes[apiErr.Code]
 }
 
 // FriendlyMessage converts an error into short, user-facing text. Known API
