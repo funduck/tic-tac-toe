@@ -22,6 +22,20 @@ func (g *Game) GetOpponentID() string {
 	return ""
 }
 
+// GetOpponentLastSeen returns the opponent's last-seen timestamp (RFC3339), or nil.
+func (g *Game) GetOpponentLastSeen() *string {
+	if g.GameGame == nil {
+		return nil
+	}
+	if g.UserId1 != nil && *g.UserId1 != UserID {
+		return g.UserId1LastSeen
+	}
+	if g.UserId2 != nil && *g.UserId2 != UserID {
+		return g.UserId2LastSeen
+	}
+	return nil
+}
+
 // GetID returns the game ID
 func (g *Game) GetID() string {
 	if g.GameGame == nil || g.Id == nil {

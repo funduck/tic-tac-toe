@@ -82,3 +82,4 @@ Look into @Makefile for available commands like lint, tests, etc.
 - Generated client maps Go `time.Time` json fields to `*string` (swagger 2.0 has no time type).
 - `memory_repo.copyGame` is a shallow struct copy; pointer fields (e.g. `*time.Time`) are safe only because callers reassign the pointer, never mutate through it. `Update` replaces the whole map entry.
 - `cmd/client` is a separate Go module (`github.com/funduck/tic-tac-toe/client`); run its tests from that dir — root `go test ./...` won't cover it.
+- AFK auto-win is enforced lazily inside `GetGame` (active player's poll calls `Touch` then `ForfeitIfOpponentAFK`), not a background reaper — the AFK player only loses once the opponent polls. Timeout via `AFK_TIMEOUT` (default 30s).

@@ -15,10 +15,11 @@ type GameService struct {
 	logger           *slog.Logger
 	joinGameMutex    sync.Mutex // protects JoinGame
 	joinAnyGameMutex sync.Mutex // protects JoinAnyGame
+	afkTimeout       time.Duration
 }
 
-func NewGameService(repo GameRepo, logger *slog.Logger) *GameService {
-	return &GameService{repo: repo, logger: logger}
+func NewGameService(repo GameRepo, logger *slog.Logger, afkTimeout time.Duration) *GameService {
+	return &GameService{repo: repo, logger: logger, afkTimeout: afkTimeout}
 }
 
 func (s *GameService) createGame(ctx context.Context, private bool) (*Game, error) {
@@ -103,7 +104,13 @@ func (s *GameService) GetGame(ctx context.Context, gameID, userID string) (*Game
 	if err != nil {
 		return nil, err
 	}
-	if g.Touch(userID, time.Now()) {
+	now := time.Now()
+	changed := g.Touch(userID, now)
+	if g.ForfeitIfOpponentAFK(userID, now, s.afkTimeout) {
+		changed = true
+		s.logger.Info("opponent AFK, auto-win", "gameID", gameID, "winnerID", g.WinnerID)
+	}
+	if changed {
 		if err := s.repo.Update(ctx, g); err != nil {
 			return nil, err
 		}

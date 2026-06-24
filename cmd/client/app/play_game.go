@@ -97,9 +97,6 @@ func handleInput(ctx context.Context, gameSvc *lib.GameService, displaySvc *lib.
 // applyUpdate swaps in new game state and redraws only if something changed,
 // avoiding needless flicker on no-op polls.
 func applyUpdate(g *lib.Game, displaySvc *lib.DisplayService) {
-	if sameGame(lib.GameState, g) {
-		return
-	}
 	lib.LastMove = diffMove(lib.GameState.GetBoard(), g.GetBoard())
 	lib.GameState = g
 	render(displaySvc)
@@ -117,22 +114,6 @@ func render(displaySvc *lib.DisplayService) {
 	} else {
 		fmt.Print("Waiting for opponent (type 'q' to quit)... ")
 	}
-}
-
-// sameGame reports whether two states are visually identical for our purposes.
-func sameGame(a, b *lib.Game) bool {
-	if a.GetStatus() != b.GetStatus() || a.GetCurrentPlayerID() != b.GetCurrentPlayerID() {
-		return false
-	}
-	ab, bb := a.GetBoard(), b.GetBoard()
-	for r := range 3 {
-		for c := range 3 {
-			if cellAt(ab, r, c) != cellAt(bb, r, c) {
-				return false
-			}
-		}
-	}
-	return true
 }
 
 // diffMove returns the 1-based numpad cell that newly gained a mark between the

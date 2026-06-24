@@ -30,22 +30,15 @@ func main() {
 
 	// Services and handlers
 	gameRepo := game.NewMemoryRepo()
-	gameSvc := game.NewGameService(gameRepo, logger)
+
+	gameSvc := game.NewGameService(gameRepo, logger, getAfkTimeout(logger))
 	gameHandler := server.NewGameHandler(gameSvc, logger)
 
-	secret := os.Getenv("JWT_SECRET")
-	if secret == "" {
-		logger.Warn("JWT_SECRET not set, using default secret (not recommended for production)")
-		secret = "default-secret"
-	}
-	tokenService := auth.NewAccessTokenService(secret, "tic-tac-toe")
+	tokenService := auth.NewAccessTokenService(getSecret(logger), "tic-tac-toe")
 
 	userRepo := user.NewMemoryUserRepo()
 	userSvc := user.NewUserService(userRepo, tokenService, logger)
-	// COOKIE_SECURE marks the refresh token cookie as Secure (HTTPS only). Disabled
-	// by default so the cookie also works over plain http in local development.
-	secureCookie := os.Getenv("COOKIE_SECURE") != ""
-	userHandler := server.NewUserHandler(userSvc, logger, secureCookie)
+	userHandler := server.NewUserHandler(userSvc, logger, isSecureCookieEnabled())
 
 	authMiddleware := server.AuthMiddleware(tokenService)
 
@@ -110,4 +103,36 @@ func newRouter(logger *slog.Logger) *chi.Mux {
 	})
 
 	return r
+}
+
+// getAfkTimeout retrieves the AFK timeout duration from the environment variable "AFK_TIMEOUT".
+func getAfkTimeout(logger *slog.Logger) time.Duration {
+	afkTimeout := os.Getenv("AFK_TIMEOUT")
+	if afkTimeout == "" {
+		logger.Warn("AFK_TIMEOUT not set, using default 30s (not recommended for production)")
+		return 30 * time.Second
+	}
+	duration, err := time.ParseDuration(afkTimeout)
+	if err != nil {
+		logger.Error("Invalid AFK_TIMEOUT value, using default 30s", "error", err)
+		return 30 * time.Second
+	}
+	return duration
+}
+
+// getSecret retrieves the JWT secret from the environment variable "JWT_SECRET".
+func getSecret(logger *slog.Logger) string {
+	secret := os.Getenv("JWT_SECRET")
+	if secret == "" {
+		logger.Warn("JWT_SECRET not set, using default secret (not recommended for production)")
+		return "default-secret"
+	}
+	return secret
+}
+
+// secureCookie determines whether cookies should be marked as Secure (HTTPS only).
+// In production, this should be true. In development, it can be false for local testing.
+func isSecureCookieEnabled() bool {
+	secureCookie := os.Getenv("SECURE_COOKIE")
+	return secureCookie == "true"
 }

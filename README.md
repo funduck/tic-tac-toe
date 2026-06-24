@@ -5,6 +5,7 @@ A multiplayer Tic Tac Toe game server and client implementation in Go, featuring
 **Contents:**
 - [Quick Start](#quick-start)
     * [Running the server](#running-the-server)
+    * [Configuration](#configuration)
     * [Running the client](#running-the-client)
     * [Running tests](#running-tests)
 - [Protocol Design](#protocol-design)
@@ -69,6 +70,24 @@ Run
 make start-server-docker
 ```
 
+### Configuration
+
+The server is configured via environment variables. All are optional and fall
+back to development-friendly defaults (a warning is logged when a default is
+used for a security-sensitive setting).
+
+| Variable        | Default          | Description                                                                                                   |
+| --------------- | ---------------- | ------------------------------------------------------------------------------------------------------------- |
+| `JWT_SECRET`    | `default-secret` | Secret key used to sign JWT tokens (HMAC-SHA256). **Set this in production.**                                  |
+| `AFK_TIMEOUT`   | `30s`            | Idle period after which an active player auto-wins against an AFK opponent. Accepts Go durations (e.g. `1m`).  |
+| `SECURE_COOKIE` | _(off)_          | Set to `true` to mark the refresh-token cookie as `Secure` (HTTPS only). Leave unset for plain-HTTP local dev. |
+
+The client reads one environment variable:
+
+| Variable | Default | Description                                                                          |
+| -------- | ------- | ------------------------------------------------------------------------------------ |
+| `DEBUG`  | _(off)_ | Set to `true` to enable HTTP request/response logging and linear (non-redraw) output. |
+
 ### Running the Client
 **Important!** Client's code is separated from the server's, so it can be run only from `cmd/client` directory.
 
@@ -107,6 +126,12 @@ type the number of the cell you want:
 - Type a number `1`-`9` on your turn to play that cell.
 - Type `q` (or `quit`) at **any** time — including while waiting for the
   opponent — to forfeit and leave.
+
+The status header shows the opponent's presence next to their name (`online`, or
+`seen Ns ago` / `seen Nm ago` based on their last activity). If your opponent
+stays idle past the AFK timeout (default `30s`, configurable on the server via
+the `AFK_TIMEOUT` environment variable), the game is auto-won for you on your
+next poll.
 
 On an interactive terminal the board is redrawn in place, with the last move and
 any winning line highlighted. Under `DEBUG=true` (or when output is piped) the

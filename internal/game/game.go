@@ -51,6 +51,9 @@ type Game struct {
 // it returns true. It reassigns the pointer rather than mutating through it, so
 // the shallow copies returned by the repo stay independent.
 func (g *Game) Touch(userID string, t time.Time) bool {
+	if userID == "" {
+		return false
+	}
 	switch userID {
 	case g.UserID1:
 		g.UserID1LastSeen = &t
@@ -151,6 +154,35 @@ func (g *Game) MakeMove(userID string, x, y int) error {
 
 	g.CurrentPlayerID = g.otherPlayer(userID)
 	return nil
+}
+
+// lastSeen returns the presence timestamp for userID, or nil.
+func (g *Game) lastSeen(userID string) *time.Time {
+	switch userID {
+	case g.UserID1:
+		return g.UserID1LastSeen
+	case g.UserID2:
+		return g.UserID2LastSeen
+	}
+	return nil
+}
+
+// ForfeitIfOpponentAFK finishes an in-progress game in favor of activeUserID
+// when their opponent has not been seen within timeout. Returns true if it
+// changed state. activeUserID is assumed to have just been Touch()ed.
+func (g *Game) ForfeitIfOpponentAFK(activeUserID string, now time.Time, timeout time.Duration) bool {
+	if g.Status != StatusInProgress || g.playerMark(activeUserID) == 0 {
+		return false
+	}
+	opp := g.otherPlayer(activeUserID)
+	last := g.lastSeen(opp)
+	if last == nil || now.Sub(*last) < timeout {
+		return false
+	}
+	g.Status = StatusFinished
+	g.Result = ResultWin
+	g.WinnerID = activeUserID
+	return true
 }
 
 // GiveUp ends the game, awarding victory to the other player.

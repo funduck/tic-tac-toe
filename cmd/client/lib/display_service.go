@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	openapi "github.com/GIT_USER_ID/GIT_REPO_ID"
 )
@@ -75,7 +76,33 @@ func (d *DisplayService) statusHeader() string {
 		turn = "🏁 Game finished"
 	}
 
+	if presence := formatLastSeen(GameState.GetOpponentLastSeen()); presence != "" {
+		opponent = fmt.Sprintf("%s (%s)", opponent, presence)
+	}
+
 	return fmt.Sprintf("You are %s · Opponent: %s\n%s", d.MyMark(), opponent, turn)
+}
+
+// formatLastSeen turns an RFC3339 timestamp into a human presence string:
+// "online" when seen within a few seconds, otherwise "seen Ns ago" / "seen Nm ago".
+// Returns "" when the timestamp is missing or unparseable.
+func formatLastSeen(ts *string) string {
+	if ts == nil || *ts == "" {
+		return ""
+	}
+	t, err := time.Parse(time.RFC3339, *ts)
+	if err != nil {
+		return ""
+	}
+	d := time.Since(t)
+	switch {
+	case d < 5*time.Second:
+		return "online"
+	case d < time.Minute:
+		return fmt.Sprintf("seen %ds ago", int(d.Seconds()))
+	default:
+		return fmt.Sprintf("seen %dm ago", int(d.Minutes()))
+	}
 }
 
 // renderBoard renders the 3x3 grid using numpad numbering: empty cells show

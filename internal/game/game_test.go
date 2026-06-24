@@ -6,6 +6,10 @@ import (
 	"time"
 )
 
+var (
+	testAfkTimeout = 30 * time.Second
+)
+
 func TestNewGame(t *testing.T) {
 	g := NewGame("id1")
 	if g.ID != "id1" {
@@ -30,6 +34,64 @@ func TestNewGameInProgress(t *testing.T) {
 	if g.Board != [3][3]int{} {
 		t.Error("expected empty board")
 	}
+}
+
+func TestForfeitIfOpponentAFK(t *testing.T) {
+	now := time.Now()
+
+	t.Run("opponent stale, active player wins", func(t *testing.T) {
+		g := NewGameInProgress("id1", "alice", "bob")
+		g.Touch("alice", now)
+		g.Touch("bob", now.Add(-testAfkTimeout-time.Second))
+
+		if !g.ForfeitIfOpponentAFK("alice", now, testAfkTimeout) {
+			t.Fatal("expected forfeit to fire")
+		}
+		if g.Status != StatusFinished || g.Result != ResultWin || g.WinnerID != "alice" {
+			t.Errorf("unexpected end state: status=%s result=%s winner=%s", g.Status, g.Result, g.WinnerID)
+		}
+	})
+
+	t.Run("opponent recently seen, no change", func(t *testing.T) {
+		g := NewGameInProgress("id1", "alice", "bob")
+		g.Touch("alice", now)
+		g.Touch("bob", now.Add(-time.Second))
+
+		if g.ForfeitIfOpponentAFK("alice", now, testAfkTimeout) {
+			t.Fatal("did not expect forfeit")
+		}
+		if g.Status != StatusInProgress {
+			t.Errorf("expected status still in progress, got %s", g.Status)
+		}
+	})
+
+	t.Run("opponent never seen, no change", func(t *testing.T) {
+		g := NewGameInProgress("id1", "alice", "bob")
+		g.Touch("alice", now)
+
+		if g.ForfeitIfOpponentAFK("alice", now, testAfkTimeout) {
+			t.Fatal("did not expect forfeit when opponent never seen")
+		}
+	})
+
+	t.Run("not in progress, no change", func(t *testing.T) {
+		g := NewGameInProgress("id1", "alice", "bob")
+		g.Status = StatusFinished
+		g.Touch("bob", now.Add(-testAfkTimeout-time.Second))
+
+		if g.ForfeitIfOpponentAFK("alice", now, testAfkTimeout) {
+			t.Fatal("did not expect forfeit on a non-in-progress game")
+		}
+	})
+
+	t.Run("non-participant, no change", func(t *testing.T) {
+		g := NewGameInProgress("id1", "alice", "bob")
+		g.Touch("bob", now.Add(-testAfkTimeout-time.Second))
+
+		if g.ForfeitIfOpponentAFK("carol", now, testAfkTimeout) {
+			t.Fatal("did not expect forfeit for a non-participant")
+		}
+	})
 }
 
 func TestJoin_Valid(t *testing.T) {
