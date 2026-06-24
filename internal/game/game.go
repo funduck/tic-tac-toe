@@ -1,6 +1,9 @@
 package game
 
-import "errors"
+import (
+	"errors"
+	"time"
+)
 
 type GameStatus string
 type GameResult string
@@ -36,6 +39,27 @@ type Game struct {
 	Result          GameResult `json:"result,omitempty"`
 	WinnerID        string     `json:"winner_id,omitempty"`
 	Private         bool       `json:"private"` // optional field to indicate if the game is private or public
+
+	// Presence timestamps, updated on every action and read by each player.
+	// Pointers so they stay omitted until the corresponding player is seen.
+	UserID1LastSeen *time.Time `json:"user_id1_last_seen,omitempty"`
+	UserID2LastSeen *time.Time `json:"user_id2_last_seen,omitempty"`
+}
+
+// Touch records that userID was last seen at t. It only updates a participant's
+// timestamp and reports whether anything changed. Callers persist the game when
+// it returns true. It reassigns the pointer rather than mutating through it, so
+// the shallow copies returned by the repo stay independent.
+func (g *Game) Touch(userID string, t time.Time) bool {
+	switch userID {
+	case g.UserID1:
+		g.UserID1LastSeen = &t
+		return true
+	case g.UserID2:
+		g.UserID2LastSeen = &t
+		return true
+	}
+	return false
 }
 
 // NewGame creates a new game in the waiting state.

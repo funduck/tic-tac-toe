@@ -36,8 +36,11 @@ func TestGameRouter(t *testing.T) {
 			g.Status = game.StatusFinished
 			return g, nil
 		},
-		getGameFunc: func(ctx context.Context, gameID string) (*game.Game, error) {
+		getGameFunc: func(ctx context.Context, gameID, userID string) (*game.Game, error) {
 			return game.NewGameInProgress(gameID, "user-1", "user-2"), nil
+		},
+		getLatestGameFunc: func(ctx context.Context, userID string) (*game.Game, error) {
+			return game.NewGameInProgress("latest-game", userID, "user-2"), nil
 		},
 	}
 
@@ -154,12 +157,21 @@ func TestGameRouter(t *testing.T) {
 			checkResponse:  nil,
 		},
 		{
-			name:           "GET /api/games - wrong method",
+			name:           "GET /api/games - latest game for user",
 			method:         http.MethodGet,
 			path:           "/api/games",
 			body:           nil,
-			expectedStatus: http.StatusMethodNotAllowed,
-			checkResponse:  nil,
+			expectedStatus: http.StatusOK,
+			checkResponse: func(t *testing.T, resp *http.Response) {
+				var g game.Game
+				json.NewDecoder(resp.Body).Decode(&g)
+				if g.ID != "latest-game" {
+					t.Errorf("expected game ID 'latest-game', got '%s'", g.ID)
+				}
+				if g.UserID1 != "test-user" {
+					t.Errorf("expected UserID1 'test-user' (from context), got '%s'", g.UserID1)
+				}
+			},
 		},
 	}
 

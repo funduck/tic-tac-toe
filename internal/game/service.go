@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"sync"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -63,6 +64,7 @@ func (s *GameService) JoinGame(ctx context.Context, gameID, userID string) (*Gam
 	if err := g.Join(userID); err != nil {
 		return nil, err
 	}
+	g.Touch(userID, time.Now())
 	if err := s.repo.Update(ctx, g); err != nil {
 		return nil, err
 	}
@@ -95,9 +97,18 @@ func (s *GameService) GetLatestGameForUser(ctx context.Context, userID string) (
 	return s.repo.FindLatestForUser(ctx, userID)
 }
 
-// GetGame retrieves a game by ID.
-func (s *GameService) GetGame(ctx context.Context, gameID string) (*Game, error) {
-	return s.repo.FindByID(ctx, gameID)
+// GetGame retrieves a game by ID and records the requesting user's presence.
+func (s *GameService) GetGame(ctx context.Context, gameID, userID string) (*Game, error) {
+	g, err := s.repo.FindByID(ctx, gameID)
+	if err != nil {
+		return nil, err
+	}
+	if g.Touch(userID, time.Now()) {
+		if err := s.repo.Update(ctx, g); err != nil {
+			return nil, err
+		}
+	}
+	return g, nil
 }
 
 // MakeMove applies a move on behalf of userID and persists the updated state.
@@ -109,6 +120,7 @@ func (s *GameService) MakeMove(ctx context.Context, gameID, userID string, x, y 
 	if err := g.MakeMove(userID, x, y); err != nil {
 		return nil, err
 	}
+	g.Touch(userID, time.Now())
 	if err := s.repo.Update(ctx, g); err != nil {
 		return nil, err
 	}
@@ -125,6 +137,7 @@ func (s *GameService) GiveUp(ctx context.Context, gameID, userID string) (*Game,
 	if err := g.GiveUp(userID); err != nil {
 		return nil, err
 	}
+	g.Touch(userID, time.Now())
 	if err := s.repo.Update(ctx, g); err != nil {
 		return nil, err
 	}
@@ -141,6 +154,7 @@ func (s *GameService) Quit(ctx context.Context, gameID, userID string) (*Game, e
 	if err := g.Quit(userID); err != nil {
 		return nil, err
 	}
+	g.Touch(userID, time.Now())
 	if err := s.repo.Update(ctx, g); err != nil {
 		return nil, err
 	}

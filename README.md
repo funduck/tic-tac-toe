@@ -137,8 +137,7 @@ make start-client USER=alice PASSWORD=alicepass ARGS="-game <gameID>"
 
 Thorough Client development seems to be an overkill for such a task, so the behavior is simplified:
 - If `-game` is provided the client will attempt to join that specific game. If the game does not exist or is already full, it will return an error.
-- If `-game` is not provided, the client looks up for the latest game in `waiting` status and joins it. If no such game exists, it creates a new one.
-- If client was in the game, on restart it will ignore that game unless `-game` parameter is provided.
+- If `-game` is not provided, the client first checks the user's latest game. If it is still `waiting` or `in_progress`, the client reconnects to it (resuming after a restart). Otherwise it joins any available waiting game, and if none exists it creates a new one.
 
 **Debug mode**
 
@@ -350,7 +349,5 @@ make codegen-client
 ## Future Improvements
 
 Additionally to bonus features mentioned in the [task](./TASK.md), here are some future improvements:
-* If `-game` parameter is not passed to client, it looks up for the last played unfinished game and joins it instead of creating a new one. This allows for easier testing and quicker game start without needing to copy-paste game IDs.
-* Store in memory the last timestamp when user *touched* the game and provide this info to the opponent. It allows to detect if opponent is AFK and maybe implement some timeout-based game end in the future.
 * Matchmaking consurrency-safe without locks, either use SQL database `SELECT FOR UPDATE` or implement in-memory queue of waiting games with atomic operations or channels.
 * Pass context to services and repository when real database is used to allow for better cancellation and timeouts.

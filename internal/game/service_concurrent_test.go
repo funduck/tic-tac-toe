@@ -50,7 +50,7 @@ func TestConcurrentJoinGame(t *testing.T) {
 		t.Errorf("expected exactly 1 successful join, got %d", succeeded)
 	}
 
-	final, err := svc.GetGame(ctx, game.ID)
+	final, err := svc.GetGame(ctx, game.ID, "alice")
 	if err != nil {
 		t.Fatalf("failed to get game: %v", err)
 	}

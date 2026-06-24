@@ -11,7 +11,9 @@ Name | Type | Description | Notes
 **Result** | Pointer to [**GameGameResult**](GameGameResult.md) |  | [optional] 
 **Status** | Pointer to [**GameGameStatus**](GameGameStatus.md) |  | [optional] 
 **UserId1** | Pointer to **string** |  | [optional] 
+**UserId1LastSeen** | Pointer to **string** | Presence timestamps, updated on every action and read by each player. Pointers so they stay omitted until the corresponding player is seen. | [optional] 
 **UserId2** | Pointer to **string** |  | [optional] 
+**UserId2LastSeen** | Pointer to **string** |  | [optional] 
 **WinnerId** | Pointer to **string** |  | [optional] 
 
 ## Methods
@@ -208,6 +210,31 @@ SetUserId1 sets UserId1 field to given value.
 
 HasUserId1 returns a boolean if a field has been set.
 
+### GetUserId1LastSeen
+
+`func (o *GameGame) GetUserId1LastSeen() string`
+
+GetUserId1LastSeen returns the UserId1LastSeen field if non-nil, zero value otherwise.
+
+### GetUserId1LastSeenOk
+
+`func (o *GameGame) GetUserId1LastSeenOk() (*string, bool)`
+
+GetUserId1LastSeenOk returns a tuple with the UserId1LastSeen field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetUserId1LastSeen
+
+`func (o *GameGame) SetUserId1LastSeen(v string)`
+
+SetUserId1LastSeen sets UserId1LastSeen field to given value.
+
+### HasUserId1LastSeen
+
+`func (o *GameGame) HasUserId1LastSeen() bool`
+
+HasUserId1LastSeen returns a boolean if a field has been set.
+
 ### GetUserId2
 
 `func (o *GameGame) GetUserId2() string`
@@ -232,6 +259,31 @@ SetUserId2 sets UserId2 field to given value.
 `func (o *GameGame) HasUserId2() bool`
 
 HasUserId2 returns a boolean if a field has been set.
+
+### GetUserId2LastSeen
+
+`func (o *GameGame) GetUserId2LastSeen() string`
+
+GetUserId2LastSeen returns the UserId2LastSeen field if non-nil, zero value otherwise.
+
+### GetUserId2LastSeenOk
+
+`func (o *GameGame) GetUserId2LastSeenOk() (*string, bool)`
+
+GetUserId2LastSeenOk returns a tuple with the UserId2LastSeen field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetUserId2LastSeen
+
+`func (o *GameGame) SetUserId2LastSeen(v string)`
+
+SetUserId2LastSeen sets UserId2LastSeen field to given value.
+
+### HasUserId2LastSeen
+
+`func (o *GameGame) HasUserId2LastSeen() bool`
+
+HasUserId2LastSeen returns a boolean if a field has been set.
 
 ### GetWinnerId
 

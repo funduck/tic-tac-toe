@@ -76,3 +76,9 @@ Use idiomatic snake_case for json: `json:"access_token"`, `json:"user_id"`
 
 # Tools
 Look into @Makefile for available commands like lint, tests, etc.
+
+## Dev Notes
+- OpenAPI client (`cmd/client/generated/server`) is generated from the *live* server's `/swagger/doc.json`, not the source: `make swag-init` (annotations → docs/swagger.json) then start the server + `make codegen-client` (Docker required).
+- Generated client maps Go `time.Time` json fields to `*string` (swagger 2.0 has no time type).
+- `memory_repo.copyGame` is a shallow struct copy; pointer fields (e.g. `*time.Time`) are safe only because callers reassign the pointer, never mutate through it. `Update` replaces the whole map entry.
+- `cmd/client` is a separate Go module (`github.com/funduck/tic-tac-toe/client`); run its tests from that dir — root `go test ./...` won't cover it.

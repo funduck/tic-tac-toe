@@ -73,6 +73,7 @@ Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *GamesAPI* | [**CreateGame**](docs/GamesAPI.md#creategame) | **Post** /api/games | Create a new game
 *GamesAPI* | [**GetGame**](docs/GamesAPI.md#getgame) | **Get** /api/games/{gameID} | Get game state
+*GamesAPI* | [**GetLatestGame**](docs/GamesAPI.md#getlatestgame) | **Get** /api/games | Get the authenticated user&#39;s most recent game
 *GamesAPI* | [**GiveUpGame**](docs/GamesAPI.md#giveupgame) | **Post** /api/games/{gameID}/giveup | Give up the game
 *GamesAPI* | [**JoinAnyGame**](docs/GamesAPI.md#joinanygame) | **Post** /api/games/join | Join any available game
 *GamesAPI* | [**JoinGame**](docs/GamesAPI.md#joingame) | **Post** /api/games/{gameID}/join | Join a waiting game

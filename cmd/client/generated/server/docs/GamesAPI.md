@@ -6,6 +6,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**CreateGame**](GamesAPI.md#CreateGame) | **Post** /api/games | Create a new game
 [**GetGame**](GamesAPI.md#GetGame) | **Get** /api/games/{gameID} | Get game state
+[**GetLatestGame**](GamesAPI.md#GetLatestGame) | **Get** /api/games | Get the authenticated user&#39;s most recent game
 [**GiveUpGame**](GamesAPI.md#GiveUpGame) | **Post** /api/games/{gameID}/giveup | Give up the game
 [**JoinAnyGame**](GamesAPI.md#JoinAnyGame) | **Post** /api/games/join | Join any available game
 [**JoinGame**](GamesAPI.md#JoinGame) | **Post** /api/games/{gameID}/join | Join a waiting game
@@ -126,6 +127,65 @@ Other parameters are passed through a pointer to a apiGetGameRequest struct via 
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
+
+
+### Return type
+
+[**GameGame**](GameGame.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## GetLatestGame
+
+> GameGame GetLatestGame(ctx).Execute()
+
+Get the authenticated user's most recent game
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.GamesAPI.GetLatestGame(context.Background()).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `GamesAPI.GetLatestGame``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `GetLatestGame`: GameGame
+	fmt.Fprintf(os.Stdout, "Response from `GamesAPI.GetLatestGame`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+This endpoint does not need any parameter.
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiGetLatestGameRequest struct via the builder pattern
 
 
 ### Return type

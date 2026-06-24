@@ -86,3 +86,12 @@ func (s *GameService) GetGame(ctx context.Context, gameID string) (*Game, error)
 	}
 	return WrapGame(g), nil
 }
+
+// GetLatestGame retrieves the authenticated user's most recent game, if any.
+func (s *GameService) GetLatestGame(ctx context.Context) (*Game, error) {
+	g, r, err := s.api.GetLatestGame(ctx).Execute()
+	if err != nil {
+		return nil, parseError(r, err)
+	}
+	return WrapGame(g), nil
+}

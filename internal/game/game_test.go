@@ -3,6 +3,7 @@ package game
 import (
 	"errors"
 	"testing"
+	"time"
 )
 
 func TestNewGame(t *testing.T) {
@@ -367,6 +368,45 @@ func TestQuit(t *testing.T) {
 		}
 		if err := g.Quit("charlie"); !errors.Is(err, ErrNotInGame) {
 			t.Errorf("expected ErrNotInGame, got %v", err)
+		}
+	})
+}
+
+func TestGame_Touch(t *testing.T) {
+	now := time.Now()
+	g := NewGameInProgress("id1", "alice", "bob")
+
+	t.Run("stamps first player", func(t *testing.T) {
+		if !g.Touch("alice", now) {
+			t.Fatal("expected Touch to report a change for a participant")
+		}
+		if g.UserID1LastSeen == nil || !g.UserID1LastSeen.Equal(now) {
+			t.Error("expected UserID1LastSeen to be set to now")
+		}
+		if g.UserID2LastSeen != nil {
+			t.Error("touching alice should not stamp bob")
+		}
+	})
+
+	t.Run("stamps second player", func(t *testing.T) {
+		if !g.Touch("bob", now) {
+			t.Fatal("expected Touch to report a change for a participant")
+		}
+		if g.UserID2LastSeen == nil || !g.UserID2LastSeen.Equal(now) {
+			t.Error("expected UserID2LastSeen to be set to now")
+		}
+	})
+
+	t.Run("ignores non-participant", func(t *testing.T) {
+		if g.Touch("charlie", now) {
+			t.Error("expected Touch to report no change for a non-participant")
+		}
+	})
+
+	t.Run("ignores empty user", func(t *testing.T) {
+		empty := NewGame("id2") // UserID1 == "" but empty userID must not match
+		if empty.Touch("", now) {
+			t.Error("expected Touch to ignore an empty userID")
 		}
 	})
 }

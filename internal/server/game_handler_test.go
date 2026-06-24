@@ -23,7 +23,8 @@ type mockGameService struct {
 	makeMoveFunc          func(ctx context.Context, gameID, userID string, x, y int) (*game.Game, error)
 	giveUpFunc            func(ctx context.Context, gameID, userID string) (*game.Game, error)
 	quitFunc              func(ctx context.Context, gameID, userID string) (*game.Game, error)
-	getGameFunc           func(ctx context.Context, gameID string) (*game.Game, error)
+	getGameFunc           func(ctx context.Context, gameID, userID string) (*game.Game, error)
+	getLatestGameFunc     func(ctx context.Context, userID string) (*game.Game, error)
 }
 
 func (m *mockGameService) CreateGame(ctx context.Context) (*game.Game, error) {
@@ -75,9 +76,16 @@ func (m *mockGameService) Quit(ctx context.Context, gameID, userID string) (*gam
 	return nil, nil
 }
 
-func (m *mockGameService) GetGame(ctx context.Context, gameID string) (*game.Game, error) {
+func (m *mockGameService) GetGame(ctx context.Context, gameID, userID string) (*game.Game, error) {
 	if m.getGameFunc != nil {
-		return m.getGameFunc(ctx, gameID)
+		return m.getGameFunc(ctx, gameID, userID)
+	}
+	return nil, nil
+}
+
+func (m *mockGameService) GetLatestGameForUser(ctx context.Context, userID string) (*game.Game, error) {
+	if m.getLatestGameFunc != nil {
+		return m.getLatestGameFunc(ctx, userID)
 	}
 	return nil, nil
 }
@@ -684,7 +692,7 @@ func TestGameHandler_GetGame(t *testing.T) {
 			name: "successfully get game",
 			mockSetup: func() *mockGameService {
 				return &mockGameService{
-					getGameFunc: func(ctx context.Context, gameID string) (*game.Game, error) {
+					getGameFunc: func(ctx context.Context, gameID, userID string) (*game.Game, error) {
 						g := game.NewGameInProgress(gameID, "user-1", "user-2")
 						return g, nil
 					},
@@ -704,7 +712,7 @@ func TestGameHandler_GetGame(t *testing.T) {
 			name: "game not found",
 			mockSetup: func() *mockGameService {
 				return &mockGameService{
-					getGameFunc: func(ctx context.Context, gameID string) (*game.Game, error) {
+					getGameFunc: func(ctx context.Context, gameID, userID string) (*game.Game, error) {
 						return nil, game.ErrGameNotFound
 					},
 				}
@@ -728,6 +736,65 @@ func TestGameHandler_GetGame(t *testing.T) {
 			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
 			w := executeRequest(h.GetGame, req)
+
+			checkStatusCode(tt.expectedStatus)(t, w)
+			if tt.checkResponse != nil {
+				tt.checkResponse(t, w.Body.Bytes())
+			}
+		})
+	}
+}
+
+func TestGameHandler_GetLatestGame(t *testing.T) {
+	tests := []struct {
+		name           string
+		mockSetup      func() *mockGameService
+		expectedStatus int
+		checkResponse  func(t *testing.T, body []byte)
+	}{
+		{
+			name: "successfully get latest game",
+			mockSetup: func() *mockGameService {
+				return &mockGameService{
+					getLatestGameFunc: func(ctx context.Context, userID string) (*game.Game, error) {
+						return game.NewGameInProgress("game-123", userID, "user-2"), nil
+					},
+				}
+			},
+			expectedStatus: http.StatusOK,
+			checkResponse: checkGameMatches(game.Game{
+				ID:              "game-123",
+				Status:          game.StatusInProgress,
+				UserID1:         "test-user",
+				UserID2:         "user-2",
+				CurrentPlayerID: "test-user",
+			}),
+		},
+		{
+			name: "no game for user",
+			mockSetup: func() *mockGameService {
+				return &mockGameService{
+					getLatestGameFunc: func(ctx context.Context, userID string) (*game.Game, error) {
+						return nil, game.ErrGameNotFound
+					},
+				}
+			},
+			expectedStatus: http.StatusNotFound,
+			checkResponse:  checkErrorResponse(game.ErrGameNotFound.Error()),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewGameHandler(
+				tt.mockSetup(),
+				slog.New(slog.NewTextHandler(io.Discard, nil)), // silent logger for tests
+			)
+
+			req := httptest.NewRequest(http.MethodGet, "/api/games", nil)
+			req = req.WithContext(context.WithValue(req.Context(), userIDContextKey, "test-user"))
+
+			w := executeRequest(h.GetLatestGame, req)
 
 			checkStatusCode(tt.expectedStatus)(t, w)
 			if tt.checkResponse != nil {

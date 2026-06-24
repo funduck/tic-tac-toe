@@ -18,7 +18,8 @@ type GameService interface {
 	MakeMove(ctx context.Context, gameID, userID string, x, y int) (*game.Game, error)
 	GiveUp(ctx context.Context, gameID, userID string) (*game.Game, error)
 	Quit(ctx context.Context, gameID, userID string) (*game.Game, error)
-	GetGame(ctx context.Context, gameID string) (*game.Game, error)
+	GetGame(ctx context.Context, gameID, userID string) (*game.Game, error)
+	GetLatestGameForUser(ctx context.Context, userID string) (*game.Game, error)
 }
 
 type GameHandler struct {
@@ -245,11 +246,37 @@ func (h *GameHandler) Quit(w http.ResponseWriter, r *http.Request) {
 //	@Router		/api/games/{gameID} [get]
 func (h *GameHandler) GetGame(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	userID := userIDFromContext(ctx)
 	gameID := chi.URLParam(r, "gameID")
 
-	g, err := h.svc.GetGame(ctx, gameID)
+	g, err := h.svc.GetGame(ctx, gameID, userID)
 	if err != nil {
 		h.logger.Warn("get game failed", "gameID", gameID, "error", err)
+		writeDomainError(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, g)
+}
+
+// GetLatestGame godoc
+//
+//	@Summary	Get the authenticated user's most recent game
+//	@ID		getLatestGame
+//	@Tags		games
+//	@Produce	json
+//	@Success	200	{object}	game.Game
+//	@Failure	404	{object}	ErrorResponse
+//	@Router		/api/games [get]
+func (h *GameHandler) GetLatestGame(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	userID := userIDFromContext(ctx)
+
+	h.logger.Debug("request", "method", r.Method, "path", r.URL.Path, "userID", userID)
+
+	g, err := h.svc.GetLatestGameForUser(ctx, userID)
+	if err != nil {
+		h.logger.Warn("get latest game failed", "userID", userID, "error", err)
 		writeDomainError(w, err)
 		return
 	}

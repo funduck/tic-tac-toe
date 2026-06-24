@@ -24,12 +24,15 @@ type GameGame struct {
 	CurrentPlayerId *string `json:"current_player_id,omitempty"`
 	Id              *string `json:"id,omitempty"`
 	// optional field to indicate if the game is private or public
-	Private  *bool           `json:"private,omitempty"`
-	Result   *GameGameResult `json:"result,omitempty"`
-	Status   *GameGameStatus `json:"status,omitempty"`
-	UserId1  *string         `json:"user_id1,omitempty"`
-	UserId2  *string         `json:"user_id2,omitempty"`
-	WinnerId *string         `json:"winner_id,omitempty"`
+	Private *bool           `json:"private,omitempty"`
+	Result  *GameGameResult `json:"result,omitempty"`
+	Status  *GameGameStatus `json:"status,omitempty"`
+	UserId1 *string         `json:"user_id1,omitempty"`
+	// Presence timestamps, updated on every action and read by each player. Pointers so they stay omitted until the corresponding player is seen.
+	UserId1LastSeen *string `json:"user_id1_last_seen,omitempty"`
+	UserId2         *string `json:"user_id2,omitempty"`
+	UserId2LastSeen *string `json:"user_id2_last_seen,omitempty"`
+	WinnerId        *string `json:"winner_id,omitempty"`
 }
 
 // NewGameGame instantiates a new GameGame object
@@ -273,6 +276,38 @@ func (o *GameGame) SetUserId1(v string) {
 	o.UserId1 = &v
 }
 
+// GetUserId1LastSeen returns the UserId1LastSeen field value if set, zero value otherwise.
+func (o *GameGame) GetUserId1LastSeen() string {
+	if o == nil || IsNil(o.UserId1LastSeen) {
+		var ret string
+		return ret
+	}
+	return *o.UserId1LastSeen
+}
+
+// GetUserId1LastSeenOk returns a tuple with the UserId1LastSeen field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *GameGame) GetUserId1LastSeenOk() (*string, bool) {
+	if o == nil || IsNil(o.UserId1LastSeen) {
+		return nil, false
+	}
+	return o.UserId1LastSeen, true
+}
+
+// HasUserId1LastSeen returns a boolean if a field has been set.
+func (o *GameGame) HasUserId1LastSeen() bool {
+	if o != nil && !IsNil(o.UserId1LastSeen) {
+		return true
+	}
+
+	return false
+}
+
+// SetUserId1LastSeen gets a reference to the given string and assigns it to the UserId1LastSeen field.
+func (o *GameGame) SetUserId1LastSeen(v string) {
+	o.UserId1LastSeen = &v
+}
+
 // GetUserId2 returns the UserId2 field value if set, zero value otherwise.
 func (o *GameGame) GetUserId2() string {
 	if o == nil || IsNil(o.UserId2) {
@@ -303,6 +338,38 @@ func (o *GameGame) HasUserId2() bool {
 // SetUserId2 gets a reference to the given string and assigns it to the UserId2 field.
 func (o *GameGame) SetUserId2(v string) {
 	o.UserId2 = &v
+}
+
+// GetUserId2LastSeen returns the UserId2LastSeen field value if set, zero value otherwise.
+func (o *GameGame) GetUserId2LastSeen() string {
+	if o == nil || IsNil(o.UserId2LastSeen) {
+		var ret string
+		return ret
+	}
+	return *o.UserId2LastSeen
+}
+
+// GetUserId2LastSeenOk returns a tuple with the UserId2LastSeen field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *GameGame) GetUserId2LastSeenOk() (*string, bool) {
+	if o == nil || IsNil(o.UserId2LastSeen) {
+		return nil, false
+	}
+	return o.UserId2LastSeen, true
+}
+
+// HasUserId2LastSeen returns a boolean if a field has been set.
+func (o *GameGame) HasUserId2LastSeen() bool {
+	if o != nil && !IsNil(o.UserId2LastSeen) {
+		return true
+	}
+
+	return false
+}
+
+// SetUserId2LastSeen gets a reference to the given string and assigns it to the UserId2LastSeen field.
+func (o *GameGame) SetUserId2LastSeen(v string) {
+	o.UserId2LastSeen = &v
 }
 
 // GetWinnerId returns the WinnerId field value if set, zero value otherwise.
@@ -368,8 +435,14 @@ func (o GameGame) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.UserId1) {
 		toSerialize["user_id1"] = o.UserId1
 	}
+	if !IsNil(o.UserId1LastSeen) {
+		toSerialize["user_id1_last_seen"] = o.UserId1LastSeen
+	}
 	if !IsNil(o.UserId2) {
 		toSerialize["user_id2"] = o.UserId2
+	}
+	if !IsNil(o.UserId2LastSeen) {
+		toSerialize["user_id2_last_seen"] = o.UserId2LastSeen
 	}
 	if !IsNil(o.WinnerId) {
 		toSerialize["winner_id"] = o.WinnerId

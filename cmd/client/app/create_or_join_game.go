@@ -13,6 +13,12 @@ import (
 // CreateOrJoinGame handles game creation or joining
 func CreateOrJoinGame(ctx context.Context, gameSvc *lib.GameService, displaySvc *lib.DisplayService) error {
 	if lib.GameID == "" {
+		// Reconnect to the latest game the user is still in, if any.
+		if g, ok := reconnectToLatestGame(ctx, gameSvc, displaySvc); ok {
+			lib.GameState = g
+			return nil
+		}
+
 		// Try join any game first
 		g, err := gameSvc.JoinAnyGame(ctx, lib.UserID)
 		if err == nil {
@@ -46,6 +52,25 @@ func CreateOrJoinGame(ctx context.Context, gameSvc *lib.GameService, displaySvc 
 	displaySvc.PrintInfo(fmt.Sprintf("Joined game: %s with %s", g.GetID(), g.GetOpponentID()))
 
 	return nil
+}
+
+// reconnectToLatestGame looks up the user's most recent game and returns it when
+// it is still joinable (waiting for an opponent or already in progress), so the
+// client can resume after a restart without needing the -game flag. A missing
+// game, a finished/cancelled game, or any transient error simply means "no
+// reconnect" and the caller falls through to the normal join/create flow.
+func reconnectToLatestGame(ctx context.Context, gameSvc *lib.GameService, displaySvc *lib.DisplayService) (*lib.Game, bool) {
+	g, err := gameSvc.GetLatestGame(ctx)
+	if err != nil {
+		return nil, false
+	}
+	switch g.GetStatus() {
+	case openapi.StatusWaiting, openapi.StatusInProgress:
+		displaySvc.PrintInfo(fmt.Sprintf("Reconnected to game: %s", g.GetID()))
+		return g, true
+	default:
+		return nil, false
+	}
 }
 
 // ErrUserQuit signals that the player chose to leave a still-waiting game with

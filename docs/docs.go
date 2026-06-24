@@ -16,6 +16,30 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/api/games": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "games"
+                ],
+                "summary": "Get the authenticated user's most recent game",
+                "operationId": "getLatestGame",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/game.Game"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/server.ErrorResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "consumes": [
                     "application/json"
@@ -552,7 +576,14 @@ const docTemplate = `{
                 "user_id1": {
                     "type": "string"
                 },
+                "user_id1_last_seen": {
+                    "description": "Presence timestamps, updated on every action and read by each player.\nPointers so they stay omitted until the corresponding player is seen.",
+                    "type": "string"
+                },
                 "user_id2": {
+                    "type": "string"
+                },
+                "user_id2_last_seen": {
                     "type": "string"
                 },
                 "winner_id": {

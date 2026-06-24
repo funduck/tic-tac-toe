@@ -22,7 +22,14 @@ definitions:
         $ref: '#/definitions/game.GameStatus'
       user_id1:
         type: string
+      user_id1_last_seen:
+        description: |-
+          Presence timestamps, updated on every action and read by each player.
+          Pointers so they stay omitted until the corresponding player is seen.
+        type: string
       user_id2:
+        type: string
+      user_id2_last_seen:
         type: string
       winner_id:
         type: string
@@ -144,6 +151,22 @@ info:
   version: "1.0"
 paths:
   /api/games:
+    get:
+      operationId: getLatestGame
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/game.Game'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Get the authenticated user's most recent game
+      tags:
+      - games
     post:
       consumes:
       - application/json

@@ -284,19 +284,54 @@ func TestGameService_GetGame(t *testing.T) {
 	svc := NewGameService(repo, slog.Default())
 	g, _ := createGameInProgressHelper(svc, "alice", "bob")
 
-	got, err := svc.GetGame(ctx, g.ID)
+	got, err := svc.GetGame(ctx, g.ID, "alice")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	if got.ID != g.ID {
 		t.Error("game ID mismatch")
 	}
+	if got.UserID1LastSeen == nil {
+		t.Error("expected UserID1LastSeen to be set after GetGame by participant")
+	}
+}
+
+func TestGameService_GetGame_TouchesPresence(t *testing.T) {
+	ctx := context.Background()
+	repo := newMockRepo()
+	svc := NewGameService(repo, slog.Default())
+	// Insert a fresh in-progress game with no presence recorded yet.
+	g := NewGameInProgress("game-presence", "alice", "bob")
+	if err := repo.Create(ctx, g); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// A non-participant read must not stamp either presence field.
+	got, err := svc.GetGame(ctx, g.ID, "carol")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if got.UserID1LastSeen != nil || got.UserID2LastSeen != nil {
+		t.Error("non-participant GetGame should not touch presence")
+	}
+
+	// bob reading the game stamps only bob's field.
+	got, err = svc.GetGame(ctx, g.ID, "bob")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if got.UserID2LastSeen == nil {
+		t.Error("expected UserID2LastSeen to be set after GetGame by bob")
+	}
+	if got.UserID1LastSeen != nil {
+		t.Error("GetGame by bob should not stamp alice's presence")
+	}
 }
 
 func TestGameService_GetGame_Errors(t *testing.T) {
 	ctx := context.Background()
 	svc := NewGameService(newMockRepo(), slog.Default())
-	_, err := svc.GetGame(ctx, "nonexistent")
+	_, err := svc.GetGame(ctx, "nonexistent", "alice")
 	if !errors.Is(err, ErrGameNotFound) {
 		t.Errorf("expected ErrGameNotFound, got %v", err)
 	}
