@@ -17,8 +17,8 @@ func TestConcurrentJoinGame(t *testing.T) {
 	repo := NewMemoryRepo()
 	svc := NewGameService(repo, slog.Default(), time.Minute)
 
-	game, _ := svc.CreateGame(ctx)
-	_, _ = svc.JoinGame(ctx, game.ID, "alice")
+	g, _ := svc.CreateGame(ctx, "host", CreateGameCommand{})
+	_, _ = svc.JoinGame(ctx, "alice", JoinGameCommand{GameID: g.ID})
 
 	const racers = 5
 	type result struct {
@@ -33,7 +33,7 @@ func TestConcurrentJoinGame(t *testing.T) {
 		playerID := fmt.Sprintf("racer_%d", i)
 		go func(id string) {
 			defer wg.Done()
-			g, err := svc.JoinGame(ctx, game.ID, id)
+			g, err := svc.JoinGame(ctx, id, JoinGameCommand{GameID: g.ID})
 			results <- result{g, err}
 		}(playerID)
 	}
@@ -51,7 +51,7 @@ func TestConcurrentJoinGame(t *testing.T) {
 		t.Errorf("expected exactly 1 successful join, got %d", succeeded)
 	}
 
-	final, err := svc.GetGame(ctx, game.ID, "alice")
+	final, err := svc.GetGame(ctx, "alice", GetGameCommand{GameID: g.ID})
 	if err != nil {
 		t.Fatalf("failed to get game: %v", err)
 	}
@@ -70,10 +70,10 @@ func TestConcurrentJoinAnyGame(t *testing.T) {
 	repo := NewMemoryRepo()
 	svc := NewGameService(repo, slog.Default(), time.Minute)
 
-	game1, _ := svc.CreateGame(ctx)
-	game2, _ := svc.CreateGame(ctx)
-	_, _ = svc.JoinGame(ctx, game1.ID, "player1")
-	_, _ = svc.JoinGame(ctx, game2.ID, "player2")
+	game1, _ := svc.CreateGame(ctx, "host1", CreateGameCommand{})
+	game2, _ := svc.CreateGame(ctx, "host2", CreateGameCommand{})
+	_, _ = svc.JoinGame(ctx, "player1", JoinGameCommand{GameID: game1.ID})
+	_, _ = svc.JoinGame(ctx, "player2", JoinGameCommand{GameID: game2.ID})
 
 	// player3 and player4 race to fill the two open slots
 	type result struct {

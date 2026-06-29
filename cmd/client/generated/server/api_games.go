@@ -25,11 +25,11 @@ type GamesAPIService service
 type ApiCreateGameRequest struct {
 	ctx        context.Context
 	ApiService *GamesAPIService
-	request    *ServerCreateGameRequest
+	request    *GameCreateGameCommand
 }
 
 // Create game request
-func (r ApiCreateGameRequest) Request(request ServerCreateGameRequest) ApiCreateGameRequest {
+func (r ApiCreateGameRequest) Request(request GameCreateGameCommand) ApiCreateGameRequest {
 	r.request = &request
 	return r
 }
@@ -388,13 +388,6 @@ type ApiGiveUpGameRequest struct {
 	ctx        context.Context
 	ApiService *GamesAPIService
 	gameID     string
-	request    *ServerGiveUpRequest
-}
-
-// Give up request
-func (r ApiGiveUpGameRequest) Request(request ServerGiveUpRequest) ApiGiveUpGameRequest {
-	r.request = &request
-	return r
 }
 
 func (r ApiGiveUpGameRequest) Execute() (*GameGame, *http.Response, error) {
@@ -438,12 +431,9 @@ func (a *GamesAPIService) GiveUpGameExecute(r ApiGiveUpGameRequest) (*GameGame, 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
-	if r.request == nil {
-		return localVarReturnValue, nil, reportError("request is required and must be specified")
-	}
 
 	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{"application/json"}
+	localVarHTTPContentTypes := []string{}
 
 	// set Content-Type header
 	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
@@ -459,8 +449,6 @@ func (a *GamesAPIService) GiveUpGameExecute(r ApiGiveUpGameRequest) (*GameGame, 
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
-	// body params
-	localVarPostBody = r.request
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return localVarReturnValue, nil, err
@@ -664,13 +652,6 @@ type ApiJoinGameRequest struct {
 	ctx        context.Context
 	ApiService *GamesAPIService
 	gameID     string
-	request    *ServerJoinGameRequest
-}
-
-// Join game request
-func (r ApiJoinGameRequest) Request(request ServerJoinGameRequest) ApiJoinGameRequest {
-	r.request = &request
-	return r
 }
 
 func (r ApiJoinGameRequest) Execute() (*GameGame, *http.Response, error) {
@@ -714,12 +695,9 @@ func (a *GamesAPIService) JoinGameExecute(r ApiJoinGameRequest) (*GameGame, *htt
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
-	if r.request == nil {
-		return localVarReturnValue, nil, reportError("request is required and must be specified")
-	}
 
 	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{"application/json"}
+	localVarHTTPContentTypes := []string{}
 
 	// set Content-Type header
 	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
@@ -735,8 +713,6 @@ func (a *GamesAPIService) JoinGameExecute(r ApiJoinGameRequest) (*GameGame, *htt
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
-	// body params
-	localVarPostBody = r.request
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return localVarReturnValue, nil, err
@@ -810,11 +786,11 @@ type ApiMakeMoveRequest struct {
 	ctx        context.Context
 	ApiService *GamesAPIService
 	gameID     string
-	request    *ServerMoveRequest
+	request    *GameMakeMoveCommand
 }
 
 // Move request
-func (r ApiMakeMoveRequest) Request(request ServerMoveRequest) ApiMakeMoveRequest {
+func (r ApiMakeMoveRequest) Request(request GameMakeMoveCommand) ApiMakeMoveRequest {
 	r.request = &request
 	return r
 }
@@ -956,13 +932,6 @@ type ApiQuitGameRequest struct {
 	ctx        context.Context
 	ApiService *GamesAPIService
 	gameID     string
-	request    *ServerQuitRequest
-}
-
-// Quit request
-func (r ApiQuitGameRequest) Request(request ServerQuitRequest) ApiQuitGameRequest {
-	r.request = &request
-	return r
 }
 
 func (r ApiQuitGameRequest) Execute() (*GameGame, *http.Response, error) {
@@ -1006,12 +975,9 @@ func (a *GamesAPIService) QuitGameExecute(r ApiQuitGameRequest) (*GameGame, *htt
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
-	if r.request == nil {
-		return localVarReturnValue, nil, reportError("request is required and must be specified")
-	}
 
 	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{"application/json"}
+	localVarHTTPContentTypes := []string{}
 
 	// set Content-Type header
 	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
@@ -1027,8 +993,6 @@ func (a *GamesAPIService) QuitGameExecute(r ApiQuitGameRequest) (*GameGame, *htt
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
-	// body params
-	localVarPostBody = r.request
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return localVarReturnValue, nil, err

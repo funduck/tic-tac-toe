@@ -34,7 +34,7 @@ import (
 )
 
 func main() {
-	request := *openapiclient.NewServerCreateGameRequest() // ServerCreateGameRequest | Create game request
+	request := *openapiclient.NewGameCreateGameCommand() // GameCreateGameCommand | Create game request
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
@@ -59,7 +59,7 @@ Other parameters are passed through a pointer to a apiCreateGameRequest struct v
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **request** | [**ServerCreateGameRequest**](ServerCreateGameRequest.md) | Create game request | 
+ **request** | [**GameCreateGameCommand**](GameCreateGameCommand.md) | Create game request | 
 
 ### Return type
 
@@ -208,7 +208,7 @@ No authorization required
 
 ## GiveUpGame
 
-> GameGame GiveUpGame(ctx, gameID).Request(request).Execute()
+> GameGame GiveUpGame(ctx, gameID).Execute()
 
 Give up the game
 
@@ -226,11 +226,10 @@ import (
 
 func main() {
 	gameID := "gameID_example" // string | Game ID
-	request := *openapiclient.NewServerGiveUpRequest() // ServerGiveUpRequest | Give up request
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
-	resp, r, err := apiClient.GamesAPI.GiveUpGame(context.Background(), gameID).Request(request).Execute()
+	resp, r, err := apiClient.GamesAPI.GiveUpGame(context.Background(), gameID).Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when calling `GamesAPI.GiveUpGame``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -256,7 +255,6 @@ Other parameters are passed through a pointer to a apiGiveUpGameRequest struct v
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
- **request** | [**ServerGiveUpRequest**](ServerGiveUpRequest.md) | Give up request | 
 
 ### Return type
 
@@ -268,7 +266,7 @@ No authorization required
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: Not defined
 - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
@@ -337,7 +335,7 @@ No authorization required
 
 ## JoinGame
 
-> GameGame JoinGame(ctx, gameID).Request(request).Execute()
+> GameGame JoinGame(ctx, gameID).Execute()
 
 Join a waiting game
 
@@ -355,11 +353,10 @@ import (
 
 func main() {
 	gameID := "gameID_example" // string | Game ID
-	request := *openapiclient.NewServerJoinGameRequest() // ServerJoinGameRequest | Join game request
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
-	resp, r, err := apiClient.GamesAPI.JoinGame(context.Background(), gameID).Request(request).Execute()
+	resp, r, err := apiClient.GamesAPI.JoinGame(context.Background(), gameID).Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when calling `GamesAPI.JoinGame``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -385,7 +382,6 @@ Other parameters are passed through a pointer to a apiJoinGameRequest struct via
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
- **request** | [**ServerJoinGameRequest**](ServerJoinGameRequest.md) | Join game request | 
 
 ### Return type
 
@@ -397,7 +393,7 @@ No authorization required
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: Not defined
 - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
@@ -425,7 +421,7 @@ import (
 
 func main() {
 	gameID := "gameID_example" // string | Game ID
-	request := *openapiclient.NewServerMoveRequest() // ServerMoveRequest | Move request
+	request := *openapiclient.NewGameMakeMoveCommand() // GameMakeMoveCommand | Move request
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
@@ -455,7 +451,7 @@ Other parameters are passed through a pointer to a apiMakeMoveRequest struct via
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
- **request** | [**ServerMoveRequest**](ServerMoveRequest.md) | Move request | 
+ **request** | [**GameMakeMoveCommand**](GameMakeMoveCommand.md) | Move request | 
 
 ### Return type
 
@@ -477,7 +473,7 @@ No authorization required
 
 ## QuitGame
 
-> GameGame QuitGame(ctx, gameID).Request(request).Execute()
+> GameGame QuitGame(ctx, gameID).Execute()
 
 Quit a game that is still waiting for an opponent
 
@@ -495,11 +491,10 @@ import (
 
 func main() {
 	gameID := "gameID_example" // string | Game ID
-	request := *openapiclient.NewServerQuitRequest() // ServerQuitRequest | Quit request
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
-	resp, r, err := apiClient.GamesAPI.QuitGame(context.Background(), gameID).Request(request).Execute()
+	resp, r, err := apiClient.GamesAPI.QuitGame(context.Background(), gameID).Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when calling `GamesAPI.QuitGame``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -525,7 +520,6 @@ Other parameters are passed through a pointer to a apiQuitGameRequest struct via
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
- **request** | [**ServerQuitRequest**](ServerQuitRequest.md) | Quit request | 
 
 ### Return type
 
@@ -537,7 +531,7 @@ No authorization required
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: Not defined
 - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)

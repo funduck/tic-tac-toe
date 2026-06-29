@@ -1,5 +1,10 @@
 basePath: /
 definitions:
+  game.CreateGameCommand:
+    properties:
+      private:
+        type: boolean
+    type: object
   game.Game:
     properties:
       board:
@@ -54,15 +59,19 @@ definitions:
     - StatusInProgress
     - StatusFinished
     - StatusCancelled
+  game.MakeMoveCommand:
+    properties:
+      gameID:
+        type: string
+      x:
+        type: integer
+      "y":
+        type: integer
+    type: object
   server.AccessTokenResponse:
     properties:
       access_token:
         type: string
-    type: object
-  server.CreateGameRequest:
-    properties:
-      private:
-        type: boolean
     type: object
   server.ErrorCode:
     enum:
@@ -103,30 +112,6 @@ definitions:
       code:
         $ref: '#/definitions/server.ErrorCode'
       error:
-        type: string
-    type: object
-  server.GiveUpRequest:
-    properties:
-      game_id:
-        type: string
-    type: object
-  server.JoinGameRequest:
-    properties:
-      game_id:
-        type: string
-    type: object
-  server.MoveRequest:
-    properties:
-      game_id:
-        type: string
-      x:
-        type: integer
-      "y":
-        type: integer
-    type: object
-  server.QuitRequest:
-    properties:
-      game_id:
         type: string
     type: object
   server.UserLoginRequest:
@@ -177,7 +162,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/server.CreateGameRequest'
+          $ref: '#/definitions/game.CreateGameCommand'
       produces:
       - application/json
       responses:
@@ -225,8 +210,6 @@ paths:
       - games
   /api/games/{gameID}/giveup:
     post:
-      consumes:
-      - application/json
       operationId: giveUpGame
       parameters:
       - description: Game ID
@@ -234,12 +217,6 @@ paths:
         name: gameID
         required: true
         type: string
-      - description: Give up request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/server.GiveUpRequest'
       produces:
       - application/json
       responses:
@@ -264,8 +241,6 @@ paths:
       - games
   /api/games/{gameID}/join:
     post:
-      consumes:
-      - application/json
       operationId: joinGame
       parameters:
       - description: Game ID
@@ -273,12 +248,6 @@ paths:
         name: gameID
         required: true
         type: string
-      - description: Join game request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/server.JoinGameRequest'
       produces:
       - application/json
       responses:
@@ -317,7 +286,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/server.MoveRequest'
+          $ref: '#/definitions/game.MakeMoveCommand'
       produces:
       - application/json
       responses:
@@ -342,8 +311,6 @@ paths:
       - games
   /api/games/{gameID}/quit:
     post:
-      consumes:
-      - application/json
       operationId: quitGame
       parameters:
       - description: Game ID
@@ -351,12 +318,6 @@ paths:
         name: gameID
         required: true
         type: string
-      - description: Quit request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/server.QuitRequest'
       produces:
       - application/json
       responses:
@@ -381,8 +342,6 @@ paths:
       - games
   /api/games/join:
     post:
-      consumes:
-      - application/json
       operationId: joinAnyGame
       produces:
       - application/json

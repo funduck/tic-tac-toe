@@ -14,33 +14,33 @@ import (
 	"encoding/json"
 )
 
-// checks if the ServerCreateGameRequest type satisfies the MappedNullable interface at compile time
-var _ MappedNullable = &ServerCreateGameRequest{}
+// checks if the GameCreateGameCommand type satisfies the MappedNullable interface at compile time
+var _ MappedNullable = &GameCreateGameCommand{}
 
-// ServerCreateGameRequest struct for ServerCreateGameRequest
-type ServerCreateGameRequest struct {
+// GameCreateGameCommand struct for GameCreateGameCommand
+type GameCreateGameCommand struct {
 	Private *bool `json:"private,omitempty"`
 }
 
-// NewServerCreateGameRequest instantiates a new ServerCreateGameRequest object
+// NewGameCreateGameCommand instantiates a new GameCreateGameCommand object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewServerCreateGameRequest() *ServerCreateGameRequest {
-	this := ServerCreateGameRequest{}
+func NewGameCreateGameCommand() *GameCreateGameCommand {
+	this := GameCreateGameCommand{}
 	return &this
 }
 
-// NewServerCreateGameRequestWithDefaults instantiates a new ServerCreateGameRequest object
+// NewGameCreateGameCommandWithDefaults instantiates a new GameCreateGameCommand object
 // This constructor will only assign default values to properties that have it defined,
 // but it doesn't guarantee that properties required by API are set
-func NewServerCreateGameRequestWithDefaults() *ServerCreateGameRequest {
-	this := ServerCreateGameRequest{}
+func NewGameCreateGameCommandWithDefaults() *GameCreateGameCommand {
+	this := GameCreateGameCommand{}
 	return &this
 }
 
 // GetPrivate returns the Private field value if set, zero value otherwise.
-func (o *ServerCreateGameRequest) GetPrivate() bool {
+func (o *GameCreateGameCommand) GetPrivate() bool {
 	if o == nil || IsNil(o.Private) {
 		var ret bool
 		return ret
@@ -50,7 +50,7 @@ func (o *ServerCreateGameRequest) GetPrivate() bool {
 
 // GetPrivateOk returns a tuple with the Private field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ServerCreateGameRequest) GetPrivateOk() (*bool, bool) {
+func (o *GameCreateGameCommand) GetPrivateOk() (*bool, bool) {
 	if o == nil || IsNil(o.Private) {
 		return nil, false
 	}
@@ -58,7 +58,7 @@ func (o *ServerCreateGameRequest) GetPrivateOk() (*bool, bool) {
 }
 
 // HasPrivate returns a boolean if a field has been set.
-func (o *ServerCreateGameRequest) HasPrivate() bool {
+func (o *GameCreateGameCommand) HasPrivate() bool {
 	if o != nil && !IsNil(o.Private) {
 		return true
 	}
@@ -67,11 +67,11 @@ func (o *ServerCreateGameRequest) HasPrivate() bool {
 }
 
 // SetPrivate gets a reference to the given bool and assigns it to the Private field.
-func (o *ServerCreateGameRequest) SetPrivate(v bool) {
+func (o *GameCreateGameCommand) SetPrivate(v bool) {
 	o.Private = &v
 }
 
-func (o ServerCreateGameRequest) MarshalJSON() ([]byte, error) {
+func (o GameCreateGameCommand) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
@@ -79,7 +79,7 @@ func (o ServerCreateGameRequest) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toSerialize)
 }
 
-func (o ServerCreateGameRequest) ToMap() (map[string]interface{}, error) {
+func (o GameCreateGameCommand) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.Private) {
 		toSerialize["private"] = o.Private
@@ -87,38 +87,38 @@ func (o ServerCreateGameRequest) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableServerCreateGameRequest struct {
-	value *ServerCreateGameRequest
+type NullableGameCreateGameCommand struct {
+	value *GameCreateGameCommand
 	isSet bool
 }
 
-func (v NullableServerCreateGameRequest) Get() *ServerCreateGameRequest {
+func (v NullableGameCreateGameCommand) Get() *GameCreateGameCommand {
 	return v.value
 }
 
-func (v *NullableServerCreateGameRequest) Set(val *ServerCreateGameRequest) {
+func (v *NullableGameCreateGameCommand) Set(val *GameCreateGameCommand) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableServerCreateGameRequest) IsSet() bool {
+func (v NullableGameCreateGameCommand) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableServerCreateGameRequest) Unset() {
+func (v *NullableGameCreateGameCommand) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableServerCreateGameRequest(val *ServerCreateGameRequest) *NullableServerCreateGameRequest {
-	return &NullableServerCreateGameRequest{value: val, isSet: true}
+func NewNullableGameCreateGameCommand(val *GameCreateGameCommand) *NullableGameCreateGameCommand {
+	return &NullableGameCreateGameCommand{value: val, isSet: true}
 }
 
-func (v NullableServerCreateGameRequest) MarshalJSON() ([]byte, error) {
+func (v NullableGameCreateGameCommand) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableServerCreateGameRequest) UnmarshalJSON(src []byte) error {
+func (v *NullableGameCreateGameCommand) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }

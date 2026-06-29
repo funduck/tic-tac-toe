@@ -11,14 +11,13 @@ import (
 )
 
 type GameService interface {
-	CreateGame(ctx context.Context) (*game.Game, error)
-	CreatePrivateGame(ctx context.Context) (*game.Game, error)
-	JoinGame(ctx context.Context, gameID, userID string) (*game.Game, error)
+	CreateGame(ctx context.Context, userID string, cmd game.CreateGameCommand) (*game.Game, error)
+	JoinGame(ctx context.Context, userID string, cmd game.JoinGameCommand) (*game.Game, error)
 	JoinAnyGame(ctx context.Context, userID string) (*game.Game, error)
-	MakeMove(ctx context.Context, gameID, userID string, x, y int) (*game.Game, error)
-	GiveUp(ctx context.Context, gameID, userID string) (*game.Game, error)
-	Quit(ctx context.Context, gameID, userID string) (*game.Game, error)
-	GetGame(ctx context.Context, gameID, userID string) (*game.Game, error)
+	GetGame(ctx context.Context, userID string, cmd game.GetGameCommand) (*game.Game, error)
+	MakeMove(ctx context.Context, userID string, cmd game.MakeMoveCommand) (*game.Game, error)
+	GiveUp(ctx context.Context, userID string, cmd game.GiveUpCommand) (*game.Game, error)
+	Quit(ctx context.Context, userID string, cmd game.QuitCommand) (*game.Game, error)
 	GetLatestGameForUser(ctx context.Context, userID string) (*game.Game, error)
 }
 
@@ -38,7 +37,7 @@ func NewGameHandler(svc GameService, logger *slog.Logger) *GameHandler {
 //	@Tags		games
 //	@Accept		json
 //	@Produce	json
-//	@Param		request	body		CreateGameRequest	true	"Create game request"
+//	@Param		request	body		game.CreateGameCommand	true	"Create game request"
 //	@Success	201		{object}	game.Game
 //	@Failure	400		{object}	ErrorResponse
 //	@Failure	409		{object}	ErrorResponse
@@ -47,27 +46,19 @@ func NewGameHandler(svc GameService, logger *slog.Logger) *GameHandler {
 func (h *GameHandler) CreateGame(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	userID := userIDFromContext(ctx)
-	var req CreateGameRequest
-	if err := parseRequestBody(r, &req, h.logger, w); err != nil {
+	var cmd game.CreateGameCommand
+	if err := parseRequestBody(r, &cmd, h.logger, w); err != nil {
 		return // parseRequestBody already wrote the error response
 	}
 
-	var g *game.Game
-	var err error
-
-	if req.Private {
-		g, err = h.svc.CreatePrivateGame(ctx)
-	} else {
-		g, err = h.svc.CreateGame(ctx)
-	}
-
+	g, err := h.svc.CreateGame(ctx, userID, cmd)
 	if err != nil {
 		h.logger.Warn("create game failed", "error", err)
 		writeDomainError(w, err)
 		return
 	}
 
-	g2, err := h.svc.JoinGame(ctx, g.ID, userID)
+	g2, err := h.svc.JoinGame(ctx, userID, game.JoinGameCommand{GameID: g.ID})
 	if err != nil {
 		h.logger.Warn("join game failed", "gameID", g.ID, "userID", userID, "error", err)
 		writeDomainError(w, err)
@@ -83,10 +74,8 @@ func (h *GameHandler) CreateGame(w http.ResponseWriter, r *http.Request) {
 //	@Summary	Join a waiting game
 //	@ID		joinGame
 //	@Tags		games
-//	@Accept		json
 //	@Produce	json
-//	@Param		gameID	path		string			true	"Game ID"
-//	@Param		request	body		JoinGameRequest	true	"Join game request"
+//	@Param		gameID	path		string	true	"Game ID"
 //	@Success	200		{object}	game.Game
 //	@Failure	400		{object}	ErrorResponse
 //	@Failure	404		{object}	ErrorResponse
@@ -99,7 +88,7 @@ func (h *GameHandler) JoinGame(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Debug("request", "method", r.Method, "path", r.URL.Path, "gameID", gameID, "userID", userID)
 
-	g, err := h.svc.JoinGame(ctx, gameID, userID)
+	g, err := h.svc.JoinGame(ctx, userID, game.JoinGameCommand{GameID: gameID})
 	if err != nil {
 		h.logger.Warn("join game failed", "gameID", gameID, "userID", userID, "error", err)
 		writeDomainError(w, err)
@@ -114,7 +103,6 @@ func (h *GameHandler) JoinGame(w http.ResponseWriter, r *http.Request) {
 //	@Summary	Join any available game
 //	@ID		joinAnyGame
 //	@Tags		games
-//	@Accept		json
 //	@Produce	json
 //	@Success	200		{object}	game.Game
 //	@Failure	400		{object}	ErrorResponse
@@ -144,8 +132,8 @@ func (h *GameHandler) JoinAnyGame(w http.ResponseWriter, r *http.Request) {
 //	@Tags		games
 //	@Accept		json
 //	@Produce	json
-//	@Param		gameID	path		string		true	"Game ID"
-//	@Param		request	body		MoveRequest	true	"Move request"
+//	@Param		gameID	path		string				true	"Game ID"
+//	@Param		request	body		game.MakeMoveCommand	true	"Move request"
 //	@Success	200		{object}	game.Game
 //	@Failure	400		{object}	ErrorResponse
 //	@Failure	404		{object}	ErrorResponse
@@ -155,16 +143,17 @@ func (h *GameHandler) MakeMove(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	userID := userIDFromContext(ctx)
 	gameID := chi.URLParam(r, "gameID")
-	var req MoveRequest
-	if err := parseRequestBody(r, &req, h.logger, w); err != nil {
+	var cmd game.MakeMoveCommand
+	if err := parseRequestBody(r, &cmd, h.logger, w); err != nil {
 		return // parseRequestBody already wrote the error response
 	}
+	cmd.GameID = gameID
 
-	h.logger.Debug("request", "method", r.Method, "path", r.URL.Path, "gameID", gameID, "userID", userID, "x", req.X, "y", req.Y)
+	h.logger.Debug("request", "method", r.Method, "path", r.URL.Path, "gameID", gameID, "userID", userID, "x", cmd.X, "y", cmd.Y)
 
-	g, err := h.svc.MakeMove(ctx, gameID, userID, req.X, req.Y)
+	g, err := h.svc.MakeMove(ctx, userID, cmd)
 	if err != nil {
-		h.logger.Warn("make move failed", "gameID", gameID, "userID", userID, "x", req.X, "y", req.Y, "error", err)
+		h.logger.Warn("make move failed", "gameID", gameID, "userID", userID, "x", cmd.X, "y", cmd.Y, "error", err)
 		writeDomainError(w, err)
 		return
 	}
@@ -177,10 +166,8 @@ func (h *GameHandler) MakeMove(w http.ResponseWriter, r *http.Request) {
 //	@Summary	Give up the game
 //	@ID		giveUpGame
 //	@Tags		games
-//	@Accept		json
 //	@Produce	json
-//	@Param		gameID	path		string			true	"Game ID"
-//	@Param		request	body		GiveUpRequest	true	"Give up request"
+//	@Param		gameID	path		string	true	"Game ID"
 //	@Success	200		{object}	game.Game
 //	@Failure	400		{object}	ErrorResponse
 //	@Failure	404		{object}	ErrorResponse
@@ -193,7 +180,7 @@ func (h *GameHandler) GiveUp(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Debug("request", "method", r.Method, "path", r.URL.Path, "gameID", gameID, "userID", userID)
 
-	g, err := h.svc.GiveUp(ctx, gameID, userID)
+	g, err := h.svc.GiveUp(ctx, userID, game.GiveUpCommand{GameID: gameID})
 	if err != nil {
 		h.logger.Warn("give up failed", "gameID", gameID, "userID", userID, "error", err)
 		writeDomainError(w, err)
@@ -208,10 +195,8 @@ func (h *GameHandler) GiveUp(w http.ResponseWriter, r *http.Request) {
 //	@Summary	Quit a game that is still waiting for an opponent
 //	@ID		quitGame
 //	@Tags		games
-//	@Accept		json
 //	@Produce	json
-//	@Param		gameID	path		string		true	"Game ID"
-//	@Param		request	body		QuitRequest	true	"Quit request"
+//	@Param		gameID	path		string	true	"Game ID"
 //	@Success	200		{object}	game.Game
 //	@Failure	400		{object}	ErrorResponse
 //	@Failure	404		{object}	ErrorResponse
@@ -224,7 +209,7 @@ func (h *GameHandler) Quit(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Debug("request", "method", r.Method, "path", r.URL.Path, "gameID", gameID, "userID", userID)
 
-	g, err := h.svc.Quit(ctx, gameID, userID)
+	g, err := h.svc.Quit(ctx, userID, game.QuitCommand{GameID: gameID})
 	if err != nil {
 		h.logger.Warn("quit failed", "gameID", gameID, "userID", userID, "error", err)
 		writeDomainError(w, err)
@@ -249,7 +234,7 @@ func (h *GameHandler) GetGame(w http.ResponseWriter, r *http.Request) {
 	userID := userIDFromContext(ctx)
 	gameID := chi.URLParam(r, "gameID")
 
-	g, err := h.svc.GetGame(ctx, gameID, userID)
+	g, err := h.svc.GetGame(ctx, userID, game.GetGameCommand{GameID: gameID})
 	if err != nil {
 		h.logger.Warn("get game failed", "gameID", gameID, "error", err)
 		writeDomainError(w, err)

@@ -1,27 +1,5 @@
 package server
 
-type CreateGameRequest struct {
-	Private bool `json:"private"`
-}
-
-type JoinGameRequest struct {
-	GameID string `json:"game_id"`
-}
-
-type MoveRequest struct {
-	GameID string `json:"game_id"`
-	X      int    `json:"x"`
-	Y      int    `json:"y"`
-}
-
-type GiveUpRequest struct {
-	GameID string `json:"game_id"`
-}
-
-type QuitRequest struct {
-	GameID string `json:"game_id"`
-}
-
 type UserSignupRequest struct {
 	UserID   string `json:"user_id"`
 	Password string `json:"password"`

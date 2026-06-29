@@ -16,34 +16,26 @@ import (
 )
 
 type mockGameService struct {
-	createGameFunc        func(ctx context.Context) (*game.Game, error)
-	createPrivateGameFunc func(ctx context.Context) (*game.Game, error)
-	joinGameFunc          func(ctx context.Context, gameID, userID string) (*game.Game, error)
-	joinAnyGameFunc       func(ctx context.Context, userID string) (*game.Game, error)
-	makeMoveFunc          func(ctx context.Context, gameID, userID string, x, y int) (*game.Game, error)
-	giveUpFunc            func(ctx context.Context, gameID, userID string) (*game.Game, error)
-	quitFunc              func(ctx context.Context, gameID, userID string) (*game.Game, error)
-	getGameFunc           func(ctx context.Context, gameID, userID string) (*game.Game, error)
-	getLatestGameFunc     func(ctx context.Context, userID string) (*game.Game, error)
+	createGameFunc    func(ctx context.Context, userID string, cmd game.CreateGameCommand) (*game.Game, error)
+	joinGameFunc      func(ctx context.Context, userID string, cmd game.JoinGameCommand) (*game.Game, error)
+	joinAnyGameFunc   func(ctx context.Context, userID string) (*game.Game, error)
+	makeMoveFunc      func(ctx context.Context, userID string, cmd game.MakeMoveCommand) (*game.Game, error)
+	giveUpFunc        func(ctx context.Context, userID string, cmd game.GiveUpCommand) (*game.Game, error)
+	quitFunc          func(ctx context.Context, userID string, cmd game.QuitCommand) (*game.Game, error)
+	getGameFunc       func(ctx context.Context, userID string, cmd game.GetGameCommand) (*game.Game, error)
+	getLatestGameFunc func(ctx context.Context, userID string) (*game.Game, error)
 }
 
-func (m *mockGameService) CreateGame(ctx context.Context) (*game.Game, error) {
+func (m *mockGameService) CreateGame(ctx context.Context, userID string, cmd game.CreateGameCommand) (*game.Game, error) {
 	if m.createGameFunc != nil {
-		return m.createGameFunc(ctx)
+		return m.createGameFunc(ctx, userID, cmd)
 	}
 	return nil, nil
 }
 
-func (m *mockGameService) CreatePrivateGame(ctx context.Context) (*game.Game, error) {
-	if m.createPrivateGameFunc != nil {
-		return m.createPrivateGameFunc(ctx)
-	}
-	return nil, nil
-}
-
-func (m *mockGameService) JoinGame(ctx context.Context, gameID, userID string) (*game.Game, error) {
+func (m *mockGameService) JoinGame(ctx context.Context, userID string, cmd game.JoinGameCommand) (*game.Game, error) {
 	if m.joinGameFunc != nil {
-		return m.joinGameFunc(ctx, gameID, userID)
+		return m.joinGameFunc(ctx, userID, cmd)
 	}
 	return nil, nil
 }
@@ -55,30 +47,30 @@ func (m *mockGameService) JoinAnyGame(ctx context.Context, userID string) (*game
 	return nil, nil
 }
 
-func (m *mockGameService) MakeMove(ctx context.Context, gameID, userID string, x, y int) (*game.Game, error) {
+func (m *mockGameService) MakeMove(ctx context.Context, userID string, cmd game.MakeMoveCommand) (*game.Game, error) {
 	if m.makeMoveFunc != nil {
-		return m.makeMoveFunc(ctx, gameID, userID, x, y)
+		return m.makeMoveFunc(ctx, userID, cmd)
 	}
 	return nil, nil
 }
 
-func (m *mockGameService) GiveUp(ctx context.Context, gameID, userID string) (*game.Game, error) {
+func (m *mockGameService) GiveUp(ctx context.Context, userID string, cmd game.GiveUpCommand) (*game.Game, error) {
 	if m.giveUpFunc != nil {
-		return m.giveUpFunc(ctx, gameID, userID)
+		return m.giveUpFunc(ctx, userID, cmd)
 	}
 	return nil, nil
 }
 
-func (m *mockGameService) Quit(ctx context.Context, gameID, userID string) (*game.Game, error) {
+func (m *mockGameService) Quit(ctx context.Context, userID string, cmd game.QuitCommand) (*game.Game, error) {
 	if m.quitFunc != nil {
-		return m.quitFunc(ctx, gameID, userID)
+		return m.quitFunc(ctx, userID, cmd)
 	}
 	return nil, nil
 }
 
-func (m *mockGameService) GetGame(ctx context.Context, gameID, userID string) (*game.Game, error) {
+func (m *mockGameService) GetGame(ctx context.Context, userID string, cmd game.GetGameCommand) (*game.Game, error) {
 	if m.getGameFunc != nil {
-		return m.getGameFunc(ctx, gameID, userID)
+		return m.getGameFunc(ctx, userID, cmd)
 	}
 	return nil, nil
 }
@@ -180,7 +172,7 @@ func TestGameHandler_CreateGame(t *testing.T) {
 		name           string
 		mockSetup      func() *mockGameService
 		userID         string
-		requestBody    CreateGameRequest
+		requestBody    game.CreateGameCommand
 		expectedStatus int
 		checkResponse  func(t *testing.T, body []byte)
 	}{
@@ -188,18 +180,18 @@ func TestGameHandler_CreateGame(t *testing.T) {
 			name: "create game",
 			mockSetup: func() *mockGameService {
 				return &mockGameService{
-					createGameFunc: func(ctx context.Context) (*game.Game, error) {
+					createGameFunc: func(ctx context.Context, userID string, cmd game.CreateGameCommand) (*game.Game, error) {
 						return game.NewGame("test-game-id-123"), nil
 					},
-					joinGameFunc: func(ctx context.Context, gameID, userID string) (*game.Game, error) {
-						g := game.NewGame(gameID)
+					joinGameFunc: func(ctx context.Context, userID string, cmd game.JoinGameCommand) (*game.Game, error) {
+						g := game.NewGame(cmd.GameID)
 						g.UserID1 = userID
 						return g, nil
 					},
 				}
 			},
 			userID:         "user-123",
-			requestBody:    CreateGameRequest{},
+			requestBody:    game.CreateGameCommand{},
 			expectedStatus: http.StatusCreated,
 			checkResponse: checkGameMatches(game.Game{
 				ID:      "test-game-id-123",
@@ -211,20 +203,20 @@ func TestGameHandler_CreateGame(t *testing.T) {
 			name: "create private game",
 			mockSetup: func() *mockGameService {
 				return &mockGameService{
-					createPrivateGameFunc: func(ctx context.Context) (*game.Game, error) {
+					createGameFunc: func(ctx context.Context, userID string, cmd game.CreateGameCommand) (*game.Game, error) {
 						g := game.NewGame("test-game-id-123")
-						g.Private = true
+						g.Private = cmd.Private
 						return g, nil
 					},
-					joinGameFunc: func(ctx context.Context, gameID, userID string) (*game.Game, error) {
-						g := game.NewGame(gameID)
+					joinGameFunc: func(ctx context.Context, userID string, cmd game.JoinGameCommand) (*game.Game, error) {
+						g := game.NewGame(cmd.GameID)
 						g.UserID1 = userID
 						return g, nil
 					},
 				}
 			},
 			userID:         "user-123",
-			requestBody:    CreateGameRequest{Private: true},
+			requestBody:    game.CreateGameCommand{Private: true},
 			expectedStatus: http.StatusCreated,
 			checkResponse: checkGameMatches(game.Game{
 				ID:      "test-game-id-123",
@@ -237,13 +229,13 @@ func TestGameHandler_CreateGame(t *testing.T) {
 			name: "create game service error",
 			mockSetup: func() *mockGameService {
 				return &mockGameService{
-					createGameFunc: func(ctx context.Context) (*game.Game, error) {
+					createGameFunc: func(ctx context.Context, userID string, cmd game.CreateGameCommand) (*game.Game, error) {
 						return nil, errors.New("database error")
 					},
 				}
 			},
 			userID:         "user-123",
-			requestBody:    CreateGameRequest{},
+			requestBody:    game.CreateGameCommand{},
 			expectedStatus: http.StatusInternalServerError,
 			checkResponse:  checkErrorResponse("database error"),
 		},
@@ -251,16 +243,16 @@ func TestGameHandler_CreateGame(t *testing.T) {
 			name: "join game service error",
 			mockSetup: func() *mockGameService {
 				return &mockGameService{
-					createGameFunc: func(ctx context.Context) (*game.Game, error) {
+					createGameFunc: func(ctx context.Context, userID string, cmd game.CreateGameCommand) (*game.Game, error) {
 						return game.NewGame("test-game-id-123"), nil
 					},
-					joinGameFunc: func(ctx context.Context, gameID, userID string) (*game.Game, error) {
+					joinGameFunc: func(ctx context.Context, userID string, cmd game.JoinGameCommand) (*game.Game, error) {
 						return nil, errors.New("join error")
 					},
 				}
 			},
 			userID:         "user-123",
-			requestBody:    CreateGameRequest{},
+			requestBody:    game.CreateGameCommand{},
 			expectedStatus: http.StatusInternalServerError,
 			checkResponse:  checkErrorResponse("join error"),
 		},
@@ -270,7 +262,7 @@ func TestGameHandler_CreateGame(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := NewGameHandler(
 				tt.mockSetup(),
-				slog.New(slog.NewTextHandler(io.Discard, nil)), // silent logger for tests
+				slog.New(slog.NewTextHandler(io.Discard, nil)),
 			)
 
 			req := makeJSONRequest(http.MethodPost, "/api/games", tt.requestBody)
@@ -298,8 +290,8 @@ func TestGameHandler_JoinGame(t *testing.T) {
 			name: "successfully join game",
 			mockSetup: func() *mockGameService {
 				return &mockGameService{
-					joinGameFunc: func(ctx context.Context, gameID, userID string) (*game.Game, error) {
-						g := game.NewGame(gameID)
+					joinGameFunc: func(ctx context.Context, userID string, cmd game.JoinGameCommand) (*game.Game, error) {
+						g := game.NewGame(cmd.GameID)
 						g.UserID1 = userID
 						return g, nil
 					},
@@ -318,7 +310,7 @@ func TestGameHandler_JoinGame(t *testing.T) {
 			name: "join game not found",
 			mockSetup: func() *mockGameService {
 				return &mockGameService{
-					joinGameFunc: func(ctx context.Context, gameID, userID string) (*game.Game, error) {
+					joinGameFunc: func(ctx context.Context, userID string, cmd game.JoinGameCommand) (*game.Game, error) {
 						return nil, game.ErrGameNotFound
 					},
 				}
@@ -332,7 +324,7 @@ func TestGameHandler_JoinGame(t *testing.T) {
 			name: "game not waiting",
 			mockSetup: func() *mockGameService {
 				return &mockGameService{
-					joinGameFunc: func(ctx context.Context, gameID, userID string) (*game.Game, error) {
+					joinGameFunc: func(ctx context.Context, userID string, cmd game.JoinGameCommand) (*game.Game, error) {
 						return nil, game.ErrGameNotWaiting
 					},
 				}
@@ -348,7 +340,7 @@ func TestGameHandler_JoinGame(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := NewGameHandler(
 				tt.mockSetup(),
-				slog.New(slog.NewTextHandler(io.Discard, nil)), // silent logger for tests
+				slog.New(slog.NewTextHandler(io.Discard, nil)),
 			)
 
 			req := httptest.NewRequest(http.MethodPost, "/api/games/"+tt.gameID+"/join", nil)
@@ -413,7 +405,7 @@ func TestGameHandler_JoinAnyGame(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := NewGameHandler(
 				tt.mockSetup(),
-				slog.New(slog.NewTextHandler(io.Discard, nil)), // silent logger for tests
+				slog.New(slog.NewTextHandler(io.Discard, nil)),
 			)
 
 			req := httptest.NewRequest(http.MethodPost, "/api/games/join", nil)
@@ -434,7 +426,7 @@ func TestGameHandler_MakeMove(t *testing.T) {
 		mockSetup      func() *mockGameService
 		gameID         string
 		userID         string
-		requestBody    MoveRequest
+		requestBody    game.MakeMoveCommand
 		expectedStatus int
 		checkResponse  func(t *testing.T, body []byte)
 	}{
@@ -442,9 +434,9 @@ func TestGameHandler_MakeMove(t *testing.T) {
 			name: "successfully make move",
 			mockSetup: func() *mockGameService {
 				return &mockGameService{
-					makeMoveFunc: func(ctx context.Context, gameID, userID string, x, y int) (*game.Game, error) {
-						g := game.NewGameInProgress(gameID, userID, "user-2")
-						g.Board[x][y] = 1
+					makeMoveFunc: func(ctx context.Context, userID string, cmd game.MakeMoveCommand) (*game.Game, error) {
+						g := game.NewGameInProgress(cmd.GameID, userID, "user-2")
+						g.Board[cmd.X][cmd.Y] = 1
 						g.CurrentPlayerID = "user-2"
 						return g, nil
 					},
@@ -452,7 +444,7 @@ func TestGameHandler_MakeMove(t *testing.T) {
 			},
 			gameID: "game-123",
 			userID: "user-1",
-			requestBody: MoveRequest{
+			requestBody: game.MakeMoveCommand{
 				X: 0,
 				Y: 0,
 			},
@@ -469,14 +461,14 @@ func TestGameHandler_MakeMove(t *testing.T) {
 			name: "not your turn",
 			mockSetup: func() *mockGameService {
 				return &mockGameService{
-					makeMoveFunc: func(ctx context.Context, gameID, userID string, x, y int) (*game.Game, error) {
+					makeMoveFunc: func(ctx context.Context, userID string, cmd game.MakeMoveCommand) (*game.Game, error) {
 						return nil, game.ErrNotYourTurn
 					},
 				}
 			},
 			gameID: "game-123",
 			userID: "user-2",
-			requestBody: MoveRequest{
+			requestBody: game.MakeMoveCommand{
 				X: 0,
 				Y: 0,
 			},
@@ -487,14 +479,14 @@ func TestGameHandler_MakeMove(t *testing.T) {
 			name: "cell occupied",
 			mockSetup: func() *mockGameService {
 				return &mockGameService{
-					makeMoveFunc: func(ctx context.Context, gameID, userID string, x, y int) (*game.Game, error) {
+					makeMoveFunc: func(ctx context.Context, userID string, cmd game.MakeMoveCommand) (*game.Game, error) {
 						return nil, game.ErrCellOccupied
 					},
 				}
 			},
 			gameID: "game-123",
 			userID: "user-1",
-			requestBody: MoveRequest{
+			requestBody: game.MakeMoveCommand{
 				X: 1,
 				Y: 1,
 			},
@@ -507,7 +499,7 @@ func TestGameHandler_MakeMove(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := NewGameHandler(
 				tt.mockSetup(),
-				slog.New(slog.NewTextHandler(io.Discard, nil)), // silent logger for tests
+				slog.New(slog.NewTextHandler(io.Discard, nil)),
 			)
 
 			req := makeJSONRequest(http.MethodPost, "/api/games/"+tt.gameID+"/move", tt.requestBody)
@@ -539,8 +531,8 @@ func TestGameHandler_GiveUp(t *testing.T) {
 			name: "successfully give up",
 			mockSetup: func() *mockGameService {
 				return &mockGameService{
-					giveUpFunc: func(ctx context.Context, gameID, userID string) (*game.Game, error) {
-						g := game.NewGameInProgress(gameID, userID, "user-2")
+					giveUpFunc: func(ctx context.Context, userID string, cmd game.GiveUpCommand) (*game.Game, error) {
+						g := game.NewGameInProgress(cmd.GameID, userID, "user-2")
 						g.Status = game.StatusFinished
 						g.Result = game.ResultWin
 						g.WinnerID = "user-2"
@@ -562,7 +554,7 @@ func TestGameHandler_GiveUp(t *testing.T) {
 			name: "player not in game",
 			mockSetup: func() *mockGameService {
 				return &mockGameService{
-					giveUpFunc: func(ctx context.Context, gameID, userID string) (*game.Game, error) {
+					giveUpFunc: func(ctx context.Context, userID string, cmd game.GiveUpCommand) (*game.Game, error) {
 						return nil, game.ErrNotInGame
 					},
 				}
@@ -578,7 +570,7 @@ func TestGameHandler_GiveUp(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := NewGameHandler(
 				tt.mockSetup(),
-				slog.New(slog.NewTextHandler(io.Discard, nil)), // silent logger for tests
+				slog.New(slog.NewTextHandler(io.Discard, nil)),
 			)
 
 			req := httptest.NewRequest(http.MethodPost, "/api/games/"+tt.gameID+"/giveup", nil)
@@ -610,8 +602,8 @@ func TestGameHandler_Quit(t *testing.T) {
 			name: "successfully quit waiting game",
 			mockSetup: func() *mockGameService {
 				return &mockGameService{
-					quitFunc: func(ctx context.Context, gameID, userID string) (*game.Game, error) {
-						g := game.NewGame(gameID)
+					quitFunc: func(ctx context.Context, userID string, cmd game.QuitCommand) (*game.Game, error) {
+						g := game.NewGame(cmd.GameID)
 						g.UserID1 = userID
 						g.Status = game.StatusCancelled
 						return g, nil
@@ -631,7 +623,7 @@ func TestGameHandler_Quit(t *testing.T) {
 			name: "game not waiting",
 			mockSetup: func() *mockGameService {
 				return &mockGameService{
-					quitFunc: func(ctx context.Context, gameID, userID string) (*game.Game, error) {
+					quitFunc: func(ctx context.Context, userID string, cmd game.QuitCommand) (*game.Game, error) {
 						return nil, game.ErrGameNotWaiting
 					},
 				}
@@ -645,7 +637,7 @@ func TestGameHandler_Quit(t *testing.T) {
 			name: "player not in game",
 			mockSetup: func() *mockGameService {
 				return &mockGameService{
-					quitFunc: func(ctx context.Context, gameID, userID string) (*game.Game, error) {
+					quitFunc: func(ctx context.Context, userID string, cmd game.QuitCommand) (*game.Game, error) {
 						return nil, game.ErrNotInGame
 					},
 				}
@@ -661,7 +653,7 @@ func TestGameHandler_Quit(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := NewGameHandler(
 				tt.mockSetup(),
-				slog.New(slog.NewTextHandler(io.Discard, nil)), // silent logger for tests
+				slog.New(slog.NewTextHandler(io.Discard, nil)),
 			)
 
 			req := httptest.NewRequest(http.MethodPost, "/api/games/"+tt.gameID+"/quit", nil)
@@ -692,8 +684,8 @@ func TestGameHandler_GetGame(t *testing.T) {
 			name: "successfully get game",
 			mockSetup: func() *mockGameService {
 				return &mockGameService{
-					getGameFunc: func(ctx context.Context, gameID, userID string) (*game.Game, error) {
-						g := game.NewGameInProgress(gameID, "user-1", "user-2")
+					getGameFunc: func(ctx context.Context, userID string, cmd game.GetGameCommand) (*game.Game, error) {
+						g := game.NewGameInProgress(cmd.GameID, "user-1", "user-2")
 						return g, nil
 					},
 				}
@@ -712,7 +704,7 @@ func TestGameHandler_GetGame(t *testing.T) {
 			name: "game not found",
 			mockSetup: func() *mockGameService {
 				return &mockGameService{
-					getGameFunc: func(ctx context.Context, gameID, userID string) (*game.Game, error) {
+					getGameFunc: func(ctx context.Context, userID string, cmd game.GetGameCommand) (*game.Game, error) {
 						return nil, game.ErrGameNotFound
 					},
 				}
@@ -727,7 +719,7 @@ func TestGameHandler_GetGame(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := NewGameHandler(
 				tt.mockSetup(),
-				slog.New(slog.NewTextHandler(io.Discard, nil)), // silent logger for tests
+				slog.New(slog.NewTextHandler(io.Discard, nil)),
 			)
 
 			req := httptest.NewRequest(http.MethodGet, "/api/games/"+tt.gameID, nil)
@@ -788,7 +780,7 @@ func TestGameHandler_GetLatestGame(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := NewGameHandler(
 				tt.mockSetup(),
-				slog.New(slog.NewTextHandler(io.Discard, nil)), // silent logger for tests
+				slog.New(slog.NewTextHandler(io.Discard, nil)),
 			)
 
 			req := httptest.NewRequest(http.MethodGet, "/api/games", nil)

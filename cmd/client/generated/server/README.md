@@ -93,17 +93,14 @@ Class | Method | HTTP request | Description
 
 ## Documentation For Models
 
+ - [GameCreateGameCommand](docs/GameCreateGameCommand.md)
  - [GameGame](docs/GameGame.md)
  - [GameGameResult](docs/GameGameResult.md)
  - [GameGameStatus](docs/GameGameStatus.md)
+ - [GameMakeMoveCommand](docs/GameMakeMoveCommand.md)
  - [ServerAccessTokenResponse](docs/ServerAccessTokenResponse.md)
- - [ServerCreateGameRequest](docs/ServerCreateGameRequest.md)
  - [ServerErrorCode](docs/ServerErrorCode.md)
  - [ServerErrorResponse](docs/ServerErrorResponse.md)
- - [ServerGiveUpRequest](docs/ServerGiveUpRequest.md)
- - [ServerJoinGameRequest](docs/ServerJoinGameRequest.md)
- - [ServerMoveRequest](docs/ServerMoveRequest.md)
- - [ServerQuitRequest](docs/ServerQuitRequest.md)
  - [ServerUserLoginRequest](docs/ServerUserLoginRequest.md)
  - [ServerUserSignupRequest](docs/ServerUserSignupRequest.md)
 

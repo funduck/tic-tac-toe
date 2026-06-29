@@ -18,7 +18,7 @@ func NewGameService(apiClient *openapi.APIClient) *GameService {
 
 // CreateGame creates a new game
 func (s *GameService) CreateGame(ctx context.Context, userID string, private bool) (*Game, error) {
-	req := openapi.NewServerCreateGameRequest()
+	req := openapi.NewGameCreateGameCommand()
 	req.SetPrivate(private)
 	g, r, err := s.api.CreateGame(ctx).Request(*req).Execute()
 	if err != nil {
@@ -29,8 +29,7 @@ func (s *GameService) CreateGame(ctx context.Context, userID string, private boo
 
 // JoinGame joins an existing game
 func (s *GameService) JoinGame(ctx context.Context, gameID, userID string) (*Game, error) {
-	req := openapi.NewServerJoinGameRequest()
-	g, r, err := s.api.JoinGame(ctx, gameID).Request(*req).Execute()
+	g, r, err := s.api.JoinGame(ctx, gameID).Execute()
 	if err != nil {
 		return nil, parseError(r, err)
 	}
@@ -48,7 +47,7 @@ func (s *GameService) JoinAnyGame(ctx context.Context, userID string) (*Game, er
 
 // MakeMove makes a move in the game
 func (s *GameService) MakeMove(ctx context.Context, gameID, userID string, x, y int) (*Game, error) {
-	req := openapi.NewServerMoveRequest()
+	req := openapi.NewGameMakeMoveCommand()
 	req.SetX(int32(x))
 	req.SetY(int32(y))
 	g, r, err := s.api.MakeMove(ctx, gameID).Request(*req).Execute()
@@ -60,8 +59,7 @@ func (s *GameService) MakeMove(ctx context.Context, gameID, userID string, x, y 
 
 // GiveUp gives up the game
 func (s *GameService) GiveUp(ctx context.Context, gameID, userID string) (*Game, error) {
-	req := openapi.NewServerGiveUpRequest()
-	g, r, err := s.api.GiveUpGame(ctx, gameID).Request(*req).Execute()
+	g, r, err := s.api.GiveUpGame(ctx, gameID).Execute()
 	if err != nil {
 		return nil, parseError(r, err)
 	}
@@ -70,8 +68,7 @@ func (s *GameService) GiveUp(ctx context.Context, gameID, userID string) (*Game,
 
 // Quit leaves a game that is still waiting for an opponent, cancelling it.
 func (s *GameService) Quit(ctx context.Context, gameID, userID string) (*Game, error) {
-	req := openapi.NewServerQuitRequest()
-	g, r, err := s.api.QuitGame(ctx, gameID).Request(*req).Execute()
+	g, r, err := s.api.QuitGame(ctx, gameID).Execute()
 	if err != nil {
 		return nil, parseError(r, err)
 	}

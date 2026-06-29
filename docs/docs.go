@@ -59,7 +59,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/server.CreateGameRequest"
+                            "$ref": "#/definitions/game.CreateGameCommand"
                         }
                     }
                 ],
@@ -93,9 +93,6 @@ const docTemplate = `{
         },
         "/api/games/join": {
             "post": {
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -169,9 +166,6 @@ const docTemplate = `{
         },
         "/api/games/{gameID}/giveup": {
             "post": {
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -187,15 +181,6 @@ const docTemplate = `{
                         "name": "gameID",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "description": "Give up request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/server.GiveUpRequest"
-                        }
                     }
                 ],
                 "responses": {
@@ -228,9 +213,6 @@ const docTemplate = `{
         },
         "/api/games/{gameID}/join": {
             "post": {
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -246,15 +228,6 @@ const docTemplate = `{
                         "name": "gameID",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "description": "Join game request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/server.JoinGameRequest"
-                        }
                     }
                 ],
                 "responses": {
@@ -312,7 +285,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/server.MoveRequest"
+                            "$ref": "#/definitions/game.MakeMoveCommand"
                         }
                     }
                 ],
@@ -346,9 +319,6 @@ const docTemplate = `{
         },
         "/api/games/{gameID}/quit": {
             "post": {
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -364,15 +334,6 @@ const docTemplate = `{
                         "name": "gameID",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "description": "Quit request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/server.QuitRequest"
-                        }
                     }
                 ],
                 "responses": {
@@ -544,6 +505,14 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "game.CreateGameCommand": {
+            "type": "object",
+            "properties": {
+                "private": {
+                    "type": "boolean"
+                }
+            }
+        },
         "game.Game": {
             "type": "object",
             "properties": {
@@ -617,19 +586,25 @@ const docTemplate = `{
                 "StatusCancelled"
             ]
         },
+        "game.MakeMoveCommand": {
+            "type": "object",
+            "properties": {
+                "gameID": {
+                    "type": "string"
+                },
+                "x": {
+                    "type": "integer"
+                },
+                "y": {
+                    "type": "integer"
+                }
+            }
+        },
         "server.AccessTokenResponse": {
             "type": "object",
             "properties": {
                 "access_token": {
                     "type": "string"
-                }
-            }
-        },
-        "server.CreateGameRequest": {
-            "type": "object",
-            "properties": {
-                "private": {
-                    "type": "boolean"
                 }
             }
         },
@@ -677,44 +652,6 @@ const docTemplate = `{
                     "$ref": "#/definitions/server.ErrorCode"
                 },
                 "error": {
-                    "type": "string"
-                }
-            }
-        },
-        "server.GiveUpRequest": {
-            "type": "object",
-            "properties": {
-                "game_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "server.JoinGameRequest": {
-            "type": "object",
-            "properties": {
-                "game_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "server.MoveRequest": {
-            "type": "object",
-            "properties": {
-                "game_id": {
-                    "type": "string"
-                },
-                "x": {
-                    "type": "integer"
-                },
-                "y": {
-                    "type": "integer"
-                }
-            }
-        },
-        "server.QuitRequest": {
-            "type": "object",
-            "properties": {
-                "game_id": {
                     "type": "string"
                 }
             }
