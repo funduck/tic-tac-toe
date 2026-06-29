@@ -18,7 +18,7 @@ func TestNewGame(t *testing.T) {
 	if g.Status != StatusWaiting {
 		t.Errorf("expected status %s, got %s", StatusWaiting, g.Status)
 	}
-	if g.Board != [3][3]int{} {
+	if !g.Board.IsEmpty() {
 		t.Error("expected empty board")
 	}
 }
@@ -31,7 +31,7 @@ func TestNewGameInProgress(t *testing.T) {
 	if g.CurrentPlayerID != "alice" {
 		t.Errorf("expected currentPlayer alice, got %s", g.CurrentPlayerID)
 	}
-	if g.Board != [3][3]int{} {
+	if !g.Board.IsEmpty() {
 		t.Error("expected empty board")
 	}
 }
@@ -203,30 +203,6 @@ func TestMakeMove_Errors(t *testing.T) {
 		x, y    int
 		wantErr error
 	}{
-		{
-			name:   "out of bounds negative x",
-			setup:  func(g *Game) {},
-			userID: "alice", x: -1, y: 0,
-			wantErr: ErrOutOfBounds,
-		},
-		{
-			name:   "out of bounds x > 2",
-			setup:  func(g *Game) {},
-			userID: "alice", x: 3, y: 0,
-			wantErr: ErrOutOfBounds,
-		},
-		{
-			name:   "out of bounds y > 2",
-			setup:  func(g *Game) {},
-			userID: "alice", x: 0, y: 3,
-			wantErr: ErrOutOfBounds,
-		},
-		{
-			name:   "cell occupied",
-			setup:  func(g *Game) { g.Board[1][1] = 1 },
-			userID: "alice", x: 1, y: 1,
-			wantErr: ErrCellOccupied,
-		},
 		{
 			name:   "not your turn",
 			setup:  func(g *Game) {},

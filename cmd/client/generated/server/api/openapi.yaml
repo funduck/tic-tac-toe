@@ -412,21 +412,21 @@ components:
   schemas:
     game.Game:
       example:
+        result: win
+        user_id1: user_id1
+        user_id2: user_id2
+        user_id2_last_seen: user_id2_last_seen
+        private: true
+        user_id1_last_seen: user_id1_last_seen
+        current_player_id: current_player_id
+        winner_id: winner_id
+        id: id
         board:
         - - 0
           - 0
         - - 0
           - 0
-        current_player_id: current_player_id
-        id: id
-        private: true
-        result: win
         status: waiting
-        user_id1: user_id1
-        user_id1_last_seen: user_id1_last_seen
-        user_id2: user_id2
-        user_id2_last_seen: user_id2_last_seen
-        winner_id: winner_id
       properties:
         board:
           items:

@@ -25,6 +25,7 @@ func copyGame(g *Game) *Game {
 		return nil
 	}
 	copy := *g
+	copy.Board = g.Board.Clone()
 	return &copy
 }
 

@@ -20,8 +20,6 @@ const (
 
 var (
 	ErrNotYourTurn    = errors.New("not your turn")
-	ErrCellOccupied   = errors.New("cell is occupied")
-	ErrOutOfBounds    = errors.New("move out of bounds")
 	ErrGameNotWaiting = errors.New("game is not waiting for players")
 	ErrGameNotActive  = errors.New("game is not in progress")
 	ErrNotInGame      = errors.New("player not in this game")
@@ -33,7 +31,7 @@ type Game struct {
 	ID              string     `json:"id"`
 	UserID1         string     `json:"user_id1"`
 	UserID2         string     `json:"user_id2"`
-	Board           [3][3]int  `json:"board"`
+	Board           Board      `json:"board"`
 	CurrentPlayerID string     `json:"current_player_id"` // user ID of the player whose turn it is
 	Status          GameStatus `json:"status"`
 	Result          GameResult `json:"result,omitempty"`
@@ -69,6 +67,7 @@ func (g *Game) Touch(userID string, t time.Time) bool {
 func NewGame(id string) *Game {
 	return &Game{
 		ID:     id,
+		Board:  NewBoard(DefaultSize),
 		Status: StatusWaiting,
 	}
 }
@@ -80,6 +79,7 @@ func NewGameInProgress(id, userID1, userID2 string) *Game {
 		ID:              id,
 		UserID1:         userID1,
 		UserID2:         userID2,
+		Board:           NewBoard(DefaultSize),
 		CurrentPlayerID: userID1,
 		Status:          StatusInProgress,
 	}
@@ -120,7 +120,8 @@ func (g *Game) Join(userID string) error {
 // Returns an error for any invalid move without modifying state.
 func (g *Game) MakeMove(userID string, x, y int) error {
 	// do not allow anyone except players in the game
-	if g.playerMark(userID) == 0 {
+	mark := g.playerMark(userID)
+	if mark == 0 {
 		return ErrNotInGame
 	}
 
@@ -130,23 +131,18 @@ func (g *Game) MakeMove(userID string, x, y int) error {
 	if g.CurrentPlayerID != userID {
 		return ErrNotYourTurn
 	}
-	if x < 0 || x > 2 || y < 0 || y > 2 {
-		return ErrOutOfBounds
-	}
-	if g.Board[x][y] != 0 {
-		return ErrCellOccupied
+
+	if err := g.Board.Set(x, y, mark); err != nil {
+		return err
 	}
 
-	mark := g.playerMark(userID)
-	g.Board[x][y] = mark
-
-	if g.checkWin(mark) {
+	if g.Board.HasLine(mark) {
 		g.Status = StatusFinished
 		g.Result = ResultWin
 		g.WinnerID = userID
 		return nil
 	}
-	if g.checkDraw() {
+	if g.Board.IsFull() {
 		g.Status = StatusFinished
 		g.Result = ResultDraw
 		return nil
@@ -232,34 +228,4 @@ func (g *Game) otherPlayer(userID string) string {
 		return g.UserID2
 	}
 	return g.UserID1
-}
-
-func (g *Game) checkWin(mark int) bool {
-	b := g.Board
-	for i := 0; i < 3; i++ {
-		if b[i][0] == mark && b[i][1] == mark && b[i][2] == mark {
-			return true
-		}
-		if b[0][i] == mark && b[1][i] == mark && b[2][i] == mark {
-			return true
-		}
-	}
-	if b[0][0] == mark && b[1][1] == mark && b[2][2] == mark {
-		return true
-	}
-	if b[0][2] == mark && b[1][1] == mark && b[2][0] == mark {
-		return true
-	}
-	return false
-}
-
-func (g *Game) checkDraw() bool {
-	for r := 0; r < 3; r++ {
-		for c := 0; c < 3; c++ {
-			if g.Board[r][c] == 0 {
-				return false
-			}
-		}
-	}
-	return true
 }
