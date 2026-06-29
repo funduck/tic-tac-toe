@@ -54,6 +54,22 @@ func (d *DisplayService) RenderFrame() {
 	fmt.Print(d.renderBoard())
 }
 
+// RenderHeaderInPlace refreshes only the status/presence lines at the top of
+// the screen without clearing the board or the prompt the user is typing on.
+// It is a no-op when not redrawing to a TTY.
+func (d *DisplayService) RenderHeaderInPlace() {
+	if !d.redraw {
+		return
+	}
+	SaveCursor()
+	fmt.Print("\033[1;1H") // cursor to row 1, col 1
+	for _, ln := range strings.Split(d.statusHeader(), "\n") {
+		fmt.Print("\033[2K") // clear entire line
+		fmt.Println(ln)
+	}
+	RestoreCursor()
+}
+
 // statusHeader is the persistent line above the board: who you are, the
 // opponent, and whose turn it is.
 func (d *DisplayService) statusHeader() string {

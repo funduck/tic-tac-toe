@@ -94,12 +94,21 @@ func handleInput(ctx context.Context, gameSvc *lib.GameService, displaySvc *lib.
 	return false, nil
 }
 
-// applyUpdate swaps in new game state and redraws only if something changed,
-// avoiding needless flicker on no-op polls.
+// applyUpdate swaps in new game state. A board/status change triggers a full
+// redraw; a no-op poll only refreshes the header in place (keeping the presence
+// timer live) so it never clobbers input the user is typing.
 func applyUpdate(g *lib.Game, displaySvc *lib.DisplayService) {
-	lib.LastMove = diffMove(lib.GameState.GetBoard(), g.GetBoard())
+	move := diffMove(lib.GameState.GetBoard(), g.GetBoard())
+	statusChanged := lib.GameState.GetStatus() != g.GetStatus()
+
+	lib.LastMove = move
 	lib.GameState = g
-	render(displaySvc)
+
+	if move != -1 || statusChanged {
+		render(displaySvc) // real state change: full redraw (clears screen)
+	} else {
+		displaySvc.RenderHeaderInPlace() // presence-only tick: refresh header in place
+	}
 }
 
 // render draws the current frame and, while the game is in progress, a prompt

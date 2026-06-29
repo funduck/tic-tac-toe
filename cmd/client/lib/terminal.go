@@ -27,6 +27,12 @@ func ClearScreen() {
 	fmt.Print("\033[2J\033[H")
 }
 
+// SaveCursor / RestoreCursor remember and return to the cursor position
+// (DECSC/DECRC) so we can refresh part of the screen without disturbing the
+// line the user is typing on.
+func SaveCursor()    { fmt.Print("\033[s") }
+func RestoreCursor() { fmt.Print("\033[u") }
+
 // colorize wraps s in the given ANSI code(s). Callers should only use it when
 // rendering to a real TTY.
 func colorize(s, code string) string {
