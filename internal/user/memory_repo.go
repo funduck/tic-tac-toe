@@ -27,7 +27,7 @@ func (r *MemoryUserRepo) FindByID(ctx context.Context, id string) (*User, error)
 	if !exists {
 		return nil, nil
 	}
-	return user, nil
+	return user.Clone(), nil
 }
 
 func (r *MemoryUserRepo) Save(ctx context.Context, user *User) error {
@@ -37,6 +37,6 @@ func (r *MemoryUserRepo) Save(ctx context.Context, user *User) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	r.users[user.ID] = user
+	r.users[user.ID] = user.Clone()
 	return nil
 }

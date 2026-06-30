@@ -167,7 +167,7 @@ Server -->> ClientA: 200 OK (finished, winner: alice)
 ```mermaid
 sequenceDiagram
 Client ->> Server: POST /api/users/signup (userID, password)
-Server -->> Client: 201 Created + {access_token, refresh_token}
+Server -->> Client: 200 OK + {access_token, refresh_token}
 
 Note over Client, Server: Client stores tokens securely (in memory for CLI, localStorage for web)
 ```

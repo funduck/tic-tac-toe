@@ -82,9 +82,8 @@ func (s *UserService) Signup(ctx context.Context, userID, password string) (*Use
 func (s *UserService) Login(ctx context.Context, userID, password string) (*User, *auth.TokenPair, error) {
 	user, err := s.userRepo.FindByID(ctx, userID)
 	if err != nil {
-		return nil, nil, errors.Join(err, ErrUserNotFound)
+		return nil, nil, err
 	}
-
 	if user == nil {
 		return nil, nil, ErrUserNotFound
 	}

@@ -98,7 +98,7 @@ func (b Board) IsFull() bool {
 	return true
 }
 
-// IsEmpty reports whether every cell is empty.
+// IsEmpty reports whether every cell is empty. Used in tests.
 func (b Board) IsEmpty() bool {
 	for _, row := range b {
 		if !slices.Contains(row, 0) {

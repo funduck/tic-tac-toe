@@ -6,4 +6,12 @@ type User struct {
 	RefreshToken string // hashed refresh token
 }
 
+func (u *User) Clone() *User {
+	return &User{
+		ID:           u.ID,
+		Password:     u.Password,
+		RefreshToken: u.RefreshToken,
+	}
+}
+
 const defaultPasswordLength = 6
