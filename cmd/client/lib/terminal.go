@@ -17,7 +17,7 @@ const (
 )
 
 // IsTTY reports whether stdout is an interactive terminal. When it is not
-// (piped output, CI, DEBUG logging) the client falls back to linear output.
+// (piped output, CI) the client falls back to linear output.
 func IsTTY() bool {
 	return term.IsTerminal(int(os.Stdout.Fd()))
 }

@@ -2,7 +2,6 @@ package lib
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -24,7 +23,7 @@ var winLines = [8][3]int{
 // DisplayService handles rendering game state to the console.
 type DisplayService struct {
 	// redraw is true when stdout is an interactive TTY: frames are cleared and
-	// redrawn in place with color. When false (DEBUG or piped output) the client
+	// redrawn in place with color. When false (piped output) the client
 	// prints linearly so logs stay readable.
 	redraw bool
 }
@@ -32,7 +31,7 @@ type DisplayService struct {
 // NewDisplayService creates a new DisplayService.
 func NewDisplayService() *DisplayService {
 	return &DisplayService{
-		redraw: IsTTY() && os.Getenv("DEBUG") == "",
+		redraw: IsTTY(),
 	}
 }
 
