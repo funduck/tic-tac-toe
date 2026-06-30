@@ -17,6 +17,7 @@ type AccessTokenResponse struct {
 }
 
 // ErrorCode is the machine-readable identifier returned in every error response.
+// Should simplify error handling on the client.
 type ErrorCode string
 
 const (

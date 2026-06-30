@@ -2,23 +2,15 @@
 
 A multiplayer Tic Tac Toe game server and client implementation in Go, featuring JWT-based authentication, automatic matchmaking, and a RESTful API.
 
-**Contents:**
-- [Quick Start](#quick-start)
-    * [Running the server](#running-the-server)
-    * [Configuration](#configuration)
-    * [Running the client](#running-the-client)
-    * [Running tests](#running-tests)
-- [Protocol Design](#protocol-design)
-- [Authentication](#authentication)
-- [Development](#development)
-- [Future Improvements](#future-improvements)
+![demo](./demo.gif)
 
 [Task description](./TASK.md)
 
 **Implemented**:
 - Registration and login with password hashing
 - JWT authentication with access and refresh tokens
-- Simple matchmaking and game state management
+- Simple matchmaking: join to known game or join to any waiting game
+- Game flow: create, join, make moves, poll for updates, finish
 - CLI client with polling-based updates
 - In-memory data storage (users, games)
 - Unit, integration and concurrency tests
@@ -59,18 +51,7 @@ Server listening on :8080
 
 You can access the Swagger UI documentation at: `http://localhost:8080/swagger/index.html`
 
-### Running Server In Docker
-Build
-```bash
-make build-server-docker
-```
-
-Run
-```bash
-make start-server-docker
-```
-
-### Configuration
+#### Configuration
 
 The server is configured via environment variables. All are optional and fall
 back to development-friendly defaults (a warning is logged when a default is
@@ -78,8 +59,8 @@ used for a security-sensitive setting).
 
 | Variable        | Default          | Description                                                                                                   |
 | --------------- | ---------------- | ------------------------------------------------------------------------------------------------------------- |
-| `JWT_SECRET`    | `default-secret` | Secret key used to sign JWT tokens (HMAC-SHA256). **Set this in production.**                                  |
-| `AFK_TIMEOUT`   | `30s`            | Idle period after which an active player auto-wins against an AFK opponent. Accepts Go durations (e.g. `1m`).  |
+| `JWT_SECRET`    | `default-secret` | Secret key used to sign JWT tokens**                                  |
+| `AFK_TIMEOUT`   | `10s`            | Idle period after which an active player auto-wins against an AFK opponent. Accepts Go durations (e.g. `1m`).  |
 | `SECURE_COOKIE` | _(off)_          | Set to `true` to mark the refresh-token cookie as `Secure` (HTTPS only). Leave unset for plain-HTTP local dev. |
 
 The client reads one environment variable:
@@ -89,7 +70,8 @@ The client reads one environment variable:
 | `DEBUG`  | _(off)_ | Set to `true` to enable HTTP request/response logging and linear (non-redraw) output. |
 
 ### Running the Client
-**Important!** Client's code is separated from the server's, so it can be run only from `cmd/client` directory.
+
+**make** commands are user for convenience, while the client can also be run directly with `go run` or a built binary.
 
 #### Basic scenario for 2 players
 Open **two separate terminals** and run a client in each:
@@ -111,67 +93,12 @@ The clients will:
 4. Display the game board after each move
 5. Show the final result (win/loss/draw)
 
-#### Making moves
-Cells are numbered like a phone keypad. Empty cells show their number, so just
-type the number of the cell you want:
-
-```
- 1 | 2 | 3
----+---+---
- 4 | 5 | 6
----+---+---
- 7 | 8 | 9
-```
-
-- Type a number `1`-`9` on your turn to play that cell.
-- Type `q` (or `quit`) at **any** time — including while waiting for the
-  opponent — to forfeit and leave.
-
-The status header shows the opponent's presence next to their name (`online`, or
-`seen Ns ago` / `seen Nm ago` based on their last activity). If your opponent
-stays idle past the AFK timeout (default `30s`, configurable on the server via
-the `AFK_TIMEOUT` environment variable), the game is auto-won for you on your
-next poll.
-
-On an interactive terminal the board is redrawn in place, with the last move and
-any winning line highlighted. Under `DEBUG=true` (or when output is piped) the
-client prints linearly instead.
-
-#### Password prompt
-If you omit `PASSWORD`, the client prompts for it without echoing to the
-terminal — safer than passing it on the command line where it lands in shell
-history and the process list:
-
-```bash
-make start-client USER=alice
-# Password: ********
-```
-
-### Advanced scenarios
-**Join Any Waiting Game or Create a New One**
-
-```bash
-make start-client USER=alice PASSWORD=alicepass
-```
-
-**Connecting To Specific Game**
-
-```bash
-make start-client USER=alice PASSWORD=alicepass ARGS="-game <gameID>"
-```
-
-Thorough Client development seems to be an overkill for such a task, so the behavior is simplified:
-- If `-game` is provided the client will attempt to join that specific game. If the game does not exist or is already full, it will return an error.
-- If `-game` is not provided, the client first checks the user's latest game. If it is still `waiting` or `in_progress`, the client reconnects to it (resuming after a restart). Otherwise it joins any available waiting game, and if none exists it creates a new one.
-
 **Debug mode**
-
-Add `DEBUG=true` to the command to enable debug logging in the client. HTTP
-requests and responses are written to a log file named `<userID>-<timestamp>.log`
-in the working directory (these `*.log` files are git-ignored).
+Turn on logging for the client to see HTTP requests and responses:
 
 ```bash
 make start-client USER=alice PASSWORD=alicepass DEBUG=true
+# or: cd cmd/client && DEBUG=true go run main.go -user alice -password alicepass
 ```
 
 ### Running Tests
@@ -370,9 +297,3 @@ make swag-init
 # Regenerate client stubs
 make codegen-client
 ```
-
-## Future Improvements
-
-Additionally to bonus features mentioned in the [task](./TASK.md), here are some future improvements:
-* Matchmaking consurrency-safe without locks, either use SQL database `SELECT FOR UPDATE` or implement in-memory queue of waiting games with atomic operations or channels.
-* Pass context to services and repository when real database is used to allow for better cancellation and timeouts.

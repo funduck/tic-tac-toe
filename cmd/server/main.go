@@ -109,13 +109,13 @@ func newRouter(logger *slog.Logger) *chi.Mux {
 func getAfkTimeout(logger *slog.Logger) time.Duration {
 	afkTimeout := os.Getenv("AFK_TIMEOUT")
 	if afkTimeout == "" {
-		logger.Warn("AFK_TIMEOUT not set, using default 30s (not recommended for production)")
-		return 30 * time.Second
+		logger.Warn("AFK_TIMEOUT not set, using default 10s (not recommended for production)")
+		return 10 * time.Second
 	}
 	duration, err := time.ParseDuration(afkTimeout)
 	if err != nil {
-		logger.Error("Invalid AFK_TIMEOUT value, using default 30s", "error", err)
-		return 30 * time.Second
+		logger.Error("Invalid AFK_TIMEOUT value, using default 10s", "error", err)
+		return 10 * time.Second
 	}
 	return duration
 }

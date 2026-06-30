@@ -19,6 +19,7 @@ func NewMemoryUserRepo() *MemoryUserRepo {
 func (r *MemoryUserRepo) FindByID(ctx context.Context, id string) (*User, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
+
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -32,6 +33,7 @@ func (r *MemoryUserRepo) FindByID(ctx context.Context, id string) (*User, error)
 func (r *MemoryUserRepo) Save(ctx context.Context, user *User) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
+
 	if err := ctx.Err(); err != nil {
 		return err
 	}

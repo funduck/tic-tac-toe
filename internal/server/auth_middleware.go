@@ -19,7 +19,12 @@ type contextKey string
 
 const userIDContextKey contextKey = "userID"
 
-// AuthMiddleware is a middleware that handles authentication
+func userIDFromContext(ctx context.Context) string {
+	v, _ := ctx.Value(userIDContextKey).(string)
+	return v
+}
+
+// AuthMiddleware handles authentication and propagates the user ID to the request context for downstream handlers.
 func AuthMiddleware(tokenService TokenService) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

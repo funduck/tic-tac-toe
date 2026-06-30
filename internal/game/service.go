@@ -26,6 +26,28 @@ type CreateGameCommand struct {
 	Private bool
 }
 
+type JoinGameCommand struct {
+	GameID string
+}
+
+type GetGameCommand struct {
+	GameID string
+}
+
+type MakeMoveCommand struct {
+	GameID string
+	X      int
+	Y      int
+}
+
+type QuitCommand struct {
+	GameID string
+}
+
+type GiveUpCommand struct {
+	GameID string
+}
+
 // CreateGame starts a new game in the waiting state, awaiting players to join.
 func (s *GameService) CreateGame(ctx context.Context, userId string, cmd CreateGameCommand) (*Game, error) {
 	id, err := uuid.NewV7() // V7 for lexicographically sortable IDs
@@ -43,17 +65,13 @@ func (s *GameService) CreateGame(ctx context.Context, userId string, cmd CreateG
 	return g, nil
 }
 
-type JoinGameCommand struct {
-	GameID string
-}
-
 // JoinGame adds a player to an existing waiting game. The first player to join becomes UserID1, the second becomes UserID2.
 // If both players have joined, the game status changes to in_progress and UserID1 moves first.
 func (s *GameService) JoinGame(ctx context.Context, userID string, cmd JoinGameCommand) (*Game, error) {
-	// To make this method concurrency-safe we need to wrap the code into a "transaction"
-	// With SQL database we'd use a transaction with "SELECT ... FOR UPDATE"
+	// Simple mutex to avoid two users joining the same game concurrently
 	s.joinGameMutex.Lock()
 	defer s.joinGameMutex.Unlock()
+
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -76,11 +94,10 @@ func (s *GameService) JoinGame(ctx context.Context, userID string, cmd JoinGameC
 
 // JoinAnyGame finds a waiting game for the user to join, or returns an error if none are available.
 func (s *GameService) JoinAnyGame(ctx context.Context, userID string) (*Game, error) {
-	// To make this method concurrency-safe we need to wrap the code into a "transaction"
-	// With SQL database we'd use a transaction with "SELECT ... FOR UPDATE"
 	// We need another mutex here to avoid picking the same game for multiple users concurrently
 	s.joinAnyGameMutex.Lock()
 	defer s.joinAnyGameMutex.Unlock()
+
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -96,10 +113,6 @@ func (s *GameService) JoinAnyGame(ctx context.Context, userID string) (*Game, er
 // GetLatestGameForUser retrieves the most recent game for a given user.
 func (s *GameService) GetLatestGameForUser(ctx context.Context, userID string) (*Game, error) {
 	return s.repo.FindLatestForUser(ctx, userID)
-}
-
-type GetGameCommand struct {
-	GameID string
 }
 
 // GetGame retrieves a game by ID and records the requesting user's presence.
@@ -122,12 +135,6 @@ func (s *GameService) GetGame(ctx context.Context, userID string, cmd GetGameCom
 	return g, nil
 }
 
-type MakeMoveCommand struct {
-	GameID string
-	X      int
-	Y      int
-}
-
 // MakeMove applies a move on behalf of userID and persists the updated state.
 func (s *GameService) MakeMove(ctx context.Context, userID string, cmd MakeMoveCommand) (*Game, error) {
 	g, err := s.repo.FindByID(ctx, cmd.GameID)
@@ -145,10 +152,6 @@ func (s *GameService) MakeMove(ctx context.Context, userID string, cmd MakeMoveC
 	return g, nil
 }
 
-type GiveUpCommand struct {
-	GameID string
-}
-
 // GiveUp concedes the game for userID, awarding the win to the other player.
 func (s *GameService) GiveUp(ctx context.Context, userID string, cmd GiveUpCommand) (*Game, error) {
 	g, err := s.repo.FindByID(ctx, cmd.GameID)
@@ -164,10 +167,6 @@ func (s *GameService) GiveUp(ctx context.Context, userID string, cmd GiveUpComma
 	}
 	s.logger.Info("player gave up", "userID", userID, "gameID", cmd.GameID, "winnerID", g.WinnerID)
 	return g, nil
-}
-
-type QuitCommand struct {
-	GameID string
 }
 
 // Quit cancels a game that is still waiting for an opponent, on behalf of userID.

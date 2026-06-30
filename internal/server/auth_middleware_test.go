@@ -13,7 +13,7 @@ func TestAuthMiddleware(t *testing.T) {
 	// More thorough testing would require mocking the TokenService and testing various scenarios (valid token, invalid token, missing token, etc.).
 	tokenService := auth.NewAccessTokenService("secret", "my-awesome-app")
 
-	validToken, err := tokenService.GenerateToken("testuser")
+	validToken, err := tokenService.GenerateTokens("testuser")
 	if err != nil {
 		t.Fatalf("failed to generate token: %v", err)
 	}

@@ -1,8 +1,10 @@
 package game
 
-import "errors"
+import (
+	"errors"
+	"slices"
+)
 
-// DefaultSize is the side length used for standard games.
 const DefaultSize = 3
 
 var (
@@ -41,6 +43,9 @@ func (b Board) isOccupied(x, y int) bool {
 
 // Set places mark at (x, y).
 func (b Board) Set(x, y, mark int) error {
+	if mark != 1 && mark != 2 {
+		panic("invalid mark: must be 1 or 2")
+	}
 	if !b.inBounds(x, y) {
 		return ErrOutOfBounds
 	}
@@ -60,7 +65,7 @@ func (b Board) HasLine(mark int) bool {
 	}
 
 	diag, antiDiag := true, true
-	for i := 0; i < n; i++ {
+	for i := range n {
 		row, col := true, true
 		for j := 0; j < n; j++ {
 			if b[i][j] != mark {
@@ -86,10 +91,8 @@ func (b Board) HasLine(mark int) bool {
 // IsFull reports whether every cell holds a mark (no empty cells remain).
 func (b Board) IsFull() bool {
 	for _, row := range b {
-		for _, cell := range row {
-			if cell == 0 {
-				return false
-			}
+		if slices.Contains(row, 0) {
+			return false
 		}
 	}
 	return true
@@ -98,10 +101,8 @@ func (b Board) IsFull() bool {
 // IsEmpty reports whether every cell is empty.
 func (b Board) IsEmpty() bool {
 	for _, row := range b {
-		for _, cell := range row {
-			if cell != 0 {
-				return false
-			}
+		if !slices.Contains(row, 0) {
+			return false
 		}
 	}
 	return true

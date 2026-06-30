@@ -13,7 +13,7 @@
 - [x] Add method to find/read currently playing game(s) for a user so it can reconnect to it (`GET /api/games` returns the user's latest game; client auto-reconnects when it is waiting/in_progress)
 - [x] Display last seen timestamp for opponent in the game (requires `last_in_game` timestamp to be saved for both players).
 - [x] If the player is AFK for a minute and the opponent is active, the game should auto-win for the opponent (requires `last_in_game` timestamp to be saved for both players).
-- [ ] Document proper client usage in README.md (Makefile is for devs only, describe DEBUG option too)
+- [x] Document proper client usage in README.md (Makefile is for devs only, describe DEBUG option too)
 - [ ] Check TASK requirements, are they met? If not, what is missing?
 - [ ] Double-check server responses, are they meaningful? Does the client display proper messages to user?
 

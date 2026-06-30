@@ -9,6 +9,20 @@ import (
 	"github.com/funduck/tic-tac-toe/internal/user"
 )
 
+const (
+	// refreshTokenCookieName is the cookie carrying the refresh token. It is kept
+	// out of the JSON body so a browser client never exposes it to JavaScript (XSS).
+	refreshTokenCookieName = "refresh_token"
+
+	// refreshTokenCookiePath scopes the cookie so browsers only send it to the
+	// refresh endpoint.
+	refreshTokenCookiePath = "/api/users/refresh-token"
+
+	// refreshTokenCookieMaxAge mirrors the refresh token lifetime in
+	// auth.AccessTokenService (7 days).
+	refreshTokenCookieMaxAge = 7 * 24 * 60 * 60
+)
+
 type UserService interface {
 	Signup(ctx context.Context, userID, password string) (*user.User, *auth.TokenPair, error)
 	Login(ctx context.Context, userID, password string) (*user.User, *auth.TokenPair, error)
@@ -123,4 +137,27 @@ func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 
 	setRefreshTokenCookie(w, tokens.RefreshToken, h.secureCookie)
 	writeJSON(w, http.StatusOK, AccessTokenResponse{AccessToken: tokens.AccessToken})
+}
+
+// setRefreshTokenCookie writes the refresh token as an HttpOnly cookie. secure is
+// driven by config so the cookie also works over plain http in local development.
+func setRefreshTokenCookie(w http.ResponseWriter, token string, secure bool) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     refreshTokenCookieName,
+		Value:    token,
+		Path:     refreshTokenCookiePath,
+		MaxAge:   refreshTokenCookieMaxAge,
+		HttpOnly: true,
+		Secure:   secure,
+		SameSite: http.SameSiteStrictMode,
+	})
+}
+
+// readRefreshTokenCookie returns the refresh token from the request cookie.
+func readRefreshTokenCookie(r *http.Request) (string, error) {
+	c, err := r.Cookie(refreshTokenCookieName)
+	if err != nil {
+		return "", err
+	}
+	return c.Value, nil
 }

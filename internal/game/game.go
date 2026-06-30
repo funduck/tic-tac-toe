@@ -46,8 +46,7 @@ type Game struct {
 
 // Touch records that userID was last seen at t. It only updates a participant's
 // timestamp and reports whether anything changed. Callers persist the game when
-// it returns true. It reassigns the pointer rather than mutating through it, so
-// the shallow copies returned by the repo stay independent.
+// it returns true.
 func (g *Game) Touch(userID string, t time.Time) bool {
 	if userID == "" {
 		return false
@@ -85,6 +84,7 @@ func NewGameInProgress(id, userID1, userID2 string) *Game {
 	}
 }
 
+// IsJoinAllowed reports whether a new player can join the game.
 func (g *Game) IsJoinAllowed() bool {
 	if g.Status != StatusWaiting {
 		return false
@@ -117,7 +117,6 @@ func (g *Game) Join(userID string) error {
 }
 
 // MakeMove places the mark for userID at (x, y).
-// Returns an error for any invalid move without modifying state.
 func (g *Game) MakeMove(userID string, x, y int) error {
 	// do not allow anyone except players in the game
 	mark := g.playerMark(userID)
@@ -148,11 +147,10 @@ func (g *Game) MakeMove(userID string, x, y int) error {
 		return nil
 	}
 
-	g.CurrentPlayerID = g.otherPlayer(userID)
+	g.CurrentPlayerID = g.otherPlayerID(userID)
 	return nil
 }
 
-// lastSeen returns the presence timestamp for userID, or nil.
 func (g *Game) lastSeen(userID string) *time.Time {
 	switch userID {
 	case g.UserID1:
@@ -163,21 +161,19 @@ func (g *Game) lastSeen(userID string) *time.Time {
 	return nil
 }
 
-// ForfeitIfOpponentAFK finishes an in-progress game in favor of activeUserID
-// when their opponent has not been seen within timeout. Returns true if it
-// changed state. activeUserID is assumed to have just been Touch()ed.
-func (g *Game) ForfeitIfOpponentAFK(activeUserID string, now time.Time, timeout time.Duration) bool {
-	if g.Status != StatusInProgress || g.playerMark(activeUserID) == 0 {
+// ForfeitIfOpponentAFK finishes an in-progress game in favor of userID when their opponent has not been seen within timeout.
+func (g *Game) ForfeitIfOpponentAFK(userID string, now time.Time, timeout time.Duration) bool {
+	if g.Status != StatusInProgress || g.playerMark(userID) == 0 {
 		return false
 	}
-	opp := g.otherPlayer(activeUserID)
-	last := g.lastSeen(opp)
+	opponentID := g.otherPlayerID(userID)
+	last := g.lastSeen(opponentID)
 	if last == nil || now.Sub(*last) < timeout {
 		return false
 	}
 	g.Status = StatusFinished
 	g.Result = ResultWin
-	g.WinnerID = activeUserID
+	g.WinnerID = userID
 	return true
 }
 
@@ -193,7 +189,7 @@ func (g *Game) GiveUp(userID string) error {
 	}
 	g.Status = StatusFinished
 	g.Result = ResultWin
-	g.WinnerID = g.otherPlayer(userID)
+	g.WinnerID = g.otherPlayerID(userID)
 	return nil
 }
 
@@ -212,6 +208,7 @@ func (g *Game) Quit(userID string) error {
 	return nil
 }
 
+// Returns the mark (1 or 2) for players in the game and 0 for anyone else.
 func (g *Game) playerMark(userID string) int {
 	switch userID {
 	case g.UserID1:
@@ -223,9 +220,30 @@ func (g *Game) playerMark(userID string) int {
 	}
 }
 
-func (g *Game) otherPlayer(userID string) string {
+func (g *Game) otherPlayerID(userID string) string {
 	if userID == g.UserID1 {
 		return g.UserID2
 	}
 	return g.UserID1
+}
+
+// Clone returns a deep copy of the game.
+func (g *Game) Clone() *Game {
+	if g == nil {
+		return nil
+	}
+	clone := *g
+
+	// Clone the reference fields to avoid sharing the same underlying data.
+	if clone.UserID1LastSeen != nil {
+		t := *clone.UserID1LastSeen
+		clone.UserID1LastSeen = &t
+	}
+	if clone.UserID2LastSeen != nil {
+		t := *clone.UserID2LastSeen
+		clone.UserID2LastSeen = &t
+	}
+
+	clone.Board = g.Board.Clone()
+	return &clone
 }

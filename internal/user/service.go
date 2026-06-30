@@ -10,7 +10,7 @@ import (
 )
 
 type TokenService interface {
-	GenerateToken(userID string) (*auth.TokenPair, error)
+	GenerateTokens(userID string) (*auth.TokenPair, error)
 	ValidateToken(tokenStr string) (*auth.Token, error)
 	ValidateRefreshToken(tokenStr string) (string, error)
 }
@@ -23,6 +23,8 @@ var (
 	ErrRefreshTokenDeleted = errors.New("refresh token deleted")
 )
 
+// UserService provides user management and authentication services using
+// a UserRepo for persistence and a TokenService for token generation and validation.
 type UserService struct {
 	userRepo     UserRepo
 	tokenService TokenService
@@ -39,8 +41,8 @@ func NewUserService(userRepo UserRepo, tokenService TokenService, logger *slog.L
 
 // Signup creates a new user and returns a token pair.
 func (s *UserService) Signup(ctx context.Context, userID, password string) (*User, *auth.TokenPair, error) {
-	if len(password) < 6 {
-		return nil, nil, fmt.Errorf("signup: %w, should contain at least 6 characters", ErrPasswordIsTooShort)
+	if len(password) < defaultPasswordLength {
+		return nil, nil, fmt.Errorf("signup: %w, should contain at least %d characters", ErrPasswordIsTooShort, defaultPasswordLength)
 	}
 
 	existingUser, err := s.userRepo.FindByID(ctx, userID)
@@ -56,7 +58,7 @@ func (s *UserService) Signup(ctx context.Context, userID, password string) (*Use
 		return nil, nil, err
 	}
 
-	tokenPair, err := s.tokenService.GenerateToken(userID)
+	tokenPair, err := s.tokenService.GenerateTokens(userID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -91,7 +93,7 @@ func (s *UserService) Login(ctx context.Context, userID, password string) (*User
 		return nil, nil, ErrInvalidCredentials
 	}
 
-	tokenPair, err := s.tokenService.GenerateToken(userID)
+	tokenPair, err := s.tokenService.GenerateTokens(userID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -109,7 +111,6 @@ func (s *UserService) Login(ctx context.Context, userID, password string) (*User
 }
 
 // RefreshToken validates the refresh token and returns a new token pair if valid.
-// The user is identified by the token's subject, so no userID needs to be supplied.
 func (s *UserService) RefreshToken(ctx context.Context, refreshToken string) (*User, *auth.TokenPair, error) {
 	userID, err := s.tokenService.ValidateRefreshToken(refreshToken)
 	if err != nil {
@@ -128,7 +129,7 @@ func (s *UserService) RefreshToken(ctx context.Context, refreshToken string) (*U
 		return nil, nil, ErrRefreshTokenDeleted
 	}
 
-	tokenPair, err := s.tokenService.GenerateToken(userID)
+	tokenPair, err := s.tokenService.GenerateTokens(userID)
 	if err != nil {
 		return nil, nil, err
 	}

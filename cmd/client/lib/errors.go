@@ -55,7 +55,7 @@ var friendlyMessages = map[openapi.ServerErrorCode]string{
 	openapi.CodeInvalidCredentials:    "Wrong username or password",
 	openapi.CodeUserNotFound:          "Wrong username or password",
 	openapi.CodeUserAlreadyExists:     "That username is taken",
-	openapi.CodePasswordTooShort:      "Password is too short (minimum 6 characters)",
+	openapi.CodePasswordTooShort:      "Password is too short",
 	openapi.CodeRefreshTokenDeleted:   sessionEndedMessage,
 	openapi.CodeTokenInvalid:          sessionEndedMessage,
 	openapi.CodeTokenExpired:          sessionEndedMessage,
@@ -81,7 +81,7 @@ func FriendlyMessage(err error) string {
 	var apiErr *APIError
 	if errors.As(err, &apiErr) {
 		if msg, ok := friendlyMessages[apiErr.Code]; ok {
-			return msg
+			return msg + ". API message: " + apiErr.Message
 		}
 		if apiErr.Message != "" {
 			return apiErr.Message

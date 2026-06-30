@@ -70,8 +70,8 @@ func (s *AccessTokenService) ValidateRefreshToken(tokenStr string) (string, erro
 	return "", ErrTokenInvalid
 }
 
-// GenerateToken generates a JWT token and refresh token for the given user ID. The refresh token is stored in the user repo for later validation.
-func (s *AccessTokenService) GenerateToken(userID string) (*TokenPair, error) {
+// GenerateTokens generates a JWT token and refresh token for the given user ID.
+func (s *AccessTokenService) GenerateTokens(userID string) (*TokenPair, error) {
 	now := time.Now()
 
 	accessClaims := CustomClaims{
