@@ -86,11 +86,17 @@ make test-race
 make test-coverage
 ```
 
+## Domain Design
+Core domain types:
+- **Board** type is responsible for moves validation and win/draw detection. Size can be configured per game.
+- **Game** type is responsible for game state management, including players, turns, and AFK detection.
+- **GameService** is responsible for matchmaking, game creation, and game actions. For persistence it uses GameRepository interface.
+
 ## Protocol Design
 
 ### Overview
 
-The system uses a **REST API over HTTP** with **polling-based state updates**. Clients communicate with the server via HTTP POST/GET requests, and poll the game state periodically to detect changes (opponent moves, game completion, etc.).
+The system uses a **REST API over HTTP** with **polling-based state updates**. Clients communicate with the server via HTTP POST/GET requests, and poll the game state periodically to ensure their presence in the game and detect changes (opponent moves, game completion, etc.).
 
 ### Game Flow
 
@@ -175,11 +181,10 @@ Note over Client, Server: This flow ensures seamless user experience even with s
 
 ### Polling Mechanism
 
-Clients use a **polling strategy** to monitor game state changes:
+Clients use a **polling strategy** to monitor game state changes and ensure presence:
 
 - **Wait for opponent:** Poll every 1 second until `status` changes from `"waiting"` to `"in_progress"`
 - **Wait for turn:** Poll every 1 second until `currentPlayerID` matches your user ID
-- **Check game end:** Poll every 1 second until `status` becomes `"finished"`
 
 This approach is simple and stateless but introduces latency (up to 1 second for updates). Future improvements could include WebSockets or Server-Sent Events for real-time updates.
 
@@ -219,22 +224,24 @@ The server uses **JWT tokens** for stateless authentication. This design choice 
 The system uses a **dual-token approach**:
 
 1. **Access Token**
-   - Lifetime: **10 seconds**
+   - Lifetime: **10 seconds** for demonstration purposes
    - Used for authenticating game API requests
    - Short-lived to minimize risk if leaked
    - Claims: `user_id`, `exp`, `iat`, `nbf`, `iss`
+   - Stored in the client memory (CLI) or localStorage (web)
 
 2. **Refresh Token**
    - Lifetime: **7 days**
    - Used to obtain new access tokens without re-login
    - Stored hashed on server side for security
    - Cannot be used for game operations
+   - Stored in a secure HTTP-only cookie (web) or in memory (CLI)
 
 ### Security Considerations
 
 - **Password storage:** Passwords are hashed using **bcrypt** (cost factor 10) before storage
 - **Minimum password length:** 6 characters
-- **Token signing:** HMAC-SHA256 with a secret key (configurable)
+- **Token signing:** HMAC-SHA256 with a secret key
 - **Refresh token storage:** Refresh tokens are hashed (SHA256) before storage to prevent misuse if database is compromised
 - **Token validation:** Every protected endpoint validates the Bearer token signature, expiration, and issuer
 
