@@ -183,20 +183,14 @@ func TestGameHandler_CreateGame(t *testing.T) {
 					createGameFunc: func(ctx context.Context, userID string, cmd game.CreateGameCommand) (*game.Game, error) {
 						return game.NewGame("test-game-id-123"), nil
 					},
-					joinGameFunc: func(ctx context.Context, userID string, cmd game.JoinGameCommand) (*game.Game, error) {
-						g := game.NewGame(cmd.GameID)
-						g.UserID1 = userID
-						return g, nil
-					},
 				}
 			},
 			userID:         "user-123",
 			requestBody:    game.CreateGameCommand{},
 			expectedStatus: http.StatusCreated,
 			checkResponse: checkGameMatches(game.Game{
-				ID:      "test-game-id-123",
-				Status:  game.StatusWaiting,
-				UserID1: "user-123",
+				ID:     "test-game-id-123",
+				Status: game.StatusWaiting,
 			}),
 		},
 		{
@@ -208,11 +202,6 @@ func TestGameHandler_CreateGame(t *testing.T) {
 						g.Private = cmd.Private
 						return g, nil
 					},
-					joinGameFunc: func(ctx context.Context, userID string, cmd game.JoinGameCommand) (*game.Game, error) {
-						g := game.NewGame(cmd.GameID)
-						g.UserID1 = userID
-						return g, nil
-					},
 				}
 			},
 			userID:         "user-123",
@@ -221,7 +210,6 @@ func TestGameHandler_CreateGame(t *testing.T) {
 			checkResponse: checkGameMatches(game.Game{
 				ID:      "test-game-id-123",
 				Status:  game.StatusWaiting,
-				UserID1: "user-123",
 				Private: true,
 			}),
 		},
@@ -238,23 +226,6 @@ func TestGameHandler_CreateGame(t *testing.T) {
 			requestBody:    game.CreateGameCommand{},
 			expectedStatus: http.StatusInternalServerError,
 			checkResponse:  checkErrorResponse("database error"),
-		},
-		{
-			name: "join game service error",
-			mockSetup: func() *mockGameService {
-				return &mockGameService{
-					createGameFunc: func(ctx context.Context, userID string, cmd game.CreateGameCommand) (*game.Game, error) {
-						return game.NewGame("test-game-id-123"), nil
-					},
-					joinGameFunc: func(ctx context.Context, userID string, cmd game.JoinGameCommand) (*game.Game, error) {
-						return nil, errors.New("join error")
-					},
-				}
-			},
-			userID:         "user-123",
-			requestBody:    game.CreateGameCommand{},
-			expectedStatus: http.StatusInternalServerError,
-			checkResponse:  checkErrorResponse("join error"),
 		},
 	}
 

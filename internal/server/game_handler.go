@@ -58,14 +58,6 @@ func (h *GameHandler) CreateGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	g2, err := h.svc.JoinGame(ctx, userID, game.JoinGameCommand{GameID: g.ID})
-	if err != nil {
-		h.logger.Warn("join game failed", "gameID", g.ID, "userID", userID, "error", err)
-		writeDomainError(w, err)
-		return
-	}
-	g = g2
-
 	writeJSON(w, http.StatusCreated, g)
 }
 

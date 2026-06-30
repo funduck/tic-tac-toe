@@ -33,10 +33,14 @@ func CreateOrJoinGame(ctx context.Context, gameSvc *lib.GameService, displaySvc 
 			return fmt.Errorf("failed to join any game: %w", err)
 		}
 
-		// Create new game
+		// Create new game, then join it as the first player.
 		g, err = gameSvc.CreateGame(ctx, lib.UserID, lib.Private)
 		if err != nil {
 			return fmt.Errorf("failed to create game: %w", err)
+		}
+		g, err = gameSvc.JoinGame(ctx, g.GetID(), lib.UserID)
+		if err != nil {
+			return fmt.Errorf("failed to join created game: %w", err)
 		}
 		lib.GameState = g
 		displaySvc.PrintInfo(fmt.Sprintf("Game created: %s\nShare this ID with your opponent.", g.GetID()))
