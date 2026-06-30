@@ -18,9 +18,17 @@ func NewAccessTokenService(secret, issuer string) *AccessTokenService {
 	return &AccessTokenService{
 		secret:               secret,
 		issuer:               issuer,
-		accessTokenLifetime:  10 * time.Second, // Short-lived access token for better security
-		refreshTokenLifetime: 7 * 24 * time.Hour,
+		accessTokenLifetime:  10 * time.Second,   // default to 10 seconds
+		refreshTokenLifetime: 7 * 24 * time.Hour, // default to 7 days
 	}
+}
+
+func (s *AccessTokenService) SetAccessTokenLifetime(duration time.Duration) {
+	s.accessTokenLifetime = duration
+}
+
+func (s *AccessTokenService) SetRefreshTokenLifetime(duration time.Duration) {
+	s.refreshTokenLifetime = duration
 }
 
 func (s *AccessTokenService) keyFunc(token *jwt.Token) (interface{}, error) {

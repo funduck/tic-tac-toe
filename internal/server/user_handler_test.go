@@ -98,7 +98,7 @@ func TestUserHandler_Signup(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := NewUserHandler(&mockUserService{
 				signupFunc: tt.signupFunc,
-			}, slog.Default(), false)
+			}, slog.Default())
 
 			req := makeJSONRequest(http.MethodPost, "/api/users/signup", tt.requestBody)
 			w := executeRequest(h.Signup, req)
@@ -146,7 +146,7 @@ func TestUserHandler_Login(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := NewUserHandler(&mockUserService{
 				loginFunc: tt.loginFunc,
-			}, slog.Default(), false)
+			}, slog.Default())
 
 			req := makeJSONRequest(http.MethodPost, "/api/users/login", tt.requestBody)
 			w := executeRequest(h.Login, req)
@@ -193,7 +193,7 @@ func TestUserHandler_RefreshToken(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := NewUserHandler(&mockUserService{
 				refreshTokenFunc: tt.refreshTokenFunc,
-			}, slog.Default(), false)
+			}, slog.Default())
 
 			req := makeJSONRequest(http.MethodPost, "/api/users/refresh-token", nil)
 			if tt.cookie != nil {

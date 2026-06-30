@@ -5,7 +5,6 @@ import (
 	"errors"
 	"log/slog"
 	"testing"
-	"time"
 )
 
 var ErrMockRepoUpdateFailure = errors.New("update failure")
@@ -85,7 +84,7 @@ func (m *mockRepo) FindGameToJoin(ctx context.Context, userID string) (*Game, er
 func TestGameService_CreateGame(t *testing.T) {
 	ctx := context.Background()
 	repo := newMockRepo()
-	svc := NewGameService(repo, slog.Default(), time.Minute)
+	svc := NewGameService(repo, slog.Default())
 
 	g, err := svc.CreateGame(ctx, "user", CreateGameCommand{})
 	if err != nil {
@@ -111,7 +110,7 @@ func TestGameService_CreateGame_Errors(t *testing.T) {
 	ctx := context.Background()
 	repo := newMockRepo()
 	repo.createErr = errors.New("storage failure")
-	svc := NewGameService(repo, slog.Default(), time.Minute)
+	svc := NewGameService(repo, slog.Default())
 
 	_, err := svc.CreateGame(ctx, "user", CreateGameCommand{})
 	if err == nil {
@@ -122,7 +121,7 @@ func TestGameService_CreateGame_Errors(t *testing.T) {
 func TestGameService_CreateGame_Private(t *testing.T) {
 	ctx := context.Background()
 	repo := newMockRepo()
-	svc := NewGameService(repo, slog.Default(), time.Minute)
+	svc := NewGameService(repo, slog.Default())
 
 	g, err := svc.CreateGame(ctx, "user", CreateGameCommand{Private: true})
 	if err != nil {
@@ -144,7 +143,7 @@ func TestGameService_CreateGame_Private(t *testing.T) {
 func TestGameService_JoinGame(t *testing.T) {
 	ctx := context.Background()
 	repo := newMockRepo()
-	svc := NewGameService(repo, slog.Default(), time.Minute)
+	svc := NewGameService(repo, slog.Default())
 	g, _ := svc.CreateGame(ctx, "user", CreateGameCommand{})
 
 	updated, err := svc.JoinGame(ctx, "alice", JoinGameCommand{GameID: g.ID})
@@ -209,7 +208,7 @@ func TestGameService_JoinGame_Errors(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			mockRepo = newMockRepo()
-			svc := NewGameService(mockRepo, slog.Default(), time.Minute)
+			svc := NewGameService(mockRepo, slog.Default())
 			gameID, userID := tc.setup(svc)
 			_, err := svc.JoinGame(ctx, userID, JoinGameCommand{GameID: gameID})
 			if !errors.Is(err, tc.wantErr()) {
@@ -224,7 +223,7 @@ func TestGameService_JoinGame_Errors(t *testing.T) {
 func TestGameService_GetLatestGameForUser(t *testing.T) {
 	ctx := context.Background()
 	repo := newMockRepo()
-	svc := NewGameService(repo, slog.Default(), time.Minute)
+	svc := NewGameService(repo, slog.Default())
 
 	// no games for user
 	_, err := svc.GetLatestGameForUser(ctx, "alice")
@@ -252,7 +251,7 @@ func TestGameService_GetLatestGameForUser_Errors(t *testing.T) {
 	ctx := context.Background()
 	repo := newMockRepo()
 	repo.getErr = errors.New("storage failure")
-	svc := NewGameService(repo, slog.Default(), time.Minute)
+	svc := NewGameService(repo, slog.Default())
 
 	_, err := svc.GetLatestGameForUser(ctx, "alice")
 	if !errors.Is(err, repo.getErr) {
@@ -282,7 +281,7 @@ func createGameInProgressHelper(svc *GameService, userID1, userID2 string) (*Gam
 func TestGameService_GetGame(t *testing.T) {
 	ctx := context.Background()
 	repo := newMockRepo()
-	svc := NewGameService(repo, slog.Default(), time.Minute)
+	svc := NewGameService(repo, slog.Default())
 	g, _ := createGameInProgressHelper(svc, "alice", "bob")
 
 	got, err := svc.GetGame(ctx, "alice", GetGameCommand{GameID: g.ID})
@@ -300,7 +299,7 @@ func TestGameService_GetGame(t *testing.T) {
 func TestGameService_GetGame_TouchesPresence(t *testing.T) {
 	ctx := context.Background()
 	repo := newMockRepo()
-	svc := NewGameService(repo, slog.Default(), time.Minute)
+	svc := NewGameService(repo, slog.Default())
 	// Insert a fresh in-progress game with no presence recorded yet.
 	g := NewGameInProgress("game-presence", "alice", "bob")
 	if err := repo.Create(ctx, g); err != nil {
@@ -332,7 +331,7 @@ func TestGameService_GetGame_TouchesPresence(t *testing.T) {
 func TestGameService_GetGame_Errors(t *testing.T) {
 	ctx := context.Background()
 	repo := newMockRepo()
-	svc := NewGameService(repo, slog.Default(), time.Minute)
+	svc := NewGameService(repo, slog.Default())
 	_, err := svc.GetGame(ctx, "alice", GetGameCommand{GameID: "nonexistent"})
 	if !errors.Is(err, ErrGameNotFound) {
 		t.Errorf("expected ErrGameNotFound, got %v", err)
@@ -344,7 +343,7 @@ func TestGameService_GetGame_Errors(t *testing.T) {
 func TestGameService_MakeMove(t *testing.T) {
 	ctx := context.Background()
 	repo := newMockRepo()
-	svc := NewGameService(repo, slog.Default(), time.Minute)
+	svc := NewGameService(repo, slog.Default())
 	g, _ := createGameInProgressHelper(svc, "alice", "bob")
 
 	updated, err := svc.MakeMove(ctx, "alice", MakeMoveCommand{GameID: g.ID, X: 0, Y: 0})
@@ -395,7 +394,7 @@ func TestGameService_MakeMove_Errors(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			mockRepo = newMockRepo()
-			svc := NewGameService(mockRepo, slog.Default(), time.Minute)
+			svc := NewGameService(mockRepo, slog.Default())
 			gameID, userID, x, y := tc.setup(svc)
 			_, err := svc.MakeMove(ctx, userID, MakeMoveCommand{GameID: gameID, X: x, Y: y})
 			if !errors.Is(err, tc.wantErr()) {
@@ -410,7 +409,7 @@ func TestGameService_MakeMove_Errors(t *testing.T) {
 func TestGameService_GiveUp(t *testing.T) {
 	ctx := context.Background()
 	repo := newMockRepo()
-	svc := NewGameService(repo, slog.Default(), time.Minute)
+	svc := NewGameService(repo, slog.Default())
 	g, _ := createGameInProgressHelper(svc, "alice", "bob")
 
 	updated, err := svc.GiveUp(ctx, "alice", GiveUpCommand{GameID: g.ID})
@@ -461,7 +460,7 @@ func TestGameService_GiveUp_Errors(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			mockRepo = newMockRepo()
-			svc := NewGameService(mockRepo, slog.Default(), time.Minute)
+			svc := NewGameService(mockRepo, slog.Default())
 			gameID, userID := tc.setup(svc)
 			_, err := svc.GiveUp(ctx, userID, GiveUpCommand{GameID: gameID})
 			if !errors.Is(err, tc.wantErr()) {

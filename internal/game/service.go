@@ -18,8 +18,12 @@ type GameService struct {
 	afkTimeout       time.Duration
 }
 
-func NewGameService(repo GameRepo, logger *slog.Logger, afkTimeout time.Duration) *GameService {
-	return &GameService{repo: repo, logger: logger, afkTimeout: afkTimeout}
+func NewGameService(repo GameRepo, logger *slog.Logger) *GameService {
+	return &GameService{repo: repo, logger: logger, afkTimeout: 10 * time.Second}
+}
+
+func (s *GameService) SetAfkTimeout(duration time.Duration) {
+	s.afkTimeout = duration
 }
 
 type CreateGameCommand struct {

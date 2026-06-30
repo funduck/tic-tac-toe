@@ -35,12 +35,15 @@ type UserHandler struct {
 	secureCookie bool
 }
 
-func NewUserHandler(svc UserService, logger *slog.Logger, secureCookie bool) *UserHandler {
+func NewUserHandler(svc UserService, logger *slog.Logger) *UserHandler {
 	return &UserHandler{
-		svc:          svc,
-		logger:       logger,
-		secureCookie: secureCookie,
+		svc:    svc,
+		logger: logger,
 	}
+}
+
+func (h *UserHandler) SetSecureCookie(secure bool) {
+	h.secureCookie = secure
 }
 
 // Signup godoc

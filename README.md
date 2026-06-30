@@ -26,6 +26,8 @@ A multiplayer Tic Tac Toe game server and client implementation in Go, featuring
 - Go 1.26.2 or higher
 - `make` (optional, for convenience commands)
 
+***make** commands are used for convenience, while the server and client can also be run directly with `go run` or a built binary.*
+
 ### Installation
 
 Clone the repository and install dependencies:
@@ -51,29 +53,7 @@ Server listening on :8080
 
 You can access the Swagger UI documentation at: `http://localhost:8080/swagger/index.html`
 
-#### Configuration
-
-The server is configured via environment variables. All are optional and fall
-back to development-friendly defaults (a warning is logged when a default is
-used for a security-sensitive setting).
-
-| Variable        | Default          | Description                                                                                                   |
-| --------------- | ---------------- | ------------------------------------------------------------------------------------------------------------- |
-| `JWT_SECRET`    | `default-secret` | Secret key used to sign JWT tokens**                                  |
-| `AFK_TIMEOUT`   | `10s`            | Idle period after which an active player auto-wins against an AFK opponent. Accepts Go durations (e.g. `1m`).  |
-| `SECURE_COOKIE` | _(off)_          | Set to `true` to mark the refresh-token cookie as `Secure` (HTTPS only). Leave unset for plain-HTTP local dev. |
-
-The client reads one environment variable:
-
-| Variable | Default | Description                                                                          |
-| -------- | ------- | ------------------------------------------------------------------------------------ |
-| `DEBUG`  | _(off)_ | Set to `true` to enable HTTP request/response logging and linear (non-redraw) output. |
-
 ### Running the Client
-
-**make** commands are user for convenience, while the client can also be run directly with `go run` or a built binary.
-
-#### Basic scenario for 2 players
 Open **two separate terminals** and run a client in each:
 
 **Terminal 1 (Player 1):**
@@ -93,30 +73,16 @@ The clients will:
 4. Display the game board after each move
 5. Show the final result (win/loss/draw)
 
-**Debug mode**
-Turn on logging for the client to see HTTP requests and responses:
-
-```bash
-make start-client USER=alice PASSWORD=alicepass DEBUG=true
-# or: cd cmd/client && DEBUG=true go run main.go -user alice -password alicepass
-```
-
 ### Running Tests
 Tests include:
 * unit tests
 * integration tests for API endpoints
 * concurrency tests
 
-Run all tests with verbose output:
-
 ```bash
 make tests
-```
-
-Run tests with race detection:
-
-```bash
 make test-race
+make test-coverage
 ```
 
 ## Protocol Design
@@ -222,17 +188,12 @@ All errors return HTTP status codes with a JSON body:
 
 ```json
 {
-  "error": "error message description"
+  "error": "Game not found",
+  "code": "ERR_GAME_NOT_FOUND"
 }
 ```
 
-Common status codes:
-- `400 Bad Request` - Invalid input, occupied cell, out-of-turn move, etc.
-- `401 Unauthorized` - Missing or invalid authentication token
-- `404 Not Found` - Game or user not found
-- `409 Conflict` - User already exists (signup)
-- `500 Internal Server Error` - Unexpected server error
-
+So, the client can handle errors gracefully and display user-friendly messages.
 
 ## Authentication
 
@@ -297,3 +258,23 @@ make swag-init
 # Regenerate client stubs
 make codegen-client
 ```
+
+### Configuration
+
+The server is configured via environment variables. All are optional and fall
+back to development-friendly defaults (a warning is logged when a default is
+used for a security-sensitive setting).
+
+| Variable        | Default          | Description                                                           |
+| --------------- | ---------------- | ----------------------------------------------------------------------|
+| `JWT_SECRET`    | `default-secret` | Secret key used to sign JWT tokens**                                  |
+| `AFK_TIMEOUT`   | `10s`            | Idle period after which an active player auto-wins against an AFK opponent. Accepts Go durations (e.g. `1m`).  |
+| `SECURE_COOKIE` | _(off)_          | Set to `true` to mark the refresh-token cookie as `Secure` (HTTPS only). Leave unset for plain-HTTP local dev. |
+| `TOKEN_LIFETIME` | `10s` | Lifetime of access tokens. Accepts Go durations (e.g. `30s`, `1m`). |
+| `REFRESH_TOKEN_LIFETIME` | `7d` | Lifetime of refresh tokens. Accepts Go durations (e.g. `24h`, `7d`). |
+
+The client reads one environment variable:
+
+| Variable | Default | Description                                                                          |
+| -------- | ------- | ------------------------------------------------------------------------------------ |
+| `DEBUG`  | _(off)_ | Set to `true` to enable logging into file. |

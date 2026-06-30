@@ -28,7 +28,7 @@ func TestUserRouter(t *testing.T) {
 		},
 	}
 
-	handler := NewUserHandler(mockSvc, slog.New(slog.NewTextHandler(io.Discard, nil)), false)
+	handler := NewUserHandler(mockSvc, slog.New(slog.NewTextHandler(io.Discard, nil)))
 	// Create router without any additional middlewares (clean test environment)
 	router := chi.NewRouter()
 	router.Route("/api", func(r chi.Router) {

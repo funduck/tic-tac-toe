@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"sync"
 	"testing"
-	"time"
 )
 
 // TestConcurrentJoinGame verifies that when multiple players race to fill the
@@ -15,7 +14,7 @@ import (
 func TestConcurrentJoinGame(t *testing.T) {
 	ctx := context.Background()
 	repo := NewMemoryRepo()
-	svc := NewGameService(repo, slog.Default(), time.Minute)
+	svc := NewGameService(repo, slog.Default())
 
 	g, _ := svc.CreateGame(ctx, "host", CreateGameCommand{})
 	_, _ = svc.JoinGame(ctx, "alice", JoinGameCommand{GameID: g.ID})
@@ -68,7 +67,7 @@ func TestConcurrentJoinGame(t *testing.T) {
 func TestConcurrentJoinAnyGame(t *testing.T) {
 	ctx := context.Background()
 	repo := NewMemoryRepo()
-	svc := NewGameService(repo, slog.Default(), time.Minute)
+	svc := NewGameService(repo, slog.Default())
 
 	game1, _ := svc.CreateGame(ctx, "host1", CreateGameCommand{})
 	game2, _ := svc.CreateGame(ctx, "host2", CreateGameCommand{})

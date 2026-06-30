@@ -31,14 +31,19 @@ func main() {
 	// Services and handlers
 	gameRepo := game.NewMemoryRepo()
 
-	gameSvc := game.NewGameService(gameRepo, logger, getAfkTimeout(logger))
+	gameSvc := game.NewGameService(gameRepo, logger)
+	gameSvc.SetAfkTimeout(getAfkTimeout(logger))
 	gameHandler := server.NewGameHandler(gameSvc, logger)
 
-	tokenService := auth.NewAccessTokenService(getSecret(logger), "tic-tac-toe")
+	tokenService := auth.NewAccessTokenService(getJWTSecret(logger), "tic-tac-toe")
+	tokenService.SetAccessTokenLifetime(getTokenLifetime(logger))
+	tokenService.SetRefreshTokenLifetime(getRefreshTokenLifetime(logger))
 
 	userRepo := user.NewMemoryUserRepo()
 	userSvc := user.NewUserService(userRepo, tokenService, logger)
-	userHandler := server.NewUserHandler(userSvc, logger, isSecureCookieEnabled())
+
+	userHandler := server.NewUserHandler(userSvc, logger)
+	userHandler.SetSecureCookie(isSecureCookieEnabled(logger))
 
 	authMiddleware := server.AuthMiddleware(tokenService)
 
@@ -109,7 +114,7 @@ func newRouter(logger *slog.Logger) *chi.Mux {
 func getAfkTimeout(logger *slog.Logger) time.Duration {
 	afkTimeout := os.Getenv("AFK_TIMEOUT")
 	if afkTimeout == "" {
-		logger.Warn("AFK_TIMEOUT not set, using default 10s (not recommended for production)")
+		logger.Warn("AFK_TIMEOUT not set, using default 10s")
 		return 10 * time.Second
 	}
 	duration, err := time.ParseDuration(afkTimeout)
@@ -120,11 +125,11 @@ func getAfkTimeout(logger *slog.Logger) time.Duration {
 	return duration
 }
 
-// getSecret retrieves the JWT secret from the environment variable "JWT_SECRET".
-func getSecret(logger *slog.Logger) string {
+// getJWTSecret retrieves the JWT secret from the environment variable "JWT_SECRET".
+func getJWTSecret(logger *slog.Logger) string {
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
-		logger.Warn("JWT_SECRET not set, using default secret (not recommended for production)")
+		logger.Warn("JWT_SECRET not set, using default secret")
 		return "default-secret"
 	}
 	return secret
@@ -132,7 +137,40 @@ func getSecret(logger *slog.Logger) string {
 
 // secureCookie determines whether cookies should be marked as Secure (HTTPS only).
 // In production, this should be true. In development, it can be false for local testing.
-func isSecureCookieEnabled() bool {
+func isSecureCookieEnabled(logger *slog.Logger) bool {
 	secureCookie := os.Getenv("SECURE_COOKIE")
+	if secureCookie == "" {
+		logger.Warn("SECURE_COOKIE not set, using default false")
+		return false
+	}
 	return secureCookie == "true"
+}
+
+// getTokenLifetime retrieves the JWT lifetime duration from the environment variable "TOKEN_LIFETIME".
+func getTokenLifetime(logger *slog.Logger) time.Duration {
+	tokenLifetime := os.Getenv("TOKEN_LIFETIME")
+	if tokenLifetime == "" {
+		logger.Warn("TOKEN_LIFETIME not set, using default 10s")
+		return 10 * time.Second // default to 10 seconds
+	}
+	duration, err := time.ParseDuration(tokenLifetime)
+	if err != nil {
+		logger.Error("Invalid TOKEN_LIFETIME value, using default 10s", "error", err)
+		return 10 * time.Second // fallback to 10 seconds on error
+	}
+	return duration
+}
+
+func getRefreshTokenLifetime(logger *slog.Logger) time.Duration {
+	refreshTokenLifetime := os.Getenv("REFRESH_TOKEN_LIFETIME")
+	if refreshTokenLifetime == "" {
+		logger.Warn("REFRESH_TOKEN_LIFETIME not set, using default 7d")
+		return 7 * 24 * time.Hour // default to 7 days
+	}
+	duration, err := time.ParseDuration(refreshTokenLifetime)
+	if err != nil {
+		logger.Error("Invalid REFRESH_TOKEN_LIFETIME value, using default 7d", "error", err)
+		return 7 * 24 * time.Hour // fallback to 7 days on error
+	}
+	return duration
 }
