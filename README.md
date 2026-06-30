@@ -11,6 +11,7 @@ A multiplayer Tic Tac Toe game server and client implementation in Go, featuring
 - JWT authentication with access and refresh tokens
 - Simple matchmaking: join to known game or join to any waiting game
 - Game flow: create, join, make moves, poll for updates, finish
+- Opponent status updates and automatic win if opponent is AFK for too long
 - CLI client with polling-based updates
 - In-memory data storage (users, games)
 - Unit, integration and concurrency tests
