@@ -1,25 +1,28 @@
 package game
 
 import (
+	"context"
 	"errors"
 	"testing"
 )
 
 func TestMemoryRepo_Create(t *testing.T) {
+	ctx := context.Background()
 	repo := NewMemoryRepo()
 	g := NewGameInProgress("id1", "alice", "bob")
-	if err := repo.Create(g); err != nil {
+	if err := repo.Create(ctx, g); err != nil {
 		t.Fatalf("Create error: %v", err)
 	}
 }
 
 func TestMemoryRepo_FindByID(t *testing.T) {
+	ctx := context.Background()
 	repo := NewMemoryRepo()
 	g := NewGameInProgress("id1", "alice", "bob")
-	if err := repo.Create(g); err != nil {
+	if err := repo.Create(ctx, g); err != nil {
 		t.Fatalf("Create error: %v", err)
 	}
-	got, err := repo.FindByID("id1")
+	got, err := repo.FindByID(ctx, "id1")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -29,25 +32,27 @@ func TestMemoryRepo_FindByID(t *testing.T) {
 }
 
 func TestMemoryRepo_FindByID_NotFound(t *testing.T) {
+	ctx := context.Background()
 	repo := NewMemoryRepo()
-	_, err := repo.FindByID("nonexistent")
+	_, err := repo.FindByID(ctx, "nonexistent")
 	if !errors.Is(err, ErrGameNotFound) {
 		t.Errorf("expected ErrGameNotFound, got %v", err)
 	}
 }
 
 func TestMemoryRepo_FindLatestForUser(t *testing.T) {
+	ctx := context.Background()
 	repo := NewMemoryRepo()
 	g1 := NewGameInProgress("id1", "alice", "bob")
 	g2 := NewGameInProgress("id2", "charlie", "alice")
-	if err := repo.Create(g1); err != nil {
+	if err := repo.Create(ctx, g1); err != nil {
 		t.Fatalf("Create error: %v", err)
 	}
-	if err := repo.Create(g2); err != nil {
+	if err := repo.Create(ctx, g2); err != nil {
 		t.Fatalf("Create error: %v", err)
 	}
 
-	got, err := repo.FindLatestForUser("alice")
+	got, err := repo.FindLatestForUser(ctx, "alice")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -57,26 +62,28 @@ func TestMemoryRepo_FindLatestForUser(t *testing.T) {
 }
 
 func TestMemoryRepo_FindLatestForUser_NotFound(t *testing.T) {
+	ctx := context.Background()
 	repo := NewMemoryRepo()
-	_, err := repo.FindLatestForUser("nonexistent")
+	_, err := repo.FindLatestForUser(ctx, "nonexistent")
 	if !errors.Is(err, ErrGameNotFound) {
 		t.Errorf("expected ErrGameNotFound, got %v", err)
 	}
 }
 
 func TestMemoryRepo_Update(t *testing.T) {
+	ctx := context.Background()
 	repo := NewMemoryRepo()
 	g := NewGameInProgress("id1", "alice", "bob")
-	if err := repo.Create(g); err != nil {
+	if err := repo.Create(ctx, g); err != nil {
 		t.Fatalf("Create error: %v", err)
 	}
 
 	g.Status = StatusFinished
-	if err := repo.Update(g); err != nil {
+	if err := repo.Update(ctx, g); err != nil {
 		t.Fatalf("Update error: %v", err)
 	}
 
-	got, err := repo.FindByID("id1")
+	got, err := repo.FindByID(ctx, "id1")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -86,26 +93,28 @@ func TestMemoryRepo_Update(t *testing.T) {
 }
 
 func TestMemoryRepo_Update_NotFound(t *testing.T) {
+	ctx := context.Background()
 	repo := NewMemoryRepo()
 	g := NewGameInProgress("id1", "alice", "bob")
-	err := repo.Update(g)
+	err := repo.Update(ctx, g)
 	if !errors.Is(err, ErrGameNotFound) {
 		t.Errorf("expected ErrGameNotFound, got %v", err)
 	}
 }
 
 func TestMemoryRepo_FindGameToJoin(t *testing.T) {
+	ctx := context.Background()
 	repo := NewMemoryRepo()
 	g1 := NewGame("id1")                           // waiting game
 	g2 := NewGameInProgress("id2", "alice", "bob") // in_progress game
-	if err := repo.Create(g1); err != nil {
+	if err := repo.Create(ctx, g1); err != nil {
 		t.Fatalf("Create error: %v", err)
 	}
-	if err := repo.Create(g2); err != nil {
+	if err := repo.Create(ctx, g2); err != nil {
 		t.Fatalf("Create error: %v", err)
 	}
 
-	got, err := repo.FindGameToJoin("charlie")
+	got, err := repo.FindGameToJoin(ctx, "charlie")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -115,19 +124,20 @@ func TestMemoryRepo_FindGameToJoin(t *testing.T) {
 }
 
 func TestMemoryRepo_FindGameToJoin_NotFound(t *testing.T) {
+	ctx := context.Background()
 	repo := NewMemoryRepo()
-	_, err := repo.FindGameToJoin("charlie")
+	_, err := repo.FindGameToJoin(ctx, "charlie")
 	if !errors.Is(err, ErrGameNotFound) {
 		t.Errorf("expected ErrGameNotFound, got %v", err)
 	}
 
 	// also test when there are only in_progress games
 	g := NewGameInProgress("id1", "alice", "bob")
-	if err := repo.Create(g); err != nil {
+	if err := repo.Create(ctx, g); err != nil {
 		t.Fatalf("Create error: %v", err)
 	}
 
-	_, err = repo.FindGameToJoin("charlie")
+	_, err = repo.FindGameToJoin(ctx, "charlie")
 	if !errors.Is(err, ErrGameNotFound) {
 		t.Errorf("expected ErrGameNotFound, got %v", err)
 	}
@@ -135,11 +145,11 @@ func TestMemoryRepo_FindGameToJoin_NotFound(t *testing.T) {
 	// and when there are only private waiting games
 	g2 := NewGame("id2")
 	g2.Private = true
-	if err := repo.Create(g2); err != nil {
+	if err := repo.Create(ctx, g2); err != nil {
 		t.Fatalf("Create error: %v", err)
 	}
 
-	_, err = repo.FindGameToJoin("charlie")
+	_, err = repo.FindGameToJoin(ctx, "charlie")
 	if !errors.Is(err, ErrGameNotFound) {
 		t.Errorf("expected ErrGameNotFound, got %v", err)
 	}

@@ -8,13 +8,31 @@ servers:
 - url: //localhost:8080/
 paths:
   /api/games:
+    get:
+      operationId: getLatestGame
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/game.Game"
+          description: OK
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Not Found
+      summary: Get the authenticated user's most recent game
+      tags:
+      - games
     post:
       operationId: createGame
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/server.CreateGameRequest"
+              $ref: "#/components/schemas/game.CreateGameCommand"
         description: Create game request
         required: true
       responses:
@@ -49,13 +67,6 @@ paths:
   /api/games/join:
     post:
       operationId: joinAnyGame
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/server.JoinAnyGameRequest"
-        description: Join any game request
-        required: true
       responses:
         "200":
           content:
@@ -84,7 +95,6 @@ paths:
       summary: Join any available game
       tags:
       - games
-      x-codegen-request-body-name: request
   /api/games/{gameID}:
     get:
       operationId: getGame
@@ -121,13 +131,6 @@ paths:
         required: true
         schema:
           type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/server.GiveUpRequest"
-        description: Give up request
-        required: true
       responses:
         "200":
           content:
@@ -156,7 +159,6 @@ paths:
       summary: Give up the game
       tags:
       - games
-      x-codegen-request-body-name: request
   /api/games/{gameID}/join:
     post:
       operationId: joinGame
@@ -167,13 +169,6 @@ paths:
         required: true
         schema:
           type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/server.JoinGameRequest"
-        description: Join game request
-        required: true
       responses:
         "200":
           content:
@@ -202,7 +197,6 @@ paths:
       summary: Join a waiting game
       tags:
       - games
-      x-codegen-request-body-name: request
   /api/games/{gameID}/move:
     post:
       operationId: makeMove
@@ -217,7 +211,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/server.MoveRequest"
+              $ref: "#/components/schemas/game.MakeMoveCommand"
         description: Move request
         required: true
       responses:
@@ -249,6 +243,44 @@ paths:
       tags:
       - games
       x-codegen-request-body-name: request
+  /api/games/{gameID}/quit:
+    post:
+      operationId: quitGame
+      parameters:
+      - description: Game ID
+        in: path
+        name: gameID
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/game.Game"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Bad Request
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Not Found
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/server.ErrorResponse"
+          description: Conflict
+      summary: Quit a game that is still waiting for an opponent
+      tags:
+      - games
   /api/users/login:
     post:
       operationId: login
@@ -264,7 +296,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/auth.TokenPair"
+                $ref: "#/components/schemas/server.AccessTokenResponse"
           description: OK
         "400":
           content:
@@ -291,26 +323,13 @@ paths:
   /api/users/refresh-token:
     post:
       operationId: refresh-token
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/server.UserRefreshTokenRequest"
-        description: User refresh token request
-        required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/auth.TokenPair"
+                $ref: "#/components/schemas/server.AccessTokenResponse"
           description: OK
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/server.ErrorResponse"
-          description: Bad Request
         "401":
           content:
             application/json:
@@ -326,7 +345,6 @@ paths:
       summary: Refresh access token using refresh token
       tags:
       - users
-      x-codegen-request-body-name: request
   /api/users/signup:
     post:
       operationId: signup
@@ -338,12 +356,12 @@ paths:
         description: User signup request
         required: true
       responses:
-        "201":
+        "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/auth.TokenPair"
-          description: Created
+                $ref: "#/components/schemas/server.AccessTokenResponse"
+          description: OK
         "400":
           content:
             application/json:
@@ -368,31 +386,28 @@ paths:
       x-codegen-request-body-name: request
 components:
   schemas:
-    auth.TokenPair:
-      example:
-        access_token: access_token
-        refresh_token: refresh_token
+    game.CreateGameCommand:
       properties:
-        access_token:
-          type: string
-        refresh_token:
-          type: string
+        private:
+          type: boolean
       type: object
     game.Game:
       example:
-        currentPlayerID: currentPlayerID
-        result: result
-        userID1: userID1
+        result: win
+        user_id1: user_id1
+        user_id2: user_id2
+        user_id2_last_seen: user_id2_last_seen
         private: true
-        userID2: userID2
-        winnerID: winnerID
+        user_id1_last_seen: user_id1_last_seen
+        current_player_id: current_player_id
+        winner_id: winner_id
         id: id
         board:
         - - 0
           - 0
         - - 0
           - 0
-        status: status
+        status: waiting
       properties:
         board:
           items:
@@ -400,7 +415,7 @@ components:
               type: integer
             type: array
           type: array
-        currentPlayerID:
+        current_player_id:
           description: user ID of the player whose turn it is
           type: string
         id:
@@ -409,81 +424,115 @@ components:
           description: optional field to indicate if the game is private or public
           type: boolean
         result:
-          type: string
+          $ref: "#/components/schemas/game.GameResult"
         status:
+          $ref: "#/components/schemas/game.GameStatus"
+        user_id1:
           type: string
-        userID1:
+        user_id1_last_seen:
+          description: |-
+            Presence timestamps, updated on every action and read by each player.
+            Pointers so they stay omitted until the corresponding player is seen.
           type: string
-        userID2:
+        user_id2:
           type: string
-        winnerID:
+        user_id2_last_seen:
+          type: string
+        winner_id:
           type: string
       type: object
-    server.CreateGameRequest:
+    game.GameResult:
+      enum:
+      - win
+      - draw
+      type: string
+      x-enum-varnames:
+      - ResultWin
+      - ResultDraw
+    game.GameStatus:
+      enum:
+      - waiting
+      - in_progress
+      - finished
+      - cancelled
+      type: string
+      x-enum-varnames:
+      - StatusWaiting
+      - StatusInProgress
+      - StatusFinished
+      - StatusCancelled
+    game.MakeMoveCommand:
       properties:
         gameID:
-          type: string
-        private:
-          type: boolean
-        userID:
-          type: string
-      type: object
-    server.ErrorResponse:
-      example:
-        error: error
-      properties:
-        error:
-          type: string
-      type: object
-    server.GiveUpRequest:
-      properties:
-        gameID:
-          type: string
-        userID:
-          type: string
-      type: object
-    server.JoinAnyGameRequest:
-      properties:
-        userID:
-          type: string
-      type: object
-    server.JoinGameRequest:
-      properties:
-        gameID:
-          type: string
-        userID:
-          type: string
-      type: object
-    server.MoveRequest:
-      properties:
-        gameID:
-          type: string
-        userID:
           type: string
         x:
           type: integer
         "y":
           type: integer
       type: object
+    server.AccessTokenResponse:
+      example:
+        access_token: access_token
+      properties:
+        access_token:
+          type: string
+      type: object
+    server.ErrorCode:
+      enum:
+      - ERR_GAME_NOT_FOUND
+      - ERR_GAME_NOT_WAITING
+      - ERR_GAME_NOT_ACTIVE
+      - ERR_NOT_YOUR_TURN
+      - ERR_NOT_IN_GAME
+      - ERR_CELL_OCCUPIED
+      - ERR_OUT_OF_BOUNDS
+      - ERR_PASSWORD_TOO_SHORT
+      - ERR_USER_ALREADY_EXISTS
+      - ERR_USER_NOT_FOUND
+      - ERR_INVALID_CREDENTIALS
+      - ERR_REFRESH_TOKEN_DELETED
+      - ERR_TOKEN_INVALID
+      - ERR_TOKEN_EXPIRED
+      - ERR_TOKEN_SIGNATURE_INVALID
+      type: string
+      x-enum-varnames:
+      - CodeGameNotFound
+      - CodeGameNotWaiting
+      - CodeGameNotActive
+      - CodeNotYourTurn
+      - CodeNotInGame
+      - CodeCellOccupied
+      - CodeOutOfBounds
+      - CodePasswordTooShort
+      - CodeUserAlreadyExists
+      - CodeUserNotFound
+      - CodeInvalidCredentials
+      - CodeRefreshTokenDeleted
+      - CodeTokenInvalid
+      - CodeTokenExpired
+      - CodeTokenSignatureInvalid
+    server.ErrorResponse:
+      example:
+        code: ERR_GAME_NOT_FOUND
+        error: error
+      properties:
+        code:
+          $ref: "#/components/schemas/server.ErrorCode"
+        error:
+          type: string
+      type: object
     server.UserLoginRequest:
       properties:
         password:
           type: string
-        userID:
-          type: string
-      type: object
-    server.UserRefreshTokenRequest:
-      properties:
-        refreshToken:
-          type: string
-        userID:
+        user_id:
           type: string
       type: object
     server.UserSignupRequest:
       properties:
         password:
           type: string
-        userID:
+        user_id:
           type: string
       type: object
 x-original-swagger-version: "2.0"

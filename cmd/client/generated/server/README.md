@@ -80,10 +80,12 @@ Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *GamesAPI* | [**CreateGame**](docs/GamesAPI.md#creategame) | **Post** /api/games | Create a new game
 *GamesAPI* | [**GetGame**](docs/GamesAPI.md#getgame) | **Get** /api/games/{gameID} | Get game state
+*GamesAPI* | [**GetLatestGame**](docs/GamesAPI.md#getlatestgame) | **Get** /api/games | Get the authenticated user&#39;s most recent game
 *GamesAPI* | [**GiveUpGame**](docs/GamesAPI.md#giveupgame) | **Post** /api/games/{gameID}/giveup | Give up the game
 *GamesAPI* | [**JoinAnyGame**](docs/GamesAPI.md#joinanygame) | **Post** /api/games/join | Join any available game
 *GamesAPI* | [**JoinGame**](docs/GamesAPI.md#joingame) | **Post** /api/games/{gameID}/join | Join a waiting game
 *GamesAPI* | [**MakeMove**](docs/GamesAPI.md#makemove) | **Post** /api/games/{gameID}/move | Make a move
+*GamesAPI* | [**QuitGame**](docs/GamesAPI.md#quitgame) | **Post** /api/games/{gameID}/quit | Quit a game that is still waiting for an opponent
 *UsersAPI* | [**Login**](docs/UsersAPI.md#login) | **Post** /api/users/login | Log in an existing user
 *UsersAPI* | [**RefreshToken**](docs/UsersAPI.md#refreshtoken) | **Post** /api/users/refresh-token | Refresh access token using refresh token
 *UsersAPI* | [**Signup**](docs/UsersAPI.md#signup) | **Post** /api/users/signup | Sign up a new user
@@ -91,16 +93,15 @@ Class | Method | HTTP request | Description
 
 ## Documentation For Models
 
- - [AuthTokenPair](docs/AuthTokenPair.md)
+ - [GameCreateGameCommand](docs/GameCreateGameCommand.md)
  - [GameGame](docs/GameGame.md)
- - [ServerCreateGameRequest](docs/ServerCreateGameRequest.md)
+ - [GameGameResult](docs/GameGameResult.md)
+ - [GameGameStatus](docs/GameGameStatus.md)
+ - [GameMakeMoveCommand](docs/GameMakeMoveCommand.md)
+ - [ServerAccessTokenResponse](docs/ServerAccessTokenResponse.md)
+ - [ServerErrorCode](docs/ServerErrorCode.md)
  - [ServerErrorResponse](docs/ServerErrorResponse.md)
- - [ServerGiveUpRequest](docs/ServerGiveUpRequest.md)
- - [ServerJoinAnyGameRequest](docs/ServerJoinAnyGameRequest.md)
- - [ServerJoinGameRequest](docs/ServerJoinGameRequest.md)
- - [ServerMoveRequest](docs/ServerMoveRequest.md)
  - [ServerUserLoginRequest](docs/ServerUserLoginRequest.md)
- - [ServerUserRefreshTokenRequest](docs/ServerUserRefreshTokenRequest.md)
  - [ServerUserSignupRequest](docs/ServerUserSignupRequest.md)
 
 

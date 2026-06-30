@@ -21,10 +21,12 @@ func GameRouter(r chi.Router, h *GameHandler, middlewares ...func(http.Handler) 
 		r.Use(LoggerMiddleware)
 
 		r.Post("/games", h.CreateGame)
+		r.Get("/games", h.GetLatestGame)
 		r.Post("/games/join", h.JoinAnyGame)
 		r.Post("/games/{gameID}/join", h.JoinGame)
 		r.Post("/games/{gameID}/move", h.MakeMove)
 		r.Post("/games/{gameID}/giveup", h.GiveUp)
+		r.Post("/games/{gameID}/quit", h.Quit)
 		r.Get("/games/{gameID}", h.GetGame)
 	})
 }

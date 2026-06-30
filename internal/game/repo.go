@@ -1,14 +1,17 @@
 package game
 
-import "errors"
+import (
+	"context"
+	"errors"
+)
 
 var ErrGameNotFound = errors.New("game not found")
 
 // GameRepo is the persistence interface for game state.
 type GameRepo interface {
-	Create(game *Game) error
-	FindByID(gameID string) (*Game, error)
-	Update(game *Game) error
-	FindLatestForUser(userID string) (*Game, error)
-	FindGameToJoin(userID string) (*Game, error) // optional method to find a waiting game for a user to join
+	Create(ctx context.Context, game *Game) error
+	FindByID(ctx context.Context, gameID string) (*Game, error)
+	Update(ctx context.Context, game *Game) error
+	FindLatestForUser(ctx context.Context, userID string) (*Game, error)
+	FindGameToJoin(ctx context.Context, userID string) (*Game, error)
 }

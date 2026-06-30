@@ -5,7 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Password** | Pointer to **string** |  | [optional] 
-**UserID** | Pointer to **string** |  | [optional] 
+**UserId** | Pointer to **string** |  | [optional] 
 
 ## Methods
 
@@ -51,30 +51,30 @@ SetPassword sets Password field to given value.
 
 HasPassword returns a boolean if a field has been set.
 
-### GetUserID
+### GetUserId
 
-`func (o *ServerUserLoginRequest) GetUserID() string`
+`func (o *ServerUserLoginRequest) GetUserId() string`
 
-GetUserID returns the UserID field if non-nil, zero value otherwise.
+GetUserId returns the UserId field if non-nil, zero value otherwise.
 
-### GetUserIDOk
+### GetUserIdOk
 
-`func (o *ServerUserLoginRequest) GetUserIDOk() (*string, bool)`
+`func (o *ServerUserLoginRequest) GetUserIdOk() (*string, bool)`
 
-GetUserIDOk returns a tuple with the UserID field if it's non-nil, zero value otherwise
+GetUserIdOk returns a tuple with the UserId field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetUserID
+### SetUserId
 
-`func (o *ServerUserLoginRequest) SetUserID(v string)`
+`func (o *ServerUserLoginRequest) SetUserId(v string)`
 
-SetUserID sets UserID field to given value.
+SetUserId sets UserId field to given value.
 
-### HasUserID
+### HasUserId
 
-`func (o *ServerUserLoginRequest) HasUserID() bool`
+`func (o *ServerUserLoginRequest) HasUserId() bool`
 
-HasUserID returns a boolean if a field has been set.
+HasUserId returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

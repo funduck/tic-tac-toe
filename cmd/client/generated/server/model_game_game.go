@@ -21,15 +21,18 @@ var _ MappedNullable = &GameGame{}
 type GameGame struct {
 	Board [][]int32 `json:"board,omitempty"`
 	// user ID of the player whose turn it is
-	CurrentPlayerID *string `json:"currentPlayerID,omitempty"`
-	Id *string `json:"id,omitempty"`
+	CurrentPlayerId *string `json:"current_player_id,omitempty"`
+	Id              *string `json:"id,omitempty"`
 	// optional field to indicate if the game is private or public
-	Private *bool `json:"private,omitempty"`
-	Result *string `json:"result,omitempty"`
-	Status *string `json:"status,omitempty"`
-	UserID1 *string `json:"userID1,omitempty"`
-	UserID2 *string `json:"userID2,omitempty"`
-	WinnerID *string `json:"winnerID,omitempty"`
+	Private *bool           `json:"private,omitempty"`
+	Result  *GameGameResult `json:"result,omitempty"`
+	Status  *GameGameStatus `json:"status,omitempty"`
+	UserId1 *string         `json:"user_id1,omitempty"`
+	// Presence timestamps, updated on every action and read by each player. Pointers so they stay omitted until the corresponding player is seen.
+	UserId1LastSeen *string `json:"user_id1_last_seen,omitempty"`
+	UserId2         *string `json:"user_id2,omitempty"`
+	UserId2LastSeen *string `json:"user_id2_last_seen,omitempty"`
+	WinnerId        *string `json:"winner_id,omitempty"`
 }
 
 // NewGameGame instantiates a new GameGame object
@@ -81,36 +84,36 @@ func (o *GameGame) SetBoard(v [][]int32) {
 	o.Board = v
 }
 
-// GetCurrentPlayerID returns the CurrentPlayerID field value if set, zero value otherwise.
-func (o *GameGame) GetCurrentPlayerID() string {
-	if o == nil || IsNil(o.CurrentPlayerID) {
+// GetCurrentPlayerId returns the CurrentPlayerId field value if set, zero value otherwise.
+func (o *GameGame) GetCurrentPlayerId() string {
+	if o == nil || IsNil(o.CurrentPlayerId) {
 		var ret string
 		return ret
 	}
-	return *o.CurrentPlayerID
+	return *o.CurrentPlayerId
 }
 
-// GetCurrentPlayerIDOk returns a tuple with the CurrentPlayerID field value if set, nil otherwise
+// GetCurrentPlayerIdOk returns a tuple with the CurrentPlayerId field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *GameGame) GetCurrentPlayerIDOk() (*string, bool) {
-	if o == nil || IsNil(o.CurrentPlayerID) {
+func (o *GameGame) GetCurrentPlayerIdOk() (*string, bool) {
+	if o == nil || IsNil(o.CurrentPlayerId) {
 		return nil, false
 	}
-	return o.CurrentPlayerID, true
+	return o.CurrentPlayerId, true
 }
 
-// HasCurrentPlayerID returns a boolean if a field has been set.
-func (o *GameGame) HasCurrentPlayerID() bool {
-	if o != nil && !IsNil(o.CurrentPlayerID) {
+// HasCurrentPlayerId returns a boolean if a field has been set.
+func (o *GameGame) HasCurrentPlayerId() bool {
+	if o != nil && !IsNil(o.CurrentPlayerId) {
 		return true
 	}
 
 	return false
 }
 
-// SetCurrentPlayerID gets a reference to the given string and assigns it to the CurrentPlayerID field.
-func (o *GameGame) SetCurrentPlayerID(v string) {
-	o.CurrentPlayerID = &v
+// SetCurrentPlayerId gets a reference to the given string and assigns it to the CurrentPlayerId field.
+func (o *GameGame) SetCurrentPlayerId(v string) {
+	o.CurrentPlayerId = &v
 }
 
 // GetId returns the Id field value if set, zero value otherwise.
@@ -178,9 +181,9 @@ func (o *GameGame) SetPrivate(v bool) {
 }
 
 // GetResult returns the Result field value if set, zero value otherwise.
-func (o *GameGame) GetResult() string {
+func (o *GameGame) GetResult() GameGameResult {
 	if o == nil || IsNil(o.Result) {
-		var ret string
+		var ret GameGameResult
 		return ret
 	}
 	return *o.Result
@@ -188,7 +191,7 @@ func (o *GameGame) GetResult() string {
 
 // GetResultOk returns a tuple with the Result field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *GameGame) GetResultOk() (*string, bool) {
+func (o *GameGame) GetResultOk() (*GameGameResult, bool) {
 	if o == nil || IsNil(o.Result) {
 		return nil, false
 	}
@@ -204,15 +207,15 @@ func (o *GameGame) HasResult() bool {
 	return false
 }
 
-// SetResult gets a reference to the given string and assigns it to the Result field.
-func (o *GameGame) SetResult(v string) {
+// SetResult gets a reference to the given GameGameResult and assigns it to the Result field.
+func (o *GameGame) SetResult(v GameGameResult) {
 	o.Result = &v
 }
 
 // GetStatus returns the Status field value if set, zero value otherwise.
-func (o *GameGame) GetStatus() string {
+func (o *GameGame) GetStatus() GameGameStatus {
 	if o == nil || IsNil(o.Status) {
-		var ret string
+		var ret GameGameStatus
 		return ret
 	}
 	return *o.Status
@@ -220,7 +223,7 @@ func (o *GameGame) GetStatus() string {
 
 // GetStatusOk returns a tuple with the Status field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *GameGame) GetStatusOk() (*string, bool) {
+func (o *GameGame) GetStatusOk() (*GameGameStatus, bool) {
 	if o == nil || IsNil(o.Status) {
 		return nil, false
 	}
@@ -236,109 +239,173 @@ func (o *GameGame) HasStatus() bool {
 	return false
 }
 
-// SetStatus gets a reference to the given string and assigns it to the Status field.
-func (o *GameGame) SetStatus(v string) {
+// SetStatus gets a reference to the given GameGameStatus and assigns it to the Status field.
+func (o *GameGame) SetStatus(v GameGameStatus) {
 	o.Status = &v
 }
 
-// GetUserID1 returns the UserID1 field value if set, zero value otherwise.
-func (o *GameGame) GetUserID1() string {
-	if o == nil || IsNil(o.UserID1) {
+// GetUserId1 returns the UserId1 field value if set, zero value otherwise.
+func (o *GameGame) GetUserId1() string {
+	if o == nil || IsNil(o.UserId1) {
 		var ret string
 		return ret
 	}
-	return *o.UserID1
+	return *o.UserId1
 }
 
-// GetUserID1Ok returns a tuple with the UserID1 field value if set, nil otherwise
+// GetUserId1Ok returns a tuple with the UserId1 field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *GameGame) GetUserID1Ok() (*string, bool) {
-	if o == nil || IsNil(o.UserID1) {
+func (o *GameGame) GetUserId1Ok() (*string, bool) {
+	if o == nil || IsNil(o.UserId1) {
 		return nil, false
 	}
-	return o.UserID1, true
+	return o.UserId1, true
 }
 
-// HasUserID1 returns a boolean if a field has been set.
-func (o *GameGame) HasUserID1() bool {
-	if o != nil && !IsNil(o.UserID1) {
+// HasUserId1 returns a boolean if a field has been set.
+func (o *GameGame) HasUserId1() bool {
+	if o != nil && !IsNil(o.UserId1) {
 		return true
 	}
 
 	return false
 }
 
-// SetUserID1 gets a reference to the given string and assigns it to the UserID1 field.
-func (o *GameGame) SetUserID1(v string) {
-	o.UserID1 = &v
+// SetUserId1 gets a reference to the given string and assigns it to the UserId1 field.
+func (o *GameGame) SetUserId1(v string) {
+	o.UserId1 = &v
 }
 
-// GetUserID2 returns the UserID2 field value if set, zero value otherwise.
-func (o *GameGame) GetUserID2() string {
-	if o == nil || IsNil(o.UserID2) {
+// GetUserId1LastSeen returns the UserId1LastSeen field value if set, zero value otherwise.
+func (o *GameGame) GetUserId1LastSeen() string {
+	if o == nil || IsNil(o.UserId1LastSeen) {
 		var ret string
 		return ret
 	}
-	return *o.UserID2
+	return *o.UserId1LastSeen
 }
 
-// GetUserID2Ok returns a tuple with the UserID2 field value if set, nil otherwise
+// GetUserId1LastSeenOk returns a tuple with the UserId1LastSeen field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *GameGame) GetUserID2Ok() (*string, bool) {
-	if o == nil || IsNil(o.UserID2) {
+func (o *GameGame) GetUserId1LastSeenOk() (*string, bool) {
+	if o == nil || IsNil(o.UserId1LastSeen) {
 		return nil, false
 	}
-	return o.UserID2, true
+	return o.UserId1LastSeen, true
 }
 
-// HasUserID2 returns a boolean if a field has been set.
-func (o *GameGame) HasUserID2() bool {
-	if o != nil && !IsNil(o.UserID2) {
+// HasUserId1LastSeen returns a boolean if a field has been set.
+func (o *GameGame) HasUserId1LastSeen() bool {
+	if o != nil && !IsNil(o.UserId1LastSeen) {
 		return true
 	}
 
 	return false
 }
 
-// SetUserID2 gets a reference to the given string and assigns it to the UserID2 field.
-func (o *GameGame) SetUserID2(v string) {
-	o.UserID2 = &v
+// SetUserId1LastSeen gets a reference to the given string and assigns it to the UserId1LastSeen field.
+func (o *GameGame) SetUserId1LastSeen(v string) {
+	o.UserId1LastSeen = &v
 }
 
-// GetWinnerID returns the WinnerID field value if set, zero value otherwise.
-func (o *GameGame) GetWinnerID() string {
-	if o == nil || IsNil(o.WinnerID) {
+// GetUserId2 returns the UserId2 field value if set, zero value otherwise.
+func (o *GameGame) GetUserId2() string {
+	if o == nil || IsNil(o.UserId2) {
 		var ret string
 		return ret
 	}
-	return *o.WinnerID
+	return *o.UserId2
 }
 
-// GetWinnerIDOk returns a tuple with the WinnerID field value if set, nil otherwise
+// GetUserId2Ok returns a tuple with the UserId2 field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *GameGame) GetWinnerIDOk() (*string, bool) {
-	if o == nil || IsNil(o.WinnerID) {
+func (o *GameGame) GetUserId2Ok() (*string, bool) {
+	if o == nil || IsNil(o.UserId2) {
 		return nil, false
 	}
-	return o.WinnerID, true
+	return o.UserId2, true
 }
 
-// HasWinnerID returns a boolean if a field has been set.
-func (o *GameGame) HasWinnerID() bool {
-	if o != nil && !IsNil(o.WinnerID) {
+// HasUserId2 returns a boolean if a field has been set.
+func (o *GameGame) HasUserId2() bool {
+	if o != nil && !IsNil(o.UserId2) {
 		return true
 	}
 
 	return false
 }
 
-// SetWinnerID gets a reference to the given string and assigns it to the WinnerID field.
-func (o *GameGame) SetWinnerID(v string) {
-	o.WinnerID = &v
+// SetUserId2 gets a reference to the given string and assigns it to the UserId2 field.
+func (o *GameGame) SetUserId2(v string) {
+	o.UserId2 = &v
+}
+
+// GetUserId2LastSeen returns the UserId2LastSeen field value if set, zero value otherwise.
+func (o *GameGame) GetUserId2LastSeen() string {
+	if o == nil || IsNil(o.UserId2LastSeen) {
+		var ret string
+		return ret
+	}
+	return *o.UserId2LastSeen
+}
+
+// GetUserId2LastSeenOk returns a tuple with the UserId2LastSeen field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *GameGame) GetUserId2LastSeenOk() (*string, bool) {
+	if o == nil || IsNil(o.UserId2LastSeen) {
+		return nil, false
+	}
+	return o.UserId2LastSeen, true
+}
+
+// HasUserId2LastSeen returns a boolean if a field has been set.
+func (o *GameGame) HasUserId2LastSeen() bool {
+	if o != nil && !IsNil(o.UserId2LastSeen) {
+		return true
+	}
+
+	return false
+}
+
+// SetUserId2LastSeen gets a reference to the given string and assigns it to the UserId2LastSeen field.
+func (o *GameGame) SetUserId2LastSeen(v string) {
+	o.UserId2LastSeen = &v
+}
+
+// GetWinnerId returns the WinnerId field value if set, zero value otherwise.
+func (o *GameGame) GetWinnerId() string {
+	if o == nil || IsNil(o.WinnerId) {
+		var ret string
+		return ret
+	}
+	return *o.WinnerId
+}
+
+// GetWinnerIdOk returns a tuple with the WinnerId field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *GameGame) GetWinnerIdOk() (*string, bool) {
+	if o == nil || IsNil(o.WinnerId) {
+		return nil, false
+	}
+	return o.WinnerId, true
+}
+
+// HasWinnerId returns a boolean if a field has been set.
+func (o *GameGame) HasWinnerId() bool {
+	if o != nil && !IsNil(o.WinnerId) {
+		return true
+	}
+
+	return false
+}
+
+// SetWinnerId gets a reference to the given string and assigns it to the WinnerId field.
+func (o *GameGame) SetWinnerId(v string) {
+	o.WinnerId = &v
 }
 
 func (o GameGame) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -350,8 +417,8 @@ func (o GameGame) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Board) {
 		toSerialize["board"] = o.Board
 	}
-	if !IsNil(o.CurrentPlayerID) {
-		toSerialize["currentPlayerID"] = o.CurrentPlayerID
+	if !IsNil(o.CurrentPlayerId) {
+		toSerialize["current_player_id"] = o.CurrentPlayerId
 	}
 	if !IsNil(o.Id) {
 		toSerialize["id"] = o.Id
@@ -365,14 +432,20 @@ func (o GameGame) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Status) {
 		toSerialize["status"] = o.Status
 	}
-	if !IsNil(o.UserID1) {
-		toSerialize["userID1"] = o.UserID1
+	if !IsNil(o.UserId1) {
+		toSerialize["user_id1"] = o.UserId1
 	}
-	if !IsNil(o.UserID2) {
-		toSerialize["userID2"] = o.UserID2
+	if !IsNil(o.UserId1LastSeen) {
+		toSerialize["user_id1_last_seen"] = o.UserId1LastSeen
 	}
-	if !IsNil(o.WinnerID) {
-		toSerialize["winnerID"] = o.WinnerID
+	if !IsNil(o.UserId2) {
+		toSerialize["user_id2"] = o.UserId2
+	}
+	if !IsNil(o.UserId2LastSeen) {
+		toSerialize["user_id2_last_seen"] = o.UserId2LastSeen
+	}
+	if !IsNil(o.WinnerId) {
+		toSerialize["winner_id"] = o.WinnerId
 	}
 	return toSerialize, nil
 }
@@ -412,5 +485,3 @@ func (v *NullableGameGame) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

@@ -2,22 +2,16 @@
 
 A multiplayer Tic Tac Toe game server and client implementation in Go, featuring JWT-based authentication, automatic matchmaking, and a RESTful API.
 
-**Contents:**
-- [Quick Start](#quick-start)
-    * [Running the server](#running-the-server)
-    * [Running the client](#running-the-client)
-    * [Running tests](#running-tests)
-- [Protocol Design](#protocol-design)
-- [Authentication](#authentication)
-- [Development](#development)
-- [Future Improvements](#future-improvements)
+![demo](./demo.gif)
 
 [Task description](./TASK.md)
 
 **Implemented**:
 - Registration and login with password hashing
 - JWT authentication with access and refresh tokens
-- Simple matchmaking and game state management
+- Simple matchmaking: join to known game or join to any waiting game
+- Game flow: create, join, make moves, poll for updates, finish
+- Opponent status updates and automatic win if opponent is AFK for too long
 - CLI client with polling-based updates
 - In-memory data storage (users, games)
 - Unit, integration and concurrency tests
@@ -32,6 +26,8 @@ A multiplayer Tic Tac Toe game server and client implementation in Go, featuring
 
 - Go 1.26.2 or higher
 - `make` (optional, for convenience commands)
+
+***make** commands are used for convenience, while the server and client can also be run directly with `go run` or a built binary.*
 
 ### Installation
 
@@ -58,21 +54,7 @@ Server listening on :8080
 
 You can access the Swagger UI documentation at: `http://localhost:8080/swagger/index.html`
 
-### Running Server In Docker
-Build
-```bash
-make build-server-docker
-```
-
-Run
-```bash
-make start-server-docker
-```
-
 ### Running the Client
-**Important!** Client's code is separated from the server's, so it can be run only from `cmd/client` directory.
-
-#### Basic scenario for 2 players
 Open **two separate terminals** and run a client in each:
 
 **Terminal 1 (Player 1):**
@@ -92,55 +74,29 @@ The clients will:
 4. Display the game board after each move
 5. Show the final result (win/loss/draw)
 
-### Advanced scenarios
-**Join Any Waiting Game or Create a New One**
-
-```bash
-make start-client USER=alice PASSWORD=alicepass
-```
-
-**Connecting To Specific Game**
-
-```bash
-make start-client USER=alice PASSWORD=alicepass ARGS="-game <gameID>"
-```
-
-Thorough Client development seems to be an overkill for such a task, so the behavior is simplified:
-- If `-game` is provided the client will attempt to join that specific game. If the game does not exist or is already full, it will return an error.
-- If `-game` is not provided, the client looks up for the latest game in `waiting` status and joins it. If no such game exists, it creates a new one.
-- If client was in the game, on restart it will ignore that game unless `-game` parameter is provided.
-
-**Debug mode**
-
-Add `DEBUG=true` to the command to enable debug logging in the client
-
-```bash
-make start-client USER=alice PASSWORD=alicepass DEBUG=true
-```
-
 ### Running Tests
 Tests include:
 * unit tests
 * integration tests for API endpoints
 * concurrency tests
 
-Run all tests with verbose output:
-
 ```bash
 make tests
-```
-
-Run tests with race detection:
-
-```bash
 make test-race
+make test-coverage
 ```
+
+## Domain Design
+Core domain types:
+- **Board** type is responsible for moves validation and win/draw detection. Size can be configured per game.
+- **Game** type is responsible for game state management, including players, turns, and AFK detection.
+- **GameService** is responsible for matchmaking, game creation, and game actions. For persistence it uses GameRepository interface.
 
 ## Protocol Design
 
 ### Overview
 
-The system uses a **REST API over HTTP** with **polling-based state updates**. Clients communicate with the server via HTTP POST/GET requests, and poll the game state periodically to detect changes (opponent moves, game completion, etc.).
+The system uses a **REST API over HTTP** with **polling-based state updates**. Clients communicate with the server via HTTP POST/GET requests, and poll the game state periodically to ensure their presence in the game and detect changes (opponent moves, game completion, etc.).
 
 ### Game Flow
 
@@ -184,7 +140,7 @@ Server -->> ClientA: 200 OK (finished, winner: alice)
 ```mermaid
 sequenceDiagram
 Client ->> Server: POST /api/users/signup (userID, password)
-Server -->> Client: 201 Created + {access_token, refresh_token}
+Server -->> Client: 200 OK + {access_token, refresh_token}
 
 Note over Client, Server: Client stores tokens securely (in memory for CLI, localStorage for web)
 ```
@@ -225,11 +181,10 @@ Note over Client, Server: This flow ensures seamless user experience even with s
 
 ### Polling Mechanism
 
-Clients use a **polling strategy** to monitor game state changes:
+Clients use a **polling strategy** to monitor game state changes and ensure presence:
 
 - **Wait for opponent:** Poll every 1 second until `status` changes from `"waiting"` to `"in_progress"`
 - **Wait for turn:** Poll every 1 second until `currentPlayerID` matches your user ID
-- **Check game end:** Poll every 1 second until `status` becomes `"finished"`
 
 This approach is simple and stateless but introduces latency (up to 1 second for updates). Future improvements could include WebSockets or Server-Sent Events for real-time updates.
 
@@ -239,17 +194,12 @@ All errors return HTTP status codes with a JSON body:
 
 ```json
 {
-  "error": "error message description"
+  "error": "Game not found",
+  "code": "ERR_GAME_NOT_FOUND"
 }
 ```
 
-Common status codes:
-- `400 Bad Request` - Invalid input, occupied cell, out-of-turn move, etc.
-- `401 Unauthorized` - Missing or invalid authentication token
-- `404 Not Found` - Game or user not found
-- `409 Conflict` - User already exists (signup)
-- `500 Internal Server Error` - Unexpected server error
-
+So, the client can handle errors gracefully and display user-friendly messages.
 
 ## Authentication
 
@@ -274,22 +224,24 @@ The server uses **JWT tokens** for stateless authentication. This design choice 
 The system uses a **dual-token approach**:
 
 1. **Access Token**
-   - Lifetime: **10 seconds**
+   - Lifetime: **10 seconds** for demonstration purposes
    - Used for authenticating game API requests
    - Short-lived to minimize risk if leaked
    - Claims: `user_id`, `exp`, `iat`, `nbf`, `iss`
+   - Stored in the client memory (CLI) or localStorage (web)
 
 2. **Refresh Token**
    - Lifetime: **7 days**
    - Used to obtain new access tokens without re-login
    - Stored hashed on server side for security
    - Cannot be used for game operations
+   - Stored in a secure HTTP-only cookie (web) or in memory (CLI)
 
 ### Security Considerations
 
 - **Password storage:** Passwords are hashed using **bcrypt** (cost factor 10) before storage
 - **Minimum password length:** 6 characters
-- **Token signing:** HMAC-SHA256 with a secret key (configurable)
+- **Token signing:** HMAC-SHA256 with a secret key
 - **Refresh token storage:** Refresh tokens are hashed (SHA256) before storage to prevent misuse if database is compromised
 - **Token validation:** Every protected endpoint validates the Bearer token signature, expiration, and issuer
 
@@ -315,10 +267,22 @@ make swag-init
 make codegen-client
 ```
 
-## Future Improvements
+### Configuration
 
-Additionally to bonus features mentioned in the [task](./TASK.md), here are some future improvements:
-* If `-game` parameter is not passed to client, it looks up for the last played unfinished game and joins it instead of creating a new one. This allows for easier testing and quicker game start without needing to copy-paste game IDs.
-* Store in memory the last timestamp when user *touched* the game and provide this info to the opponent. It allows to detect if opponent is AFK and maybe implement some timeout-based game end in the future.
-* Matchmaking consurrency-safe without locks, either use SQL database `SELECT FOR UPDATE` or implement in-memory queue of waiting games with atomic operations or channels.
-* Pass context to services and repository when real database is used to allow for better cancellation and timeouts.
+The server is configured via environment variables. All are optional and fall
+back to development-friendly defaults (a warning is logged when a default is
+used for a security-sensitive setting).
+
+| Variable        | Default          | Description                                                           |
+| --------------- | ---------------- | ----------------------------------------------------------------------|
+| `JWT_SECRET`    | `default-secret` | Secret key used to sign JWT tokens**                                  |
+| `AFK_TIMEOUT`   | `10s`            | Idle period after which an active player auto-wins against an AFK opponent. Accepts Go durations (e.g. `1m`).  |
+| `SECURE_COOKIE` | _(off)_          | Set to `true` to mark the refresh-token cookie as `Secure` (HTTPS only). Leave unset for plain-HTTP local dev. |
+| `TOKEN_LIFETIME` | `10s` | Lifetime of access tokens. Accepts Go durations (e.g. `30s`, `1m`). |
+| `REFRESH_TOKEN_LIFETIME` | `7d` | Lifetime of refresh tokens. Accepts Go durations (e.g. `24h`, `7d`). |
+
+The client reads one environment variable:
+
+| Variable | Default | Description                                                                          |
+| -------- | ------- | ------------------------------------------------------------------------------------ |
+| `DEBUG`  | _(off)_ | Set to `true` to enable logging into file. |

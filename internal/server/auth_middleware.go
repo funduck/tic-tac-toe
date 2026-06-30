@@ -1,8 +1,8 @@
 package server
 
 import (
-	"bytes"
-	"encoding/json"
+	"context"
+	"errors"
 	"net/http"
 	"regexp"
 
@@ -15,18 +15,23 @@ type TokenService interface {
 
 var reAuthorization = regexp.MustCompile(`^Bearer (.+)$`)
 
-type dtoWithUserID struct {
-	UserID string `json:"userID"`
+type contextKey string
+
+const userIDContextKey contextKey = "userID"
+
+func userIDFromContext(ctx context.Context) string {
+	v, _ := ctx.Value(userIDContextKey).(string)
+	return v
 }
 
-// AuthMiddleware is a middleware that handles authentication
+// AuthMiddleware handles authentication and propagates the user ID to the request context for downstream handlers.
 func AuthMiddleware(tokenService TokenService) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Extract authorization header and validate JWT token
 			authHeader := r.Header.Get("Authorization")
 			if authHeader == "" {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				writeError(w, http.StatusUnauthorized, errors.New("unauthorized"))
 				return
 			}
 
@@ -36,34 +41,21 @@ func AuthMiddleware(tokenService TokenService) func(next http.Handler) http.Hand
 			if len(matches) == 2 {
 				tokenStr = matches[1]
 			} else {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				writeError(w, http.StatusUnauthorized, errors.New("unauthorized"))
 				return
 			}
 
 			// Validate JWT token
 			token, err := tokenService.ValidateToken(tokenStr)
 			if err != nil {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				writeDomainError(w, err)
 				return
 			}
 			userID := token.UserID
 
-			// check if body contains userID and if so, validate it matches the token's userID
-			if r.Body != nil && r.Header.Get("Content-Type") == "application/json" {
-				bodyBytes, err := getBodyBytes(r)
-				if err != nil {
-					http.Error(w, "Failed to read body", http.StatusBadRequest)
-					return
-				}
-
-				var dto dtoWithUserID
-				if err := json.NewDecoder(bytes.NewBuffer(bodyBytes)).Decode(&dto); err == nil {
-					if dto.UserID != userID {
-						http.Error(w, "Unauthorized", http.StatusUnauthorized)
-						return
-					}
-				}
-			}
+			// Propagate userID to the request context for downstream handlers
+			ctx := context.WithValue(r.Context(), userIDContextKey, userID)
+			r = r.WithContext(ctx)
 
 			// If valid, call the next handler
 			next.ServeHTTP(w, r)

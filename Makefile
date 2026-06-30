@@ -1,15 +1,28 @@
 install:
 	go mod download
 	cd cmd/client && go mod download
+
+install-tools:
 	go install github.com/swaggo/swag/cmd/swag@latest
 	go install github.com/air-verse/air@latest
+	go install golang.org/x/tools/cmd/goimports@latest
+	#Please install golangci-lint manually: https://golangci-lint.run/docs/welcome/install/local/
+
+lint:
+	goimports -w .
+	gofmt -s -w .
+	go vet -v ./...
+	golangci-lint run --timeout 5m --tests=false
 
 tests:
 	go test -v ./...
-	go vet ./...
 
 test-race:
 	go test -race -v ./...
+
+test-coverage:
+	go test -coverprofile=coverage.out ./...
+	go tool cover -html=coverage.out
 
 swag-init:
 	swag init -g cmd/server/main.go

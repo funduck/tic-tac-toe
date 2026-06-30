@@ -2,16 +2,23 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"os"
+	"time"
 
+	openapi "github.com/GIT_USER_ID/GIT_REPO_ID"
 	"github.com/funduck/tic-tac-toe/client/lib"
-	"github.com/funduck/tic-tac-toe/internal/game"
 )
 
 // CreateOrJoinGame handles game creation or joining
 func CreateOrJoinGame(ctx context.Context, gameSvc *lib.GameService, displaySvc *lib.DisplayService) error {
 	if lib.GameID == "" {
+		// Reconnect to the latest game the user is still in, if any.
+		if g, ok := reconnectToLatestGame(ctx, gameSvc, displaySvc); ok {
+			lib.GameState = g
+			return nil
+		}
+
 		// Try join any game first
 		g, err := gameSvc.JoinAnyGame(ctx, lib.UserID)
 		if err == nil {
@@ -20,10 +27,20 @@ func CreateOrJoinGame(ctx context.Context, gameSvc *lib.GameService, displaySvc 
 			return nil
 		}
 
-		// Create new game
+		// Only fall through to create if no game was available; surface real errors.
+		var apiErr *lib.APIError
+		if !errors.As(err, &apiErr) || !apiErr.HasCode(openapi.CodeGameNotFound) {
+			return fmt.Errorf("failed to join any game: %w", err)
+		}
+
+		// Create new game, then join it as the first player.
 		g, err = gameSvc.CreateGame(ctx, lib.UserID, lib.Private)
 		if err != nil {
 			return fmt.Errorf("failed to create game: %w", err)
+		}
+		g, err = gameSvc.JoinGame(ctx, g.GetID(), lib.UserID)
+		if err != nil {
+			return fmt.Errorf("failed to join created game: %w", err)
 		}
 		lib.GameState = g
 		displaySvc.PrintInfo(fmt.Sprintf("Game created: %s\nShare this ID with your opponent.", g.GetID()))
@@ -41,18 +58,71 @@ func CreateOrJoinGame(ctx context.Context, gameSvc *lib.GameService, displaySvc 
 	return nil
 }
 
-func WaitForOpponent(ctx context.Context, gameSvc *lib.GameService, displaySvc *lib.DisplayService) error {
-	g := lib.GameState
-	if g.GetStatus() == game.StatusWaiting { // TODO safe types for enums
-		displaySvc.PrintInfo("⏳ Waiting for opponent to join...")
-		g, err := gameSvc.PollUntil(ctx, g.GetID(), func(g *lib.Game) bool {
-			return g.GetStatus() == game.StatusInProgress
-		}, 5)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "❌ Error: failed to wait for opponent: %v\n", err)
-			os.Exit(1)
-		}
-		lib.GameState = g
+// reconnectToLatestGame looks up the user's most recent game and returns it when
+// it is still joinable (waiting for an opponent or already in progress), so the
+// client can resume after a restart without needing the -game flag. A missing
+// game, a finished/cancelled game, or any transient error simply means "no
+// reconnect" and the caller falls through to the normal join/create flow.
+func reconnectToLatestGame(ctx context.Context, gameSvc *lib.GameService, displaySvc *lib.DisplayService) (*lib.Game, bool) {
+	g, err := gameSvc.GetLatestGame(ctx)
+	if err != nil {
+		return nil, false
 	}
-	return nil
+	switch g.GetStatus() {
+	case openapi.StatusWaiting, openapi.StatusInProgress:
+		displaySvc.PrintInfo(fmt.Sprintf("Reconnected to game: %s", g.GetID()))
+		return g, true
+	default:
+		return nil, false
+	}
+}
+
+// ErrUserQuit signals that the player chose to leave a still-waiting game with
+// 'q'. Callers treat it as a clean exit rather than an error.
+var ErrUserQuit = errors.New("user quit")
+
+// WaitForOpponent blocks until an opponent joins (status becomes in_progress),
+// polling the server while concurrently reading stdin so the player can leave
+// with 'q'. Leaving cancels the game via the quit endpoint and returns
+// ErrUserQuit.
+func WaitForOpponent(ctx context.Context, gameSvc *lib.GameService, displaySvc *lib.DisplayService, input <-chan string) error {
+	if lib.GameState.GetStatus() != openapi.StatusWaiting {
+		return nil
+	}
+	displaySvc.PrintInfo("⏳ Waiting for opponent to join (press 'q' to leave)...")
+
+	ticker := time.NewTicker(pollInterval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+
+		case line, ok := <-input:
+			if !ok {
+				input = nil // stdin closed; keep polling for an opponent
+				continue
+			}
+			if _, _, giveUp, _ := lib.ParseMove(line); giveUp {
+				if _, err := gameSvc.Quit(ctx, lib.GameState.GetID(), lib.UserID); err != nil {
+					return fmt.Errorf("failed to quit: %w", err)
+				}
+				return ErrUserQuit
+			}
+
+		case <-ticker.C:
+			g, err := gameSvc.GetGame(ctx, lib.GameState.GetID())
+			if err != nil {
+				if lib.IsSessionError(err) {
+					return err
+				}
+				continue // transient; retry on the next tick
+			}
+			if g.GetStatus() == openapi.StatusInProgress {
+				lib.GameState = g
+				return nil
+			}
+		}
+	}
 }

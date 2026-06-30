@@ -11,10 +11,11 @@ package openapi
 
 import (
 	"context"
+	"testing"
+
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
-	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
 )
 
 func Test_openapi_GamesAPIService(t *testing.T) {
@@ -24,7 +25,7 @@ func Test_openapi_GamesAPIService(t *testing.T) {
 
 	t.Run("Test GamesAPIService CreateGame", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		resp, httpRes, err := apiClient.GamesAPI.CreateGame(context.Background()).Execute()
 
@@ -36,7 +37,7 @@ func Test_openapi_GamesAPIService(t *testing.T) {
 
 	t.Run("Test GamesAPIService GetGame", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		var gameID string
 
@@ -48,9 +49,21 @@ func Test_openapi_GamesAPIService(t *testing.T) {
 
 	})
 
+	t.Run("Test GamesAPIService GetLatestGame", func(t *testing.T) {
+
+		t.Skip("skip test") // remove to run test
+
+		resp, httpRes, err := apiClient.GamesAPI.GetLatestGame(context.Background()).Execute()
+
+		require.Nil(t, err)
+		require.NotNil(t, resp)
+		assert.Equal(t, 200, httpRes.StatusCode)
+
+	})
+
 	t.Run("Test GamesAPIService GiveUpGame", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		var gameID string
 
@@ -64,7 +77,7 @@ func Test_openapi_GamesAPIService(t *testing.T) {
 
 	t.Run("Test GamesAPIService JoinAnyGame", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		resp, httpRes, err := apiClient.GamesAPI.JoinAnyGame(context.Background()).Execute()
 
@@ -76,7 +89,7 @@ func Test_openapi_GamesAPIService(t *testing.T) {
 
 	t.Run("Test GamesAPIService JoinGame", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		var gameID string
 
@@ -90,11 +103,25 @@ func Test_openapi_GamesAPIService(t *testing.T) {
 
 	t.Run("Test GamesAPIService MakeMove", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		var gameID string
 
 		resp, httpRes, err := apiClient.GamesAPI.MakeMove(context.Background(), gameID).Execute()
+
+		require.Nil(t, err)
+		require.NotNil(t, resp)
+		assert.Equal(t, 200, httpRes.StatusCode)
+
+	})
+
+	t.Run("Test GamesAPIService QuitGame", func(t *testing.T) {
+
+		t.Skip("skip test") // remove to run test
+
+		var gameID string
+
+		resp, httpRes, err := apiClient.GamesAPI.QuitGame(context.Background(), gameID).Execute()
 
 		require.Nil(t, err)
 		require.NotNil(t, resp)

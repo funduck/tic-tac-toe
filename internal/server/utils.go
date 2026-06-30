@@ -1,9 +1,7 @@
 package server
 
 import (
-	"bytes"
 	"encoding/json"
-	"io"
 	"log/slog"
 	"net/http"
 )
@@ -27,23 +25,14 @@ func writeJSON(w http.ResponseWriter, status int, v any) {
 	json.NewEncoder(w).Encode(v) //nolint:errcheck
 }
 
-func writeError(w http.ResponseWriter, status int, err error) {
-	writeJSON(w, status, ErrorResponse{Error: err.Error()})
+// writeDomainError writes a JSON error response with status and code both resolved from the registry.
+func writeDomainError(w http.ResponseWriter, err error) {
+	status, code := lookupError(err)
+	writeJSON(w, status, ErrorResponse{Error: err.Error(), Code: code})
 }
 
-func getBodyBytes(r *http.Request) ([]byte, error) {
-	// 1. Read the entire body into memory
-	bodyBytes, err := io.ReadAll(r.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	// Crucial step: Ensure the original body is closed to prevent leaks
-	r.Body.Close()
-
-	// 2. RESTORE the body immediately so it's safe for later
-	r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
-
-	// 3. Return the body bytes
-	return bodyBytes, nil
+// writeError writes a JSON error response with a caller-supplied status; code is still looked up and attached.
+func writeError(w http.ResponseWriter, status int, err error) {
+	_, code := lookupError(err)
+	writeJSON(w, status, ErrorResponse{Error: err.Error(), Code: code})
 }

@@ -1,11 +1,9 @@
 basePath: /
 definitions:
-  auth.TokenPair:
+  game.CreateGameCommand:
     properties:
-      access_token:
-        type: string
-      refresh_token:
-        type: string
+      private:
+        type: boolean
     type: object
   game.Game:
     properties:
@@ -15,7 +13,7 @@ definitions:
             type: integer
           type: array
         type: array
-      currentPlayerID:
+      current_player_id:
         description: user ID of the player whose turn it is
         type: string
       id:
@@ -24,79 +22,110 @@ definitions:
         description: optional field to indicate if the game is private or public
         type: boolean
       result:
-        type: string
+        $ref: '#/definitions/game.GameResult'
       status:
+        $ref: '#/definitions/game.GameStatus'
+      user_id1:
         type: string
-      userID1:
+      user_id1_last_seen:
+        description: |-
+          Presence timestamps, updated on every action and read by each player.
+          Pointers so they stay omitted until the corresponding player is seen.
         type: string
-      userID2:
+      user_id2:
         type: string
-      winnerID:
+      user_id2_last_seen:
+        type: string
+      winner_id:
         type: string
     type: object
-  server.CreateGameRequest:
+  game.GameResult:
+    enum:
+    - win
+    - draw
+    type: string
+    x-enum-varnames:
+    - ResultWin
+    - ResultDraw
+  game.GameStatus:
+    enum:
+    - waiting
+    - in_progress
+    - finished
+    - cancelled
+    type: string
+    x-enum-varnames:
+    - StatusWaiting
+    - StatusInProgress
+    - StatusFinished
+    - StatusCancelled
+  game.MakeMoveCommand:
     properties:
       gameID:
-        type: string
-      private:
-        type: boolean
-      userID:
-        type: string
-    type: object
-  server.ErrorResponse:
-    properties:
-      error:
-        type: string
-    type: object
-  server.GiveUpRequest:
-    properties:
-      gameID:
-        type: string
-      userID:
-        type: string
-    type: object
-  server.JoinAnyGameRequest:
-    properties:
-      userID:
-        type: string
-    type: object
-  server.JoinGameRequest:
-    properties:
-      gameID:
-        type: string
-      userID:
-        type: string
-    type: object
-  server.MoveRequest:
-    properties:
-      gameID:
-        type: string
-      userID:
         type: string
       x:
         type: integer
       "y":
         type: integer
     type: object
+  server.AccessTokenResponse:
+    properties:
+      access_token:
+        type: string
+    type: object
+  server.ErrorCode:
+    enum:
+    - ERR_GAME_NOT_FOUND
+    - ERR_GAME_NOT_WAITING
+    - ERR_GAME_NOT_ACTIVE
+    - ERR_NOT_YOUR_TURN
+    - ERR_NOT_IN_GAME
+    - ERR_CELL_OCCUPIED
+    - ERR_OUT_OF_BOUNDS
+    - ERR_PASSWORD_TOO_SHORT
+    - ERR_USER_ALREADY_EXISTS
+    - ERR_USER_NOT_FOUND
+    - ERR_INVALID_CREDENTIALS
+    - ERR_REFRESH_TOKEN_DELETED
+    - ERR_TOKEN_INVALID
+    - ERR_TOKEN_EXPIRED
+    - ERR_TOKEN_SIGNATURE_INVALID
+    type: string
+    x-enum-varnames:
+    - CodeGameNotFound
+    - CodeGameNotWaiting
+    - CodeGameNotActive
+    - CodeNotYourTurn
+    - CodeNotInGame
+    - CodeCellOccupied
+    - CodeOutOfBounds
+    - CodePasswordTooShort
+    - CodeUserAlreadyExists
+    - CodeUserNotFound
+    - CodeInvalidCredentials
+    - CodeRefreshTokenDeleted
+    - CodeTokenInvalid
+    - CodeTokenExpired
+    - CodeTokenSignatureInvalid
+  server.ErrorResponse:
+    properties:
+      code:
+        $ref: '#/definitions/server.ErrorCode'
+      error:
+        type: string
+    type: object
   server.UserLoginRequest:
     properties:
       password:
         type: string
-      userID:
-        type: string
-    type: object
-  server.UserRefreshTokenRequest:
-    properties:
-      refreshToken:
-        type: string
-      userID:
+      user_id:
         type: string
     type: object
   server.UserSignupRequest:
     properties:
       password:
         type: string
-      userID:
+      user_id:
         type: string
     type: object
 host: localhost:8080
@@ -107,6 +136,22 @@ info:
   version: "1.0"
 paths:
   /api/games:
+    get:
+      operationId: getLatestGame
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/game.Game'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Get the authenticated user's most recent game
+      tags:
+      - games
     post:
       consumes:
       - application/json
@@ -117,7 +162,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/server.CreateGameRequest'
+          $ref: '#/definitions/game.CreateGameCommand'
       produces:
       - application/json
       responses:
@@ -165,8 +210,6 @@ paths:
       - games
   /api/games/{gameID}/giveup:
     post:
-      consumes:
-      - application/json
       operationId: giveUpGame
       parameters:
       - description: Game ID
@@ -174,12 +217,6 @@ paths:
         name: gameID
         required: true
         type: string
-      - description: Give up request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/server.GiveUpRequest'
       produces:
       - application/json
       responses:
@@ -204,8 +241,6 @@ paths:
       - games
   /api/games/{gameID}/join:
     post:
-      consumes:
-      - application/json
       operationId: joinGame
       parameters:
       - description: Game ID
@@ -213,12 +248,6 @@ paths:
         name: gameID
         required: true
         type: string
-      - description: Join game request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/server.JoinGameRequest'
       produces:
       - application/json
       responses:
@@ -257,7 +286,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/server.MoveRequest'
+          $ref: '#/definitions/game.MakeMoveCommand'
       produces:
       - application/json
       responses:
@@ -280,18 +309,40 @@ paths:
       summary: Make a move
       tags:
       - games
+  /api/games/{gameID}/quit:
+    post:
+      operationId: quitGame
+      parameters:
+      - description: Game ID
+        in: path
+        name: gameID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/game.Game'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Quit a game that is still waiting for an opponent
+      tags:
+      - games
   /api/games/join:
     post:
-      consumes:
-      - application/json
       operationId: joinAnyGame
-      parameters:
-      - description: Join any game request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/server.JoinAnyGameRequest'
       produces:
       - application/json
       responses:
@@ -332,7 +383,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/auth.TokenPair'
+            $ref: '#/definitions/server.AccessTokenResponse'
         "400":
           description: Bad Request
           schema:
@@ -353,24 +404,13 @@ paths:
       consumes:
       - application/json
       operationId: refresh-token
-      parameters:
-      - description: User refresh token request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/server.UserRefreshTokenRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/auth.TokenPair'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/server.ErrorResponse'
+            $ref: '#/definitions/server.AccessTokenResponse'
         "401":
           description: Unauthorized
           schema:
@@ -397,10 +437,10 @@ paths:
       produces:
       - application/json
       responses:
-        "201":
-          description: Created
+        "200":
+          description: OK
           schema:
-            $ref: '#/definitions/auth.TokenPair'
+            $ref: '#/definitions/server.AccessTokenResponse'
         "400":
           description: Bad Request
           schema:

@@ -1,13 +1,17 @@
 package user
 
-import "testing"
+import (
+	"context"
+	"testing"
+)
 
 func TestMemoryUserRepo_FindByID(t *testing.T) {
+	ctx := context.Background()
 	repo := NewMemoryUserRepo()
 	user := &User{ID: "user1", Password: "pass"}
-	repo.Save(user)
+	repo.Save(ctx, user)
 
-	found, err := repo.FindByID("user1")
+	found, err := repo.FindByID(ctx, "user1")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -20,14 +24,15 @@ func TestMemoryUserRepo_FindByID(t *testing.T) {
 }
 
 func TestMemoryUserRepo_Save(t *testing.T) {
+	ctx := context.Background()
 	repo := NewMemoryUserRepo()
 	user := &User{ID: "user2", Password: "pass"}
-	err := repo.Save(user)
+	err := repo.Save(ctx, user)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	found, err := repo.FindByID("user2")
+	found, err := repo.FindByID(ctx, "user2")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

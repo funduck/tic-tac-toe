@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"os"
@@ -19,7 +20,7 @@ func NewMockUserRepo() *MockUserRepo {
 	}
 }
 
-func (r *MockUserRepo) FindByID(id string) (*User, error) {
+func (r *MockUserRepo) FindByID(ctx context.Context, id string) (*User, error) {
 	user, exists := r.users[id]
 	if !exists {
 		return nil, nil
@@ -27,12 +28,13 @@ func (r *MockUserRepo) FindByID(id string) (*User, error) {
 	return user, nil
 }
 
-func (r *MockUserRepo) Save(user *User) error {
+func (r *MockUserRepo) Save(ctx context.Context, user *User) error {
 	r.users[user.ID] = user
 	return nil
 }
 
 func TestAuthService_Signup(t *testing.T) {
+	ctx := context.Background()
 	userRepo := NewMockUserRepo()
 	tokenService := auth.NewAccessTokenService("secret", "my-awesome-app")
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
@@ -43,7 +45,7 @@ func TestAuthService_Signup(t *testing.T) {
 	userID := "testuser"
 	password := "password123"
 
-	user, tokenPair, err := authService.Signup(userID, password)
+	user, tokenPair, err := authService.Signup(ctx, userID, password)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -65,6 +67,7 @@ func TestAuthService_Signup(t *testing.T) {
 }
 
 func TestAuthService_Signup_Errors(t *testing.T) {
+	ctx := context.Background()
 	userRepo := NewMockUserRepo()
 	tokenService := auth.NewAccessTokenService("secret", "my-awesome-app")
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
@@ -73,7 +76,7 @@ func TestAuthService_Signup_Errors(t *testing.T) {
 	authService := NewUserService(userRepo, tokenService, logger)
 
 	// prepare existing user
-	_, _, err := authService.Signup("testuser", "password123")
+	_, _, err := authService.Signup(ctx, "testuser", "password123")
 	if err != nil {
 		t.Fatalf("unexpected error during initial signup: %v", err)
 	}
@@ -88,7 +91,7 @@ func TestAuthService_Signup_Errors(t *testing.T) {
 		{"user already exists", "testuser", "password123", ErrUserAlreadyExists},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			_, _, err := authService.Signup(tc.userID, tc.password)
+			_, _, err := authService.Signup(ctx, tc.userID, tc.password)
 			if !errors.Is(err, tc.expectedError) {
 				t.Fatalf("expected error %v, got %v", tc.expectedError, err)
 			}
@@ -97,6 +100,7 @@ func TestAuthService_Signup_Errors(t *testing.T) {
 }
 
 func TestAuthService_Login(t *testing.T) {
+	ctx := context.Background()
 	userRepo := NewMockUserRepo()
 	tokenService := auth.NewAccessTokenService("secret", "my-awesome-app")
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
@@ -107,13 +111,13 @@ func TestAuthService_Login(t *testing.T) {
 	// First, sign up a user
 	userID := "testuser"
 	password := "password123"
-	user, _, err := authService.Signup(userID, password)
+	user, _, err := authService.Signup(ctx, userID, password)
 	if err != nil {
 		t.Fatalf("unexpected error during signup: %v", err)
 	}
 
 	// Now, try to log in with the same credentials
-	loggedInUser, tokenPair, err := authService.Login(userID, password)
+	loggedInUser, tokenPair, err := authService.Login(ctx, userID, password)
 	if err != nil {
 		t.Fatalf("unexpected error during login: %v", err)
 	}
@@ -135,6 +139,7 @@ func TestAuthService_Login(t *testing.T) {
 }
 
 func TestAuthService_Login_Errors(t *testing.T) {
+	ctx := context.Background()
 	userRepo := NewMockUserRepo()
 	tokenService := auth.NewAccessTokenService("secret", "my-awesome-app")
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
@@ -143,7 +148,7 @@ func TestAuthService_Login_Errors(t *testing.T) {
 	authService := NewUserService(userRepo, tokenService, logger)
 
 	// prepare existing user
-	_, _, err := authService.Signup("testuser", "password123")
+	_, _, err := authService.Signup(ctx, "testuser", "password123")
 	if err != nil {
 		t.Fatalf("unexpected error during signup: %v", err)
 	}
@@ -158,7 +163,7 @@ func TestAuthService_Login_Errors(t *testing.T) {
 		{"wrong password", "testuser", "wrongpassword", ErrInvalidCredentials},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			_, _, err := authService.Login(tc.userID, tc.password)
+			_, _, err := authService.Login(ctx, tc.userID, tc.password)
 			if !errors.Is(err, tc.expectedError) {
 				t.Fatalf("expected error %v, got %v", tc.expectedError, err)
 			}
@@ -167,6 +172,7 @@ func TestAuthService_Login_Errors(t *testing.T) {
 }
 
 func TestAuthService_RefreshToken(t *testing.T) {
+	ctx := context.Background()
 	userRepo := NewMockUserRepo()
 	tokenService := auth.NewAccessTokenService("secret", "my-awesome-app")
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
@@ -177,13 +183,13 @@ func TestAuthService_RefreshToken(t *testing.T) {
 	// First, sign up a user
 	userID := "testuser"
 	password := "password123"
-	user, tokenPair, err := authService.Signup(userID, password)
+	user, tokenPair, err := authService.Signup(ctx, userID, password)
 	if err != nil {
 		t.Fatalf("unexpected error during signup: %v", err)
 	}
 
 	// Now, try to refresh the token using the refresh token
-	refreshedUser, newTokenPair, err := authService.RefreshToken(userID, tokenPair.RefreshToken)
+	refreshedUser, newTokenPair, err := authService.RefreshToken(ctx, tokenPair.RefreshToken)
 	if err != nil {
 		t.Fatalf("unexpected error during token refresh: %v", err)
 	}
@@ -205,6 +211,7 @@ func TestAuthService_RefreshToken(t *testing.T) {
 }
 
 func TestAuthService_RefreshToken_Errors(t *testing.T) {
+	ctx := context.Background()
 	userRepo := NewMockUserRepo()
 	tokenService := auth.NewAccessTokenService("secret", "my-awesome-app")
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
@@ -213,14 +220,14 @@ func TestAuthService_RefreshToken_Errors(t *testing.T) {
 	authService := NewUserService(userRepo, tokenService, logger)
 
 	// prepare valid refresh token
-	_, tokenPair, err := authService.Signup("testuser", "password123")
+	_, tokenPair, err := authService.Signup(ctx, "testuser", "password123")
 	if err != nil {
 		t.Fatalf("unexpected error during signup: %v", err)
 	}
 	userRepo.users["testuser"] = nil // Simulate user not found for the refresh token test
 
 	// prepare existing user but refresh token hash will not match
-	_, tokenPair2, err := authService.Signup("testuser2", "password123")
+	_, tokenPair2, err := authService.Signup(ctx, "testuser2", "password123")
 	if err != nil {
 		t.Fatalf("unexpected error during signup: %v", err)
 	}
@@ -228,17 +235,15 @@ func TestAuthService_RefreshToken_Errors(t *testing.T) {
 
 	for _, tc := range []struct {
 		name          string
-		userID        string
 		refreshToken  string
 		expectedError error
 	}{
-		{"invalid refresh token", "testuser", "invalidtoken", auth.ErrTokenInvalid},
-		{"token user not matches user", "nonexistent", tokenPair.RefreshToken, ErrUserNotFound},
-		{"user not found", "testuser", tokenPair.RefreshToken, ErrUserNotFound},
-		{"refresh token hash mismatch", "testuser2", tokenPair2.RefreshToken, ErrRefreshTokenDeleted},
+		{"invalid refresh token", "invalidtoken", auth.ErrTokenInvalid},
+		{"user not found", tokenPair.RefreshToken, ErrUserNotFound},
+		{"refresh token hash mismatch", tokenPair2.RefreshToken, ErrRefreshTokenDeleted},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			_, _, err := authService.RefreshToken(tc.userID, tc.refreshToken)
+			_, _, err := authService.RefreshToken(ctx, tc.refreshToken)
 			if !errors.Is(err, tc.expectedError) {
 				t.Fatalf("expected error %v, got %v", tc.expectedError, err)
 			}

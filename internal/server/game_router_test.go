@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"log/slog"
@@ -17,32 +18,42 @@ import (
 func TestGameRouter(t *testing.T) {
 	// Create a simple mock service for routing tests
 	mockSvc := &mockGameService{
-		createGameFunc: func() (*game.Game, error) {
+		createGameFunc: func(ctx context.Context, userID string, cmd game.CreateGameCommand) (*game.Game, error) {
 			return game.NewGame("test-id"), nil
 		},
-		joinGameFunc: func(gameID, userID string) (*game.Game, error) {
-			g := game.NewGame(gameID)
+		joinGameFunc: func(ctx context.Context, userID string, cmd game.JoinGameCommand) (*game.Game, error) {
+			g := game.NewGame(cmd.GameID)
 			g.UserID1 = userID
 			return g, nil
 		},
-		makeMoveFunc: func(gameID, userID string, x, y int) (*game.Game, error) {
-			g := game.NewGameInProgress(gameID, userID, "user-2")
-			g.Board[x][y] = 1
+		makeMoveFunc: func(ctx context.Context, userID string, cmd game.MakeMoveCommand) (*game.Game, error) {
+			g := game.NewGameInProgress(cmd.GameID, userID, "user-2")
+			g.Board[cmd.X][cmd.Y] = 1
 			return g, nil
 		},
-		giveUpFunc: func(gameID, userID string) (*game.Game, error) {
-			g := game.NewGameInProgress(gameID, userID, "user-2")
+		giveUpFunc: func(ctx context.Context, userID string, cmd game.GiveUpCommand) (*game.Game, error) {
+			g := game.NewGameInProgress(cmd.GameID, userID, "user-2")
 			g.Status = game.StatusFinished
 			return g, nil
 		},
-		getGameFunc: func(gameID string) (*game.Game, error) {
-			return game.NewGameInProgress(gameID, "user-1", "user-2"), nil
+		getGameFunc: func(ctx context.Context, userID string, cmd game.GetGameCommand) (*game.Game, error) {
+			return game.NewGameInProgress(cmd.GameID, "user-1", "user-2"), nil
+		},
+		getLatestGameFunc: func(ctx context.Context, userID string) (*game.Game, error) {
+			return game.NewGameInProgress("latest-game", userID, "user-2"), nil
 		},
 	}
 
 	handler := NewGameHandler(mockSvc, slog.New(slog.NewTextHandler(io.Discard, nil)))
-	// Create router without any additional middlewares (clean test environment)
+	// Inject a fixed test userID simulating what AuthMiddleware does in production
+	testUserMiddleware := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := context.WithValue(r.Context(), userIDContextKey, "test-user")
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
 	router := chi.NewRouter()
+	router.Use(testUserMiddleware)
 	router.Route("/api", func(r chi.Router) {
 		GameRouter(r, handler)
 	})
@@ -59,7 +70,7 @@ func TestGameRouter(t *testing.T) {
 			name:           "POST /api/games - create game",
 			method:         http.MethodPost,
 			path:           "/api/games",
-			body:           CreateGameRequest{},
+			body:           game.CreateGameCommand{},
 			expectedStatus: http.StatusCreated,
 			checkResponse: func(t *testing.T, resp *http.Response) {
 				var g game.Game
@@ -70,12 +81,10 @@ func TestGameRouter(t *testing.T) {
 			},
 		},
 		{
-			name:   "POST /api/games/{gameID}/join - join game",
-			method: http.MethodPost,
-			path:   "/api/games/game-123/join",
-			body: JoinGameRequest{
-				UserID: "user-456",
-			},
+			name:           "POST /api/games/{gameID}/join - join game",
+			method:         http.MethodPost,
+			path:           "/api/games/game-123/join",
+			body:           nil,
 			expectedStatus: http.StatusOK,
 			checkResponse: func(t *testing.T, resp *http.Response) {
 				var g game.Game
@@ -83,8 +92,8 @@ func TestGameRouter(t *testing.T) {
 				if g.ID != "game-123" {
 					t.Errorf("expected game ID 'game-123' (from URL), got '%s'", g.ID)
 				}
-				if g.UserID1 != "user-456" {
-					t.Errorf("expected UserID1 'user-456', got '%s'", g.UserID1)
+				if g.UserID1 != "test-user" {
+					t.Errorf("expected UserID1 'test-user' (from context), got '%s'", g.UserID1)
 				}
 			},
 		},
@@ -92,10 +101,9 @@ func TestGameRouter(t *testing.T) {
 			name:   "POST /api/games/{gameID}/move - make move",
 			method: http.MethodPost,
 			path:   "/api/games/game-456/move",
-			body: MoveRequest{
-				UserID: "user-1",
-				X:      0,
-				Y:      0,
+			body: game.MakeMoveCommand{
+				X: 0,
+				Y: 0,
 			},
 			expectedStatus: http.StatusOK,
 			checkResponse: func(t *testing.T, resp *http.Response) {
@@ -110,12 +118,10 @@ func TestGameRouter(t *testing.T) {
 			},
 		},
 		{
-			name:   "POST /api/games/{gameID}/giveup - give up",
-			method: http.MethodPost,
-			path:   "/api/games/game-789/giveup",
-			body: GiveUpRequest{
-				UserID: "user-1",
-			},
+			name:           "POST /api/games/{gameID}/giveup - give up",
+			method:         http.MethodPost,
+			path:           "/api/games/game-789/giveup",
+			body:           nil,
 			expectedStatus: http.StatusOK,
 			checkResponse: func(t *testing.T, resp *http.Response) {
 				var g game.Game
@@ -151,12 +157,21 @@ func TestGameRouter(t *testing.T) {
 			checkResponse:  nil,
 		},
 		{
-			name:           "GET /api/games - wrong method",
+			name:           "GET /api/games - latest game for user",
 			method:         http.MethodGet,
 			path:           "/api/games",
 			body:           nil,
-			expectedStatus: http.StatusMethodNotAllowed,
-			checkResponse:  nil,
+			expectedStatus: http.StatusOK,
+			checkResponse: func(t *testing.T, resp *http.Response) {
+				var g game.Game
+				json.NewDecoder(resp.Body).Decode(&g)
+				if g.ID != "latest-game" {
+					t.Errorf("expected game ID 'latest-game', got '%s'", g.ID)
+				}
+				if g.UserID1 != "test-user" {
+					t.Errorf("expected UserID1 'test-user' (from context), got '%s'", g.UserID1)
+				}
+			},
 		},
 	}
 
@@ -190,7 +205,7 @@ func TestGameRouter(t *testing.T) {
 // TestGameRouterWithMiddleware verifies that custom middlewares can be injected
 func TestGameRouterWithMiddleware(t *testing.T) {
 	mockSvc := &mockGameService{
-		createGameFunc: func() (*game.Game, error) {
+		createGameFunc: func(ctx context.Context, userID string, cmd game.CreateGameCommand) (*game.Game, error) {
 			return game.NewGame("test-id"), nil
 		},
 	}

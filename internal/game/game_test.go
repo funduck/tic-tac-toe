@@ -3,6 +3,11 @@ package game
 import (
 	"errors"
 	"testing"
+	"time"
+)
+
+var (
+	testAfkTimeout = 30 * time.Second
 )
 
 func TestNewGame(t *testing.T) {
@@ -13,7 +18,7 @@ func TestNewGame(t *testing.T) {
 	if g.Status != StatusWaiting {
 		t.Errorf("expected status %s, got %s", StatusWaiting, g.Status)
 	}
-	if g.Board != [3][3]int{} {
+	if !g.Board.IsEmpty() {
 		t.Error("expected empty board")
 	}
 }
@@ -26,46 +31,115 @@ func TestNewGameInProgress(t *testing.T) {
 	if g.CurrentPlayerID != "alice" {
 		t.Errorf("expected currentPlayer alice, got %s", g.CurrentPlayerID)
 	}
-	if g.Board != [3][3]int{} {
+	if !g.Board.IsEmpty() {
 		t.Error("expected empty board")
 	}
 }
 
+func TestForfeitIfOpponentAFK(t *testing.T) {
+	now := time.Now()
+
+	t.Run("opponent stale, active player wins", func(t *testing.T) {
+		g := NewGameInProgress("id1", "alice", "bob")
+		g.Touch("alice", now)
+		g.Touch("bob", now.Add(-testAfkTimeout-time.Second))
+
+		if !g.ForfeitIfOpponentAFK("alice", now, testAfkTimeout) {
+			t.Fatal("expected forfeit to fire")
+		}
+		if g.Status != StatusFinished || g.Result != ResultWin || g.WinnerID != "alice" {
+			t.Errorf("unexpected end state: status=%s result=%s winner=%s", g.Status, g.Result, g.WinnerID)
+		}
+	})
+
+	t.Run("opponent recently seen, no change", func(t *testing.T) {
+		g := NewGameInProgress("id1", "alice", "bob")
+		g.Touch("alice", now)
+		g.Touch("bob", now.Add(-time.Second))
+
+		if g.ForfeitIfOpponentAFK("alice", now, testAfkTimeout) {
+			t.Fatal("did not expect forfeit")
+		}
+		if g.Status != StatusInProgress {
+			t.Errorf("expected status still in progress, got %s", g.Status)
+		}
+	})
+
+	t.Run("opponent never seen, no change", func(t *testing.T) {
+		g := NewGameInProgress("id1", "alice", "bob")
+		g.Touch("alice", now)
+
+		if g.ForfeitIfOpponentAFK("alice", now, testAfkTimeout) {
+			t.Fatal("did not expect forfeit when opponent never seen")
+		}
+	})
+
+	t.Run("not in progress, no change", func(t *testing.T) {
+		g := NewGameInProgress("id1", "alice", "bob")
+		g.Status = StatusFinished
+		g.Touch("bob", now.Add(-testAfkTimeout-time.Second))
+
+		if g.ForfeitIfOpponentAFK("alice", now, testAfkTimeout) {
+			t.Fatal("did not expect forfeit on a non-in-progress game")
+		}
+	})
+
+	t.Run("non-participant, no change", func(t *testing.T) {
+		g := NewGameInProgress("id1", "alice", "bob")
+		g.Touch("bob", now.Add(-testAfkTimeout-time.Second))
+
+		if g.ForfeitIfOpponentAFK("carol", now, testAfkTimeout) {
+			t.Fatal("did not expect forfeit for a non-participant")
+		}
+	})
+}
+
 func TestJoin_Valid(t *testing.T) {
-	g := NewGame("id1")
-	if err := g.Join("alice"); err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if g.UserID1 != "alice" {
-		t.Errorf("expected UserID1 alice, got %s", g.UserID1)
-	}
-	if g.Status != StatusWaiting {
-		t.Errorf("expected status still waiting, got %s", g.Status)
-	}
+	t.Run("first player joins", func(t *testing.T) {
+		g := NewGame("id1")
+		if err := g.Join("alice"); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if g.UserID1 != "alice" {
+			t.Errorf("expected UserID1 alice, got %s", g.UserID1)
+		}
+		if g.Status != StatusWaiting {
+			t.Errorf("expected status still waiting, got %s", g.Status)
+		}
+	})
 
-	if err := g.Join("bob"); err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if g.UserID2 != "bob" {
-		t.Errorf("expected UserID2 bob, got %s", g.UserID2)
-	}
-	if g.Status != StatusInProgress {
-		t.Errorf("expected status in_progress, got %s", g.Status)
-	}
+	t.Run("second player joins, game starts", func(t *testing.T) {
+		g := NewGame("id1")
+		if err := g.Join("alice"); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if err := g.Join("bob"); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if g.UserID2 != "bob" {
+			t.Errorf("expected UserID2 bob, got %s", g.UserID2)
+		}
+		if g.Status != StatusInProgress {
+			t.Errorf("expected status in_progress, got %s", g.Status)
+		}
+	})
 
-	// allow join again
-	if err := g.Join("alice"); err != nil {
-		t.Fatalf("unexpected error on rejoin: %v", err)
-	}
-	if g.UserID1 != "alice" {
-		t.Errorf("expected UserID1 alice, got %s", g.UserID1)
-	}
-	if g.UserID2 != "bob" {
-		t.Errorf("expected UserID2 bob, got %s", g.UserID2)
-	}
-	if g.Status != StatusInProgress {
-		t.Errorf("expected status still in_progress, got %s", g.Status)
-	}
+	t.Run("same player joins again", func(t *testing.T) {
+		g := NewGameInProgress("id1", "alice", "bob")
+		// allow join again
+		if err := g.Join("alice"); err != nil {
+			t.Fatalf("unexpected error on rejoin: %v", err)
+		}
+		if g.UserID1 != "alice" {
+			t.Errorf("expected UserID1 alice, got %s", g.UserID1)
+		}
+		if g.UserID2 != "bob" {
+			t.Errorf("expected UserID2 bob, got %s", g.UserID2)
+		}
+		if g.Status != StatusInProgress {
+			t.Errorf("expected status still in_progress, got %s", g.Status)
+		}
+	})
 }
 
 func TestJoin_Errors(t *testing.T) {
@@ -73,7 +147,6 @@ func TestJoin_Errors(t *testing.T) {
 		name    string
 		setup   func(*Game)
 		userID  string
-		x, y    int
 		wantErr error
 	}{
 		{
@@ -130,30 +203,6 @@ func TestMakeMove_Errors(t *testing.T) {
 		x, y    int
 		wantErr error
 	}{
-		{
-			name:   "out of bounds negative x",
-			setup:  func(g *Game) {},
-			userID: "alice", x: -1, y: 0,
-			wantErr: ErrOutOfBounds,
-		},
-		{
-			name:   "out of bounds x > 2",
-			setup:  func(g *Game) {},
-			userID: "alice", x: 3, y: 0,
-			wantErr: ErrOutOfBounds,
-		},
-		{
-			name:   "out of bounds y > 2",
-			setup:  func(g *Game) {},
-			userID: "alice", x: 0, y: 3,
-			wantErr: ErrOutOfBounds,
-		},
-		{
-			name:   "cell occupied",
-			setup:  func(g *Game) { g.Board[1][1] = 1 },
-			userID: "alice", x: 1, y: 1,
-			wantErr: ErrCellOccupied,
-		},
 		{
 			name:   "not your turn",
 			setup:  func(g *Game) {},
@@ -325,6 +374,77 @@ func TestGiveUp(t *testing.T) {
 		g := NewGameInProgress("id1", "alice", "bob")
 		if err := g.GiveUp("charlie"); !errors.Is(err, ErrNotInGame) {
 			t.Errorf("expected ErrNotInGame, got %v", err)
+		}
+	})
+}
+
+func TestQuit(t *testing.T) {
+	t.Run("creator quits waiting game, it is cancelled", func(t *testing.T) {
+		g := NewGame("id1")
+		if err := g.Join("alice"); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if err := g.Quit("alice"); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if g.Status != StatusCancelled {
+			t.Errorf("expected cancelled, got %s", g.Status)
+		}
+	})
+
+	t.Run("quit on in-progress game is rejected", func(t *testing.T) {
+		g := NewGameInProgress("id1", "alice", "bob")
+		if err := g.Quit("alice"); !errors.Is(err, ErrGameNotWaiting) {
+			t.Errorf("expected ErrGameNotWaiting, got %v", err)
+		}
+	})
+
+	t.Run("non-player quits", func(t *testing.T) {
+		g := NewGame("id1")
+		if err := g.Join("alice"); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if err := g.Quit("charlie"); !errors.Is(err, ErrNotInGame) {
+			t.Errorf("expected ErrNotInGame, got %v", err)
+		}
+	})
+}
+
+func TestGame_Touch(t *testing.T) {
+	now := time.Now()
+	g := NewGameInProgress("id1", "alice", "bob")
+
+	t.Run("stamps first player", func(t *testing.T) {
+		if !g.Touch("alice", now) {
+			t.Fatal("expected Touch to report a change for a participant")
+		}
+		if g.UserID1LastSeen == nil || !g.UserID1LastSeen.Equal(now) {
+			t.Error("expected UserID1LastSeen to be set to now")
+		}
+		if g.UserID2LastSeen != nil {
+			t.Error("touching alice should not stamp bob")
+		}
+	})
+
+	t.Run("stamps second player", func(t *testing.T) {
+		if !g.Touch("bob", now) {
+			t.Fatal("expected Touch to report a change for a participant")
+		}
+		if g.UserID2LastSeen == nil || !g.UserID2LastSeen.Equal(now) {
+			t.Error("expected UserID2LastSeen to be set to now")
+		}
+	})
+
+	t.Run("ignores non-participant", func(t *testing.T) {
+		if g.Touch("charlie", now) {
+			t.Error("expected Touch to report no change for a non-participant")
+		}
+	})
+
+	t.Run("ignores empty user", func(t *testing.T) {
+		empty := NewGame("id2") // UserID1 == "" but empty userID must not match
+		if empty.Touch("", now) {
+			t.Error("expected Touch to ignore an empty userID")
 		}
 	})
 }

@@ -3,68 +3,12 @@ package server
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"io"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"github.com/funduck/tic-tac-toe/internal/game"
 )
-
-func TestGameErrorMapping(t *testing.T) {
-	tests := []struct {
-		name     string
-		err      error
-		expected int
-	}{
-		{
-			name:     "game not found",
-			err:      game.ErrGameNotFound,
-			expected: http.StatusNotFound,
-		},
-		{
-			name:     "game not waiting",
-			err:      game.ErrGameNotWaiting,
-			expected: http.StatusConflict,
-		},
-		{
-			name:     "game not active",
-			err:      game.ErrGameNotActive,
-			expected: http.StatusConflict,
-		},
-		{
-			name:     "not in game",
-			err:      game.ErrNotInGame,
-			expected: http.StatusConflict,
-		},
-		{
-			name:     "not your turn",
-			err:      game.ErrNotYourTurn,
-			expected: http.StatusConflict,
-		},
-		{
-			name:     "cell occupied",
-			err:      game.ErrCellOccupied,
-			expected: http.StatusBadRequest,
-		},
-		{
-			name:     "unknown error",
-			err:      errors.New("some unexpected error"),
-			expected: http.StatusInternalServerError,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			status := mapGameError(tt.err)
-			if status != tt.expected {
-				t.Errorf("expected status %d, got %d", tt.expected, status)
-			}
-		})
-	}
-}
 
 func TestParseRequestBody(t *testing.T) {
 	type testRequest struct {

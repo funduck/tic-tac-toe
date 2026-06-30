@@ -16,6 +16,30 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/api/games": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "games"
+                ],
+                "summary": "Get the authenticated user's most recent game",
+                "operationId": "getLatestGame",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/game.Game"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/server.ErrorResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "consumes": [
                     "application/json"
@@ -35,7 +59,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/server.CreateGameRequest"
+                            "$ref": "#/definitions/game.CreateGameCommand"
                         }
                     }
                 ],
@@ -69,9 +93,6 @@ const docTemplate = `{
         },
         "/api/games/join": {
             "post": {
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -80,17 +101,6 @@ const docTemplate = `{
                 ],
                 "summary": "Join any available game",
                 "operationId": "joinAnyGame",
-                "parameters": [
-                    {
-                        "description": "Join any game request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/server.JoinAnyGameRequest"
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -156,9 +166,6 @@ const docTemplate = `{
         },
         "/api/games/{gameID}/giveup": {
             "post": {
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -174,15 +181,6 @@ const docTemplate = `{
                         "name": "gameID",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "description": "Give up request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/server.GiveUpRequest"
-                        }
                     }
                 ],
                 "responses": {
@@ -215,9 +213,6 @@ const docTemplate = `{
         },
         "/api/games/{gameID}/join": {
             "post": {
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -233,15 +228,6 @@ const docTemplate = `{
                         "name": "gameID",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "description": "Join game request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/server.JoinGameRequest"
-                        }
                     }
                 ],
                 "responses": {
@@ -299,8 +285,55 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/server.MoveRequest"
+                            "$ref": "#/definitions/game.MakeMoveCommand"
                         }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/game.Game"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/server.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/server.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/server.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/games/{gameID}/quit": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "games"
+                ],
+                "summary": "Quit a game that is still waiting for an opponent",
+                "operationId": "quitGame",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Game ID",
+                        "name": "gameID",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -359,7 +392,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/auth.TokenPair"
+                            "$ref": "#/definitions/server.AccessTokenResponse"
                         }
                     },
                     "400": {
@@ -396,28 +429,11 @@ const docTemplate = `{
                 ],
                 "summary": "Refresh access token using refresh token",
                 "operationId": "refresh-token",
-                "parameters": [
-                    {
-                        "description": "User refresh token request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/server.UserRefreshTokenRequest"
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/auth.TokenPair"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/server.ErrorResponse"
+                            "$ref": "#/definitions/server.AccessTokenResponse"
                         }
                     },
                     "401": {
@@ -460,10 +476,10 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created",
+                    "200": {
+                        "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/auth.TokenPair"
+                            "$ref": "#/definitions/server.AccessTokenResponse"
                         }
                     },
                     "400": {
@@ -489,14 +505,11 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "auth.TokenPair": {
+        "game.CreateGameCommand": {
             "type": "object",
             "properties": {
-                "access_token": {
-                    "type": "string"
-                },
-                "refresh_token": {
-                    "type": "string"
+                "private": {
+                    "type": "boolean"
                 }
             }
         },
@@ -512,7 +525,7 @@ const docTemplate = `{
                         }
                     }
                 },
-                "currentPlayerID": {
+                "current_player_id": {
                     "description": "user ID of the player whose turn it is",
                     "type": "string"
                 },
@@ -524,81 +537,59 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "result": {
-                    "type": "string"
+                    "$ref": "#/definitions/game.GameResult"
                 },
                 "status": {
+                    "$ref": "#/definitions/game.GameStatus"
+                },
+                "user_id1": {
                     "type": "string"
                 },
-                "userID1": {
+                "user_id1_last_seen": {
+                    "description": "Presence timestamps, updated on every action and read by each player.\nPointers so they stay omitted until the corresponding player is seen.",
                     "type": "string"
                 },
-                "userID2": {
+                "user_id2": {
                     "type": "string"
                 },
-                "winnerID": {
+                "user_id2_last_seen": {
+                    "type": "string"
+                },
+                "winner_id": {
                     "type": "string"
                 }
             }
         },
-        "server.CreateGameRequest": {
+        "game.GameResult": {
+            "type": "string",
+            "enum": [
+                "win",
+                "draw"
+            ],
+            "x-enum-varnames": [
+                "ResultWin",
+                "ResultDraw"
+            ]
+        },
+        "game.GameStatus": {
+            "type": "string",
+            "enum": [
+                "waiting",
+                "in_progress",
+                "finished",
+                "cancelled"
+            ],
+            "x-enum-varnames": [
+                "StatusWaiting",
+                "StatusInProgress",
+                "StatusFinished",
+                "StatusCancelled"
+            ]
+        },
+        "game.MakeMoveCommand": {
             "type": "object",
             "properties": {
                 "gameID": {
-                    "type": "string"
-                },
-                "private": {
-                    "type": "boolean"
-                },
-                "userID": {
-                    "type": "string"
-                }
-            }
-        },
-        "server.ErrorResponse": {
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string"
-                }
-            }
-        },
-        "server.GiveUpRequest": {
-            "type": "object",
-            "properties": {
-                "gameID": {
-                    "type": "string"
-                },
-                "userID": {
-                    "type": "string"
-                }
-            }
-        },
-        "server.JoinAnyGameRequest": {
-            "type": "object",
-            "properties": {
-                "userID": {
-                    "type": "string"
-                }
-            }
-        },
-        "server.JoinGameRequest": {
-            "type": "object",
-            "properties": {
-                "gameID": {
-                    "type": "string"
-                },
-                "userID": {
-                    "type": "string"
-                }
-            }
-        },
-        "server.MoveRequest": {
-            "type": "object",
-            "properties": {
-                "gameID": {
-                    "type": "string"
-                },
-                "userID": {
                     "type": "string"
                 },
                 "x": {
@@ -609,24 +600,69 @@ const docTemplate = `{
                 }
             }
         },
+        "server.AccessTokenResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "server.ErrorCode": {
+            "type": "string",
+            "enum": [
+                "ERR_GAME_NOT_FOUND",
+                "ERR_GAME_NOT_WAITING",
+                "ERR_GAME_NOT_ACTIVE",
+                "ERR_NOT_YOUR_TURN",
+                "ERR_NOT_IN_GAME",
+                "ERR_CELL_OCCUPIED",
+                "ERR_OUT_OF_BOUNDS",
+                "ERR_PASSWORD_TOO_SHORT",
+                "ERR_USER_ALREADY_EXISTS",
+                "ERR_USER_NOT_FOUND",
+                "ERR_INVALID_CREDENTIALS",
+                "ERR_REFRESH_TOKEN_DELETED",
+                "ERR_TOKEN_INVALID",
+                "ERR_TOKEN_EXPIRED",
+                "ERR_TOKEN_SIGNATURE_INVALID"
+            ],
+            "x-enum-varnames": [
+                "CodeGameNotFound",
+                "CodeGameNotWaiting",
+                "CodeGameNotActive",
+                "CodeNotYourTurn",
+                "CodeNotInGame",
+                "CodeCellOccupied",
+                "CodeOutOfBounds",
+                "CodePasswordTooShort",
+                "CodeUserAlreadyExists",
+                "CodeUserNotFound",
+                "CodeInvalidCredentials",
+                "CodeRefreshTokenDeleted",
+                "CodeTokenInvalid",
+                "CodeTokenExpired",
+                "CodeTokenSignatureInvalid"
+            ]
+        },
+        "server.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "$ref": "#/definitions/server.ErrorCode"
+                },
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
         "server.UserLoginRequest": {
             "type": "object",
             "properties": {
                 "password": {
                     "type": "string"
                 },
-                "userID": {
-                    "type": "string"
-                }
-            }
-        },
-        "server.UserRefreshTokenRequest": {
-            "type": "object",
-            "properties": {
-                "refreshToken": {
-                    "type": "string"
-                },
-                "userID": {
+                "user_id": {
                     "type": "string"
                 }
             }
@@ -637,7 +673,7 @@ const docTemplate = `{
                 "password": {
                     "type": "string"
                 },
-                "userID": {
+                "user_id": {
                     "type": "string"
                 }
             }

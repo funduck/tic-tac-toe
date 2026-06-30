@@ -6,7 +6,7 @@ replace github.com/GIT_USER_ID/GIT_REPO_ID => ./generated/server
 
 require (
 	github.com/GIT_USER_ID/GIT_REPO_ID v0.0.0
-	github.com/funduck/tic-tac-toe v0.0.0-20260611134052-557dae18aa36
+	golang.org/x/term v0.44.0
 )
 
-require github.com/google/uuid v1.6.0 // indirect
+require golang.org/x/sys v0.46.0 // indirect

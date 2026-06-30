@@ -6,13 +6,13 @@ import (
 	"time"
 )
 
-func TestAccessTokenService_generateToken(t *testing.T) {
+func TestAccessTokenService_GenerateTokens(t *testing.T) {
 	s := NewAccessTokenService(
 		"secret",
 		"my-awesome-app",
 	)
 
-	tokenPair, err := s.GenerateToken("user1")
+	tokenPair, err := s.GenerateTokens("user1")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -33,7 +33,7 @@ func TestAccessTokenService_ValidateToken(t *testing.T) {
 		"my-awesome-app",
 	)
 
-	tokenPair, err := s.GenerateToken("user1")
+	tokenPair, err := s.GenerateTokens("user1")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -73,7 +73,7 @@ func TestAccessTokenService_ValidateToken_Errors(t *testing.T) {
 					"wrong-secret",
 					"my-awesome-app",
 				)
-				tokenPair, err := s2.GenerateToken("user1")
+				tokenPair, err := s2.GenerateTokens("user1")
 				if err != nil {
 					t.Fatalf("unexpected error: %v", err)
 				}
@@ -90,7 +90,7 @@ func TestAccessTokenService_ValidateToken_Errors(t *testing.T) {
 					issuer:              "my-awesome-app",
 					accessTokenLifetime: -1 * time.Minute, // Already expired
 				}
-				tokenPair, err := s2.GenerateToken("user1")
+				tokenPair, err := s2.GenerateTokens("user1")
 				if err != nil {
 					t.Fatalf("unexpected error: %v", err)
 				}
@@ -118,7 +118,7 @@ func TestAccessTokenService_ValidateRefreshToken(t *testing.T) {
 		"my-awesome-app",
 	)
 
-	tokenPair, err := s.GenerateToken("user1")
+	tokenPair, err := s.GenerateTokens("user1")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -155,7 +155,7 @@ func TestAccessTokenService_ValidateRefreshToken_Errors(t *testing.T) {
 					"wrong-secret",
 					"my-awesome-app",
 				)
-				tokenPair, err := s2.GenerateToken("user1")
+				tokenPair, err := s2.GenerateTokens("user1")
 				if err != nil {
 					t.Fatalf("unexpected error: %v", err)
 				}
@@ -172,7 +172,7 @@ func TestAccessTokenService_ValidateRefreshToken_Errors(t *testing.T) {
 					issuer:               "my-awesome-app",
 					refreshTokenLifetime: -1 * time.Minute, // Already expired
 				}
-				tokenPair, err := s2.GenerateToken("user1")
+				tokenPair, err := s2.GenerateTokens("user1")
 				if err != nil {
 					t.Fatalf("unexpected error: %v", err)
 				}

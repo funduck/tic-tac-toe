@@ -18,9 +18,17 @@ func NewAccessTokenService(secret, issuer string) *AccessTokenService {
 	return &AccessTokenService{
 		secret:               secret,
 		issuer:               issuer,
-		accessTokenLifetime:  10 * time.Second, // Short-lived access token for better security
-		refreshTokenLifetime: 7 * 24 * time.Hour,
+		accessTokenLifetime:  10 * time.Second,   // default to 10 seconds
+		refreshTokenLifetime: 7 * 24 * time.Hour, // default to 7 days
 	}
+}
+
+func (s *AccessTokenService) SetAccessTokenLifetime(duration time.Duration) {
+	s.accessTokenLifetime = duration
+}
+
+func (s *AccessTokenService) SetRefreshTokenLifetime(duration time.Duration) {
+	s.refreshTokenLifetime = duration
 }
 
 func (s *AccessTokenService) keyFunc(token *jwt.Token) (interface{}, error) {
@@ -31,7 +39,7 @@ func (s *AccessTokenService) keyFunc(token *jwt.Token) (interface{}, error) {
 	return []byte(s.secret), nil
 }
 
-// Parses and validates the access token, returning the user ID and session ID if valid.
+// ValidateToken parses and validates the access token, returning the user ID and session ID if valid.
 func (s *AccessTokenService) ValidateToken(tokenStr string) (*Token, error) {
 	token, err := jwt.ParseWithClaims(tokenStr, &CustomClaims{}, s.keyFunc)
 	if err != nil {
@@ -50,7 +58,7 @@ func (s *AccessTokenService) ValidateToken(tokenStr string) (*Token, error) {
 	return nil, ErrTokenInvalid
 }
 
-// Parses and validates the refresh token, returning the user ID.
+// ValidateRefreshToken parses and validates the refresh token, returning the user ID.
 func (s *AccessTokenService) ValidateRefreshToken(tokenStr string) (string, error) {
 	token, err := jwt.ParseWithClaims(tokenStr, &jwt.RegisteredClaims{}, s.keyFunc)
 	if err != nil {
@@ -70,8 +78,8 @@ func (s *AccessTokenService) ValidateRefreshToken(tokenStr string) (string, erro
 	return "", ErrTokenInvalid
 }
 
-// Generates JWT token and refresh token for the given user ID. The refresh token is stored in the user repo for later validation.
-func (s *AccessTokenService) GenerateToken(userID string) (*TokenPair, error) {
+// GenerateTokens generates a JWT token and refresh token for the given user ID.
+func (s *AccessTokenService) GenerateTokens(userID string) (*TokenPair, error) {
 	now := time.Now()
 
 	accessClaims := CustomClaims{

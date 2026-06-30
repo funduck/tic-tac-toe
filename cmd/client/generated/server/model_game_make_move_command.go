@@ -14,36 +14,35 @@ import (
 	"encoding/json"
 )
 
-// checks if the ServerMoveRequest type satisfies the MappedNullable interface at compile time
-var _ MappedNullable = &ServerMoveRequest{}
+// checks if the GameMakeMoveCommand type satisfies the MappedNullable interface at compile time
+var _ MappedNullable = &GameMakeMoveCommand{}
 
-// ServerMoveRequest struct for ServerMoveRequest
-type ServerMoveRequest struct {
+// GameMakeMoveCommand struct for GameMakeMoveCommand
+type GameMakeMoveCommand struct {
 	GameID *string `json:"gameID,omitempty"`
-	UserID *string `json:"userID,omitempty"`
-	X *int32 `json:"x,omitempty"`
-	Y *int32 `json:"y,omitempty"`
+	X      *int32  `json:"x,omitempty"`
+	Y      *int32  `json:"y,omitempty"`
 }
 
-// NewServerMoveRequest instantiates a new ServerMoveRequest object
+// NewGameMakeMoveCommand instantiates a new GameMakeMoveCommand object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewServerMoveRequest() *ServerMoveRequest {
-	this := ServerMoveRequest{}
+func NewGameMakeMoveCommand() *GameMakeMoveCommand {
+	this := GameMakeMoveCommand{}
 	return &this
 }
 
-// NewServerMoveRequestWithDefaults instantiates a new ServerMoveRequest object
+// NewGameMakeMoveCommandWithDefaults instantiates a new GameMakeMoveCommand object
 // This constructor will only assign default values to properties that have it defined,
 // but it doesn't guarantee that properties required by API are set
-func NewServerMoveRequestWithDefaults() *ServerMoveRequest {
-	this := ServerMoveRequest{}
+func NewGameMakeMoveCommandWithDefaults() *GameMakeMoveCommand {
+	this := GameMakeMoveCommand{}
 	return &this
 }
 
 // GetGameID returns the GameID field value if set, zero value otherwise.
-func (o *ServerMoveRequest) GetGameID() string {
+func (o *GameMakeMoveCommand) GetGameID() string {
 	if o == nil || IsNil(o.GameID) {
 		var ret string
 		return ret
@@ -53,7 +52,7 @@ func (o *ServerMoveRequest) GetGameID() string {
 
 // GetGameIDOk returns a tuple with the GameID field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ServerMoveRequest) GetGameIDOk() (*string, bool) {
+func (o *GameMakeMoveCommand) GetGameIDOk() (*string, bool) {
 	if o == nil || IsNil(o.GameID) {
 		return nil, false
 	}
@@ -61,7 +60,7 @@ func (o *ServerMoveRequest) GetGameIDOk() (*string, bool) {
 }
 
 // HasGameID returns a boolean if a field has been set.
-func (o *ServerMoveRequest) HasGameID() bool {
+func (o *GameMakeMoveCommand) HasGameID() bool {
 	if o != nil && !IsNil(o.GameID) {
 		return true
 	}
@@ -70,44 +69,12 @@ func (o *ServerMoveRequest) HasGameID() bool {
 }
 
 // SetGameID gets a reference to the given string and assigns it to the GameID field.
-func (o *ServerMoveRequest) SetGameID(v string) {
+func (o *GameMakeMoveCommand) SetGameID(v string) {
 	o.GameID = &v
 }
 
-// GetUserID returns the UserID field value if set, zero value otherwise.
-func (o *ServerMoveRequest) GetUserID() string {
-	if o == nil || IsNil(o.UserID) {
-		var ret string
-		return ret
-	}
-	return *o.UserID
-}
-
-// GetUserIDOk returns a tuple with the UserID field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *ServerMoveRequest) GetUserIDOk() (*string, bool) {
-	if o == nil || IsNil(o.UserID) {
-		return nil, false
-	}
-	return o.UserID, true
-}
-
-// HasUserID returns a boolean if a field has been set.
-func (o *ServerMoveRequest) HasUserID() bool {
-	if o != nil && !IsNil(o.UserID) {
-		return true
-	}
-
-	return false
-}
-
-// SetUserID gets a reference to the given string and assigns it to the UserID field.
-func (o *ServerMoveRequest) SetUserID(v string) {
-	o.UserID = &v
-}
-
 // GetX returns the X field value if set, zero value otherwise.
-func (o *ServerMoveRequest) GetX() int32 {
+func (o *GameMakeMoveCommand) GetX() int32 {
 	if o == nil || IsNil(o.X) {
 		var ret int32
 		return ret
@@ -117,7 +84,7 @@ func (o *ServerMoveRequest) GetX() int32 {
 
 // GetXOk returns a tuple with the X field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ServerMoveRequest) GetXOk() (*int32, bool) {
+func (o *GameMakeMoveCommand) GetXOk() (*int32, bool) {
 	if o == nil || IsNil(o.X) {
 		return nil, false
 	}
@@ -125,7 +92,7 @@ func (o *ServerMoveRequest) GetXOk() (*int32, bool) {
 }
 
 // HasX returns a boolean if a field has been set.
-func (o *ServerMoveRequest) HasX() bool {
+func (o *GameMakeMoveCommand) HasX() bool {
 	if o != nil && !IsNil(o.X) {
 		return true
 	}
@@ -134,12 +101,12 @@ func (o *ServerMoveRequest) HasX() bool {
 }
 
 // SetX gets a reference to the given int32 and assigns it to the X field.
-func (o *ServerMoveRequest) SetX(v int32) {
+func (o *GameMakeMoveCommand) SetX(v int32) {
 	o.X = &v
 }
 
 // GetY returns the Y field value if set, zero value otherwise.
-func (o *ServerMoveRequest) GetY() int32 {
+func (o *GameMakeMoveCommand) GetY() int32 {
 	if o == nil || IsNil(o.Y) {
 		var ret int32
 		return ret
@@ -149,7 +116,7 @@ func (o *ServerMoveRequest) GetY() int32 {
 
 // GetYOk returns a tuple with the Y field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ServerMoveRequest) GetYOk() (*int32, bool) {
+func (o *GameMakeMoveCommand) GetYOk() (*int32, bool) {
 	if o == nil || IsNil(o.Y) {
 		return nil, false
 	}
@@ -157,7 +124,7 @@ func (o *ServerMoveRequest) GetYOk() (*int32, bool) {
 }
 
 // HasY returns a boolean if a field has been set.
-func (o *ServerMoveRequest) HasY() bool {
+func (o *GameMakeMoveCommand) HasY() bool {
 	if o != nil && !IsNil(o.Y) {
 		return true
 	}
@@ -166,25 +133,22 @@ func (o *ServerMoveRequest) HasY() bool {
 }
 
 // SetY gets a reference to the given int32 and assigns it to the Y field.
-func (o *ServerMoveRequest) SetY(v int32) {
+func (o *GameMakeMoveCommand) SetY(v int32) {
 	o.Y = &v
 }
 
-func (o ServerMoveRequest) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+func (o GameMakeMoveCommand) MarshalJSON() ([]byte, error) {
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
 	return json.Marshal(toSerialize)
 }
 
-func (o ServerMoveRequest) ToMap() (map[string]interface{}, error) {
+func (o GameMakeMoveCommand) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.GameID) {
 		toSerialize["gameID"] = o.GameID
-	}
-	if !IsNil(o.UserID) {
-		toSerialize["userID"] = o.UserID
 	}
 	if !IsNil(o.X) {
 		toSerialize["x"] = o.X
@@ -195,40 +159,38 @@ func (o ServerMoveRequest) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableServerMoveRequest struct {
-	value *ServerMoveRequest
+type NullableGameMakeMoveCommand struct {
+	value *GameMakeMoveCommand
 	isSet bool
 }
 
-func (v NullableServerMoveRequest) Get() *ServerMoveRequest {
+func (v NullableGameMakeMoveCommand) Get() *GameMakeMoveCommand {
 	return v.value
 }
 
-func (v *NullableServerMoveRequest) Set(val *ServerMoveRequest) {
+func (v *NullableGameMakeMoveCommand) Set(val *GameMakeMoveCommand) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableServerMoveRequest) IsSet() bool {
+func (v NullableGameMakeMoveCommand) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableServerMoveRequest) Unset() {
+func (v *NullableGameMakeMoveCommand) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableServerMoveRequest(val *ServerMoveRequest) *NullableServerMoveRequest {
-	return &NullableServerMoveRequest{value: val, isSet: true}
+func NewNullableGameMakeMoveCommand(val *GameMakeMoveCommand) *NullableGameMakeMoveCommand {
+	return &NullableGameMakeMoveCommand{value: val, isSet: true}
 }
 
-func (v NullableServerMoveRequest) MarshalJSON() ([]byte, error) {
+func (v NullableGameMakeMoveCommand) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableServerMoveRequest) UnmarshalJSON(src []byte) error {
+func (v *NullableGameMakeMoveCommand) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

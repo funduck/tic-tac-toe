@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/cookiejar"
+	"strings"
 	"sync"
 )
 
@@ -30,6 +32,13 @@ func (a *AuthRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) 
 	// Clone the request to avoid modifying the original
 	reqClone := cloneRequest(req)
 
+	// The refresh-token request must never recurse through the refresh-on-401
+	// logic below: it would re-enter RoundTrip and deadlock on a.mu (already held
+	// by the in-flight refresh). Send it straight through.
+	if strings.HasSuffix(req.URL.Path, "/api/users/refresh-token") {
+		return a.transport.RoundTrip(reqClone)
+	}
+
 	// Add Authorization header if we have an access token
 	if AccessToken != "" {
 		reqClone.Header.Set("Authorization", fmt.Sprintf("Bearer %s", AccessToken))
@@ -41,8 +50,9 @@ func (a *AuthRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) 
 		return resp, err
 	}
 
-	// Check if we got a 401 Unauthorized response
-	if resp.StatusCode == http.StatusUnauthorized && RefreshToken != "" {
+	// Check if we got a 401 Unauthorized response. We only attempt a refresh if we
+	// were authenticated; the refresh token itself rides along as an HttpOnly cookie.
+	if resp.StatusCode == http.StatusUnauthorized && AccessToken != "" {
 		// Close the original response body
 		resp.Body.Close()
 
@@ -66,16 +76,14 @@ func (a *AuthRoundTripper) refreshToken(ctx context.Context) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
-	// Double-check if another goroutine already refreshed the token
-	// by attempting the refresh with current refresh token
-	tokenPair, err := a.userService.RefreshToken(ctx, UserID, RefreshToken)
+	// The refresh token is sent automatically as an HttpOnly cookie by the cookie jar.
+	resp, err := a.userService.RefreshToken(ctx)
 	if err != nil {
-		return fmt.Errorf("refresh token request failed: %w", err)
+		return err
 	}
 
-	// Update the global tokens
-	AccessToken = *tokenPair.AccessToken
-	RefreshToken = *tokenPair.RefreshToken
+	// Update the access token; the new refresh token is stored in the cookie jar.
+	AccessToken = *resp.AccessToken
 
 	return nil
 }
@@ -101,9 +109,17 @@ func cloneRequest(req *http.Request) *http.Request {
 	return reqClone
 }
 
-// NewAuthHTTPClient creates an HTTP client with authentication support
+// NewAuthHTTPClient creates an HTTP client with authentication support. The cookie
+// jar transparently stores the HttpOnly refresh token cookie returned on login and
+// sends it back on refresh requests, so the refresh token never lives in process state.
 func NewAuthHTTPClient(userService *UserService) *http.Client {
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		// cookiejar.New(nil) never returns an error, but fail safe just in case.
+		panic(fmt.Sprintf("failed to create cookie jar: %v", err))
+	}
 	return &http.Client{
 		Transport: NewAuthRoundTripper(userService),
+		Jar:       jar,
 	}
 }
