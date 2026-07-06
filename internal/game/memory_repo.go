@@ -52,9 +52,14 @@ func (r *MemoryRepo) Update(ctx context.Context, game *Game) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	if _, ok := r.gamesByID[game.ID]; !ok {
+	stored, ok := r.gamesByID[game.ID]
+	if !ok {
 		return ErrGameNotFound
 	}
+	if stored.Version != game.Version {
+		return ErrVersionConflict
+	}
+	game.Version++
 	r.gamesByID[game.ID] = game.Clone()
 	return nil
 }

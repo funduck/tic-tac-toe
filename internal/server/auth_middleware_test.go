@@ -69,4 +69,16 @@ func TestAuthMiddleware(t *testing.T) {
 		}
 	})
 
+	t.Run("refresh token used as access token should deny access", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/api/games/123", nil)
+		req.Header.Set("Authorization", "Bearer "+validToken.RefreshToken)
+		w := httptest.NewRecorder()
+
+		handler.ServeHTTP(w, req)
+
+		if w.Code != http.StatusUnauthorized {
+			t.Errorf("expected status 401 Unauthorized, got %d", w.Code)
+		}
+	})
+
 }

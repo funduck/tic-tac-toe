@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"errors"
 	"testing"
 )
 
@@ -41,5 +42,26 @@ func TestMemoryUserRepo_Save(t *testing.T) {
 	}
 	if found.ID != "user2" {
 		t.Errorf("expected ID 'user2', got '%s'", found.ID)
+	}
+}
+
+func TestMemoryUserRepo_Create_AlreadyExists(t *testing.T) {
+	ctx := context.Background()
+	repo := NewMemoryUserRepo()
+
+	if err := repo.Create(ctx, &User{ID: "user3", Password: "pass"}); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	err := repo.Create(ctx, &User{ID: "user3", Password: "other"})
+	if !errors.Is(err, ErrUserAlreadyExists) {
+		t.Fatalf("expected ErrUserAlreadyExists, got %v", err)
+	}
+
+	found, err := repo.FindByID(ctx, "user3")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if found.Password != "pass" {
+		t.Errorf("existing user was overwritten: password %q", found.Password)
 	}
 }

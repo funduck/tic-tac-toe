@@ -356,12 +356,12 @@ paths:
         description: User signup request
         required: true
       responses:
-        "200":
+        "201":
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/server.AccessTokenResponse"
-          description: OK
+          description: Created
         "400":
           content:
             application/json:

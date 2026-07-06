@@ -23,6 +23,7 @@ var (
 	ErrGameNotWaiting = errors.New("game is not waiting for players")
 	ErrGameNotActive  = errors.New("game is not in progress")
 	ErrNotInGame      = errors.New("player not in this game")
+	ErrUserIDEmpty    = errors.New("user id must not be empty")
 )
 
 // Game represents the state of a single tic-tac-toe match.
@@ -42,6 +43,8 @@ type Game struct {
 	// Pointers so they stay omitted until the corresponding player is seen.
 	UserID1LastSeen *time.Time `json:"user_id1_last_seen,omitempty"`
 	UserID2LastSeen *time.Time `json:"user_id2_last_seen,omitempty"`
+
+	Version int `json:"-"` // optimistic locking version, incremented on every update
 }
 
 // Touch records that userID was last seen at t. It only updates a participant's
@@ -98,6 +101,9 @@ func (g *Game) IsJoinAllowed() bool {
 // Join adds a player to the game. The first player to join becomes UserID1, the second becomes UserID2.
 // If both players have joined, the game status changes to in_progress and UserID1 moves first.
 func (g *Game) Join(userID string) error {
+	if userID == "" {
+		return ErrUserIDEmpty
+	}
 	if userID == g.UserID1 || userID == g.UserID2 {
 		return nil // already joined, no change
 	}

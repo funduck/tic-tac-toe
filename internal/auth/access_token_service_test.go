@@ -45,8 +45,8 @@ func TestAccessTokenService_ValidateToken(t *testing.T) {
 	if token == nil {
 		t.Fatal("expected non-nil token")
 	}
-	if token.UserID != "user1" {
-		t.Errorf("expected user ID 'user1', got '%s'", token.UserID)
+	if token.Subject != "user1" {
+		t.Errorf("expected user ID 'user1', got '%s'", token.Subject)
 	}
 }
 
@@ -97,6 +97,17 @@ func TestAccessTokenService_ValidateToken_Errors(t *testing.T) {
 				return tokenPair.AccessToken
 			}(),
 			expectedErr: ErrTokenExpired,
+		},
+		{
+			name: "refresh token used as access token",
+			tokenStr: func() string {
+				tokenPair, err := s.GenerateTokens("user1")
+				if err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				return tokenPair.RefreshToken
+			}(),
+			expectedErr: ErrTokenInvalid,
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -179,6 +190,17 @@ func TestAccessTokenService_ValidateRefreshToken_Errors(t *testing.T) {
 				return tokenPair.RefreshToken
 			}(),
 			expectedErr: ErrTokenInvalid, // For refresh token expiration means same as invalid token.
+		},
+		{
+			name: "access token used as refresh token",
+			tokenStr: func() string {
+				tokenPair, err := s.GenerateTokens("user1")
+				if err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				return tokenPair.AccessToken
+			}(),
+			expectedErr: ErrTokenInvalid,
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

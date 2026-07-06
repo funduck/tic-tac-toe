@@ -70,7 +70,7 @@ func TestUserRouter(t *testing.T) {
 			method:         http.MethodPost,
 			path:           "/api/users/signup",
 			body:           UserSignupRequest{UserID: "testuser", Password: "testpass"},
-			expectedStatus: http.StatusOK,
+			expectedStatus: http.StatusCreated,
 			checkResponse:  checkTokens("access", "refresh"),
 		},
 		{
