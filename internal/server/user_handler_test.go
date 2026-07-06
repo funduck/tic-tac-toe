@@ -80,7 +80,7 @@ func TestUserHandler_Signup(t *testing.T) {
 			signupFunc: func(ctx context.Context, userID, password string) (*user.User, *auth.TokenPair, error) {
 				return &user.User{ID: userID}, &auth.TokenPair{AccessToken: "access", RefreshToken: "refresh"}, nil
 			},
-			expectedStatus: http.StatusOK,
+			expectedStatus: http.StatusCreated,
 			checkResponse:  checkAccessTokenResponse("access", "refresh"),
 		},
 		{

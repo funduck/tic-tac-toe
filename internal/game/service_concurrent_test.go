@@ -109,3 +109,74 @@ func TestConcurrentJoinAnyGame(t *testing.T) {
 		t.Errorf("expected players in 2 different games, got %d", len(joinedGames))
 	}
 }
+
+// TestConcurrentPollAndMove is a lost-update regression test: GetGame persists
+// presence (read-modify-write), so a poll racing a MakeMove must never write
+// stale state back and silently erase the move.
+func TestConcurrentPollAndMove(t *testing.T) {
+	ctx := context.Background()
+	repo := NewMemoryRepo()
+	svc := NewGameService(repo, slog.Default())
+
+	g, _ := svc.CreateGame(ctx, "alice", CreateGameCommand{})
+	_, _ = svc.JoinGame(ctx, "alice", JoinGameCommand{GameID: g.ID})
+	_, _ = svc.JoinGame(ctx, "bob", JoinGameCommand{GameID: g.ID})
+
+	// Alice takes the first column, bob fills the second; alice wins.
+	moves := []struct {
+		player string
+		x, y   int
+	}{
+		{"alice", 0, 0}, {"bob", 1, 0},
+		{"alice", 0, 1}, {"bob", 1, 1},
+		{"alice", 0, 2},
+	}
+
+	for _, mv := range moves {
+		opponent := "alice"
+		if mv.player == "alice" {
+			opponent = "bob"
+		}
+
+		// The opponent polls aggressively while the move is being made.
+		done := make(chan struct{})
+		var wg sync.WaitGroup
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for {
+				select {
+				case <-done:
+					return
+				default:
+					if _, err := svc.GetGame(ctx, opponent, GetGameCommand{GameID: g.ID}); err != nil {
+						t.Errorf("unexpected poll error: %v", err)
+						return
+					}
+				}
+			}
+		}()
+
+		if _, err := svc.MakeMove(ctx, mv.player, MakeMoveCommand{GameID: g.ID, X: mv.x, Y: mv.y}); err != nil {
+			t.Fatalf("move (%d,%d) by %s failed: %v", mv.x, mv.y, mv.player, err)
+		}
+		close(done)
+		wg.Wait()
+
+		final, err := svc.GetGame(ctx, mv.player, GetGameCommand{GameID: g.ID})
+		if err != nil {
+			t.Fatalf("failed to get game: %v", err)
+		}
+		if final.Board[mv.x][mv.y] == 0 {
+			t.Fatalf("move (%d,%d) by %s was lost to a concurrent poll", mv.x, mv.y, mv.player)
+		}
+	}
+
+	final, err := svc.GetGame(ctx, "alice", GetGameCommand{GameID: g.ID})
+	if err != nil {
+		t.Fatalf("failed to get game: %v", err)
+	}
+	if final.Status != StatusFinished || final.WinnerID != "alice" {
+		t.Errorf("expected alice to win, got status=%s winner=%q", final.Status, final.WinnerID)
+	}
+}

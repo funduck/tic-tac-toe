@@ -28,6 +28,14 @@ func (r *MockUserRepo) FindByID(ctx context.Context, id string) (*User, error) {
 	return user, nil
 }
 
+func (r *MockUserRepo) Create(ctx context.Context, user *User) error {
+	if _, exists := r.users[user.ID]; exists {
+		return ErrUserAlreadyExists
+	}
+	r.users[user.ID] = user
+	return nil
+}
+
 func (r *MockUserRepo) Save(ctx context.Context, user *User) error {
 	r.users[user.ID] = user
 	return nil

@@ -45,14 +45,6 @@ func (s *UserService) Signup(ctx context.Context, userID, password string) (*Use
 		return nil, nil, fmt.Errorf("signup: %w, should contain at least %d characters", ErrPasswordIsTooShort, defaultPasswordLength)
 	}
 
-	existingUser, err := s.userRepo.FindByID(ctx, userID)
-	if err != nil {
-		return nil, nil, err
-	}
-	if existingUser != nil {
-		return nil, nil, ErrUserAlreadyExists
-	}
-
 	passwordHash, err := auth.HashPassword(password)
 	if err != nil {
 		return nil, nil, err
@@ -69,7 +61,8 @@ func (s *UserService) Signup(ctx context.Context, userID, password string) (*Use
 		Password:     passwordHash,
 		RefreshToken: refreshTokenHash,
 	}
-	if err := s.userRepo.Save(ctx, user); err != nil {
+	// Instead of Save we use Create to ensure that we don't overwrite an existing user.
+	if err := s.userRepo.Create(ctx, user); err != nil {
 		return nil, nil, err
 	}
 

@@ -92,6 +92,9 @@ Core domain types:
 - **Game** type is responsible for game state management, including players, turns, and AFK detection.
 - **GameService** is responsible for matchmaking, game creation, and game actions. For persistence it uses GameRepository interface.
 
+### Concurrency Model
+Game state is protected with **optimistic locking**: every game carries a version, and the repository only persists an update whose version matches the stored one.
+
 ## Protocol Design
 
 ### Overview
@@ -104,7 +107,7 @@ The system uses a **REST API over HTTP** with **polling-based state updates**. C
 sequenceDiagram
 
 ClientA ->> Server: POST /api/users/signup (alice)
-Server -->> ClientA: 200 OK + tokens    
+Server -->> ClientA: 201 Created + tokens    
 
 ClientA ->> Server: POST /api/games (create game)
 Server -->> ClientA: 201 Created + gameID
@@ -115,7 +118,7 @@ loop Wait for opponent
 end
 
 ClientB ->> Server: POST /api/users/signup (bob)
-Server -->> ClientB: 200 OK + tokens
+Server -->> ClientB: 201 Created + tokens
 ClientB ->> Server: POST /api/games/join (matchmaking)
 Server -->> ClientB: 200 OK + gameID
 
@@ -140,7 +143,7 @@ Server -->> ClientA: 200 OK (finished, winner: alice)
 ```mermaid
 sequenceDiagram
 Client ->> Server: POST /api/users/signup (userID, password)
-Server -->> Client: 200 OK + {access_token, refresh_token}
+Server -->> Client: 201 Created + {access_token, refresh_token}
 
 Note over Client, Server: Client stores tokens securely (in memory for CLI, localStorage for web)
 ```
@@ -243,7 +246,7 @@ The system uses a **dual-token approach**:
 - **Minimum password length:** 6 characters
 - **Token signing:** HMAC-SHA256 with a secret key
 - **Refresh token storage:** Refresh tokens are hashed (SHA256) before storage to prevent misuse if database is compromised
-- **Token validation:** Every protected endpoint validates the Bearer token signature, expiration, and issuer
+- **Token validation:** Every protected endpoint validates the Bearer token signature, expiration, issuer, subject and `is_access_token` claim
 
 ## Development
 
@@ -275,6 +278,7 @@ used for a security-sensitive setting).
 
 | Variable        | Default          | Description                                                           |
 | --------------- | ---------------- | ----------------------------------------------------------------------|
+| `PORT`          | `8080`           | HTTP listen port                                                      |
 | `JWT_SECRET`    | `default-secret` | Secret key used to sign JWT tokens**                                  |
 | `AFK_TIMEOUT`   | `10s`            | Idle period after which an active player auto-wins against an AFK opponent. Accepts Go durations (e.g. `1m`).  |
 | `SECURE_COOKIE` | _(off)_          | Set to `true` to mark the refresh-token cookie as `Secure` (HTTPS only). Leave unset for plain-HTTP local dev. |

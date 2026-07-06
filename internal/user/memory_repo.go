@@ -30,6 +30,20 @@ func (r *MemoryUserRepo) FindByID(ctx context.Context, id string) (*User, error)
 	return user.Clone(), nil
 }
 
+func (r *MemoryUserRepo) Create(ctx context.Context, user *User) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	if _, exists := r.users[user.ID]; exists {
+		return ErrUserAlreadyExists
+	}
+	r.users[user.ID] = user.Clone()
+	return nil
+}
+
 func (r *MemoryUserRepo) Save(ctx context.Context, user *User) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()

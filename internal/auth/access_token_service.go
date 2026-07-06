@@ -50,17 +50,17 @@ func (s *AccessTokenService) ValidateToken(tokenStr string) (*Token, error) {
 	}
 
 	// Check if token is valid and claims are of type *CustomClaims
-	if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
+	if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid && claims.IsAccessToken {
 		return &Token{*claims}, nil
 	}
 
-	// Type assertion failed or token is invalid
+	// Type assertion failed, token is invalid or it is not an access token
 	return nil, ErrTokenInvalid
 }
 
 // ValidateRefreshToken parses and validates the refresh token, returning the user ID.
 func (s *AccessTokenService) ValidateRefreshToken(tokenStr string) (string, error) {
-	token, err := jwt.ParseWithClaims(tokenStr, &jwt.RegisteredClaims{}, s.keyFunc)
+	token, err := jwt.ParseWithClaims(tokenStr, &CustomClaims{}, s.keyFunc)
 	if err != nil {
 		// For refresh token expiration means same as invalid token.
 		// if errors.Is(err, jwt.ErrTokenExpired) {
@@ -69,12 +69,12 @@ func (s *AccessTokenService) ValidateRefreshToken(tokenStr string) (string, erro
 		return "", errors.Join(err, ErrTokenInvalid)
 	}
 
-	// Check if token is valid and claims are of type *jwt.RegisteredClaims
-	if claims, ok := token.Claims.(*jwt.RegisteredClaims); ok && token.Valid {
+	// Check if token is valid and claims are of type *CustomClaims
+	if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid && !claims.IsAccessToken {
 		return claims.Subject, nil
 	}
 
-	// Type assertion failed or token is invalid
+	// Type assertion failed, token is invalid or it is not a refresh token
 	return "", ErrTokenInvalid
 }
 
@@ -83,8 +83,9 @@ func (s *AccessTokenService) GenerateTokens(userID string) (*TokenPair, error) {
 	now := time.Now()
 
 	accessClaims := CustomClaims{
-		UserID: userID,
+		IsAccessToken: true,
 		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   userID,
 			ExpiresAt: jwt.NewNumericDate(now.Add(s.accessTokenLifetime)),
 			IssuedAt:  jwt.NewNumericDate(now),
 			NotBefore: jwt.NewNumericDate(now),
@@ -98,11 +99,14 @@ func (s *AccessTokenService) GenerateTokens(userID string) (*TokenPair, error) {
 		return nil, err
 	}
 
-	refreshClaims := jwt.RegisteredClaims{
-		Subject:   userID,
-		ExpiresAt: jwt.NewNumericDate(now.Add(s.refreshTokenLifetime)),
-		IssuedAt:  jwt.NewNumericDate(now),
-		Issuer:    s.issuer,
+	refreshClaims := CustomClaims{
+		IsAccessToken: false,
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   userID,
+			ExpiresAt: jwt.NewNumericDate(now.Add(s.refreshTokenLifetime)),
+			IssuedAt:  jwt.NewNumericDate(now),
+			Issuer:    s.issuer,
+		},
 	}
 
 	refreshTokenObj := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)

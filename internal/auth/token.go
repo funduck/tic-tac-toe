@@ -16,7 +16,7 @@ var (
 )
 
 type CustomClaims struct {
-	UserID string `json:"user_id"`
+	IsAccessToken bool `json:"is_access_token"`
 	jwt.RegisteredClaims
 }
 

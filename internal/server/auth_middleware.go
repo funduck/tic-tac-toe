@@ -51,7 +51,12 @@ func AuthMiddleware(tokenService TokenService) func(next http.Handler) http.Hand
 				writeDomainError(w, err)
 				return
 			}
-			userID := token.UserID
+			// Read and validate the user ID from the token's subject claim
+			userID := token.Subject
+			if userID == "" {
+				writeDomainError(w, auth.ErrTokenInvalid)
+				return
+			}
 
 			// Propagate userID to the request context for downstream handlers
 			ctx := context.WithValue(r.Context(), userIDContextKey, userID)

@@ -5,7 +5,10 @@ import (
 	"errors"
 )
 
-var ErrGameNotFound = errors.New("game not found")
+var (
+	ErrGameNotFound    = errors.New("game not found")
+	ErrVersionConflict = errors.New("game was modified concurrently")
+)
 
 // GameRepo is the persistence interface for game state.
 type GameRepo interface {

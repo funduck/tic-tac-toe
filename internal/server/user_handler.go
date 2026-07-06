@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/funduck/tic-tac-toe/internal/auth"
 	"github.com/funduck/tic-tac-toe/internal/user"
@@ -17,10 +18,6 @@ const (
 	// refreshTokenCookiePath scopes the cookie so browsers only send it to the
 	// refresh endpoint.
 	refreshTokenCookiePath = "/api/users/refresh-token"
-
-	// refreshTokenCookieMaxAge mirrors the refresh token lifetime in
-	// auth.AccessTokenService (7 days).
-	refreshTokenCookieMaxAge = 7 * 24 * 60 * 60
 )
 
 type UserService interface {
@@ -30,20 +27,30 @@ type UserService interface {
 }
 
 type UserHandler struct {
-	svc          UserService
-	logger       *slog.Logger
+	svc    UserService
+	logger *slog.Logger
+
+	// secureCookie determines whether the refresh token cookie is set with the Secure flag.
 	secureCookie bool
+
+	// refreshTokenLifetime drives the refresh cookie MaxAge
+	refreshTokenLifetime time.Duration
 }
 
 func NewUserHandler(svc UserService, logger *slog.Logger) *UserHandler {
 	return &UserHandler{
-		svc:    svc,
-		logger: logger,
+		svc:                  svc,
+		logger:               logger,
+		refreshTokenLifetime: 7 * 24 * time.Hour, // default, mirrors auth.AccessTokenService
 	}
 }
 
 func (h *UserHandler) SetSecureCookie(secure bool) {
 	h.secureCookie = secure
+}
+
+func (h *UserHandler) SetRefreshTokenLifetime(d time.Duration) {
+	h.refreshTokenLifetime = d
 }
 
 // Signup godoc
@@ -54,7 +61,7 @@ func (h *UserHandler) SetSecureCookie(secure bool) {
 //	@Accept		json
 //	@Produce	json
 //	@Param		request	body		UserSignupRequest	true	"User signup request"
-//	@Success	200		{object}	AccessTokenResponse
+//	@Success	201		{object}	AccessTokenResponse
 //	@Failure	400		{object}	ErrorResponse
 //	@Failure	409		{object}	ErrorResponse
 //	@Failure	500		{object}	ErrorResponse
@@ -73,8 +80,8 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setRefreshTokenCookie(w, tokens.RefreshToken, h.secureCookie)
-	writeJSON(w, http.StatusOK, AccessTokenResponse{AccessToken: tokens.AccessToken})
+	h.setRefreshTokenCookie(w, tokens.RefreshToken)
+	writeJSON(w, http.StatusCreated, AccessTokenResponse{AccessToken: tokens.AccessToken})
 }
 
 // Login godoc
@@ -104,7 +111,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setRefreshTokenCookie(w, tokens.RefreshToken, h.secureCookie)
+	h.setRefreshTokenCookie(w, tokens.RefreshToken)
 	writeJSON(w, http.StatusOK, AccessTokenResponse{AccessToken: tokens.AccessToken})
 }
 
@@ -138,20 +145,21 @@ func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setRefreshTokenCookie(w, tokens.RefreshToken, h.secureCookie)
+	h.setRefreshTokenCookie(w, tokens.RefreshToken)
 	writeJSON(w, http.StatusOK, AccessTokenResponse{AccessToken: tokens.AccessToken})
 }
 
-// setRefreshTokenCookie writes the refresh token as an HttpOnly cookie. secure is
-// driven by config so the cookie also works over plain http in local development.
-func setRefreshTokenCookie(w http.ResponseWriter, token string, secure bool) {
+// setRefreshTokenCookie writes the refresh token as an HttpOnly cookie. Secure is
+// driven by config so the cookie also works over plain http in local development;
+// MaxAge follows the configured refresh token lifetime.
+func (h *UserHandler) setRefreshTokenCookie(w http.ResponseWriter, token string) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     refreshTokenCookieName,
 		Value:    token,
 		Path:     refreshTokenCookiePath,
-		MaxAge:   refreshTokenCookieMaxAge,
+		MaxAge:   int(h.refreshTokenLifetime.Seconds()),
 		HttpOnly: true,
-		Secure:   secure,
+		Secure:   h.secureCookie,
 		SameSite: http.SameSiteStrictMode,
 	})
 }

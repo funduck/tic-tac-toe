@@ -44,6 +44,7 @@ func main() {
 
 	userHandler := server.NewUserHandler(userSvc, logger)
 	userHandler.SetSecureCookie(isSecureCookieEnabled(logger))
+	userHandler.SetRefreshTokenLifetime(getRefreshTokenLifetime(logger))
 
 	authMiddleware := server.AuthMiddleware(tokenService)
 
@@ -55,12 +56,13 @@ func main() {
 	})
 
 	// Server
+	addr := ":" + getPort(logger)
 	srv := &http.Server{
-		Addr:    ":8080",
+		Addr:    addr,
 		Handler: router,
 	}
 	go func() {
-		logger.Info("Starting server on :8080")
+		logger.Info("Starting server on " + addr)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logger.Error("Server error", "error", err)
 		}
@@ -108,6 +110,16 @@ func newRouter(logger *slog.Logger) *chi.Mux {
 	})
 
 	return r
+}
+
+// getPort retrieves the listen port from the environment variable "PORT".
+func getPort(logger *slog.Logger) string {
+	port := os.Getenv("PORT")
+	if port == "" {
+		logger.Warn("PORT not set, using default 8080")
+		return "8080"
+	}
+	return port
 }
 
 // getAfkTimeout retrieves the AFK timeout duration from the environment variable "AFK_TIMEOUT".
